@@ -1,7 +1,7 @@
 object fmain: Tfmain
   Left = 0
   Top = 0
-  ClientHeight = 558
+  ClientHeight = 460
   ClientWidth = 487
   Color = clBtnFace
   Font.Charset = DEFAULT_CHARSET
@@ -16,20 +16,20 @@ object fmain: Tfmain
     Left = 0
     Top = 0
     Width = 487
-    Height = 558
-    ActivePage = TabSheet4
+    Height = 460
+    ActivePage = TabSheet5
     Align = alClient
     TabOrder = 0
-    ExplicitHeight = 577
+    ExplicitHeight = 558
     object TabSheet0: TTabSheet
       Caption = '0'
       ImageIndex = 4
-      ExplicitHeight = 549
+      ExplicitHeight = 530
       object DBGrid0: TDBGrid
         Left = 0
         Top = 0
         Width = 479
-        Height = 530
+        Height = 432
         Align = alClient
         DataSource = DataModule1.DataSource4
         TabOrder = 0
@@ -42,12 +42,12 @@ object fmain: Tfmain
     end
     object TabSheet1: TTabSheet
       Caption = '1'
-      ExplicitHeight = 549
+      ExplicitHeight = 530
       object DBGrid1: TDBGrid
         Left = 0
         Top = 0
         Width = 479
-        Height = 530
+        Height = 432
         Align = alClient
         DataSource = DataModule1.DataSource1
         TabOrder = 0
@@ -152,12 +152,11 @@ object fmain: Tfmain
     object TabSheet2: TTabSheet
       Caption = '2'
       ImageIndex = 1
-      ExplicitHeight = 549
       object DBGrid2: TDBGrid
         Left = 0
         Top = 0
         Width = 479
-        Height = 530
+        Height = 432
         Align = alClient
         DataSource = DataModule1.DataSource2
         TabOrder = 0
@@ -171,12 +170,11 @@ object fmain: Tfmain
     object TabSheet3: TTabSheet
       Caption = '3'
       ImageIndex = 2
-      ExplicitHeight = 549
       object DBGrid3: TDBGrid
         Left = 0
         Top = 0
         Width = 479
-        Height = 530
+        Height = 432
         Align = alClient
         DataSource = DataModule1.DataSource3
         TabOrder = 0
@@ -190,7 +188,7 @@ object fmain: Tfmain
     object TabSheet4: TTabSheet
       Caption = '4'
       ImageIndex = 3
-      ExplicitHeight = 549
+      ExplicitHeight = 530
       object RemoteHost: TEdit
         Left = 24
         Top = 30
@@ -266,7 +264,7 @@ object fmain: Tfmain
     object TabSheet5: TTabSheet
       Caption = 'm'
       ImageIndex = 5
-      ExplicitHeight = 549
+      ExplicitHeight = 530
       object ValueListEditor1: TValueListEditor
         Left = 0
         Top = 0
@@ -301,7 +299,7 @@ object fmain: Tfmain
       end
       object StatusBar1: TStatusBar
         Left = 0
-        Top = 511
+        Top = 413
         Width = 479
         Height = 19
         Panels = <
@@ -309,16 +307,16 @@ object fmain: Tfmain
             Text = #1057#1090#1072#1088#1090
             Width = 200
           end>
-        ExplicitTop = 530
+        ExplicitTop = 511
       end
       object Memo1: TMemo
         Left = 0
-        Top = 229
+        Top = 131
         Width = 479
         Height = 282
         Align = alBottom
         TabOrder = 3
-        ExplicitTop = 248
+        ExplicitTop = 229
       end
     end
   end
