@@ -256,7 +256,6 @@ object fmain: Tfmain
         TabOrder = 7
         OnClick = Button7Click
       end
-<<<<<<< HEAD
       object Button9: TButton
         Left = 24
         Top = 340
@@ -265,25 +264,6 @@ object fmain: Tfmain
         Caption = 'GetConfig'
         TabOrder = 8
         OnClick = Button9Click
-=======
-      object Memo2: TMemo
-        Left = 167
-        Top = 239
-        Width = 201
-        Height = 161
-        Lines.Strings = (
-          'Memo2')
-        TabOrder = 8
-      end
-      object Memo3: TMemo
-        Left = 247
-        Top = 82
-        Width = 201
-        Height = 161
-        Lines.Strings = (
-          'Memo2')
-        TabOrder = 9
->>>>>>> 967c12f53eae5df6ae457e9952a6b75e4a5a5f1f
       end
     end
     object TabSheet5: TTabSheet
