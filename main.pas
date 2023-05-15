@@ -35,7 +35,12 @@ type
     Button8: TButton;
     StatusBar1: TStatusBar;
     Memo1: TMemo;
+<<<<<<< HEAD
     Button9: TButton;
+=======
+    Memo2: TMemo;
+    Memo3: TMemo;
+>>>>>>> 967c12f53eae5df6ae457e9952a6b75e4a5a5f1f
     procedure Button1Click(Sender: TObject);
     procedure Button2Click(Sender: TObject);
     procedure Button3Click(Sender: TObject);
