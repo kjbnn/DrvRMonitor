@@ -35,6 +35,7 @@ type
     Button8: TButton;
     StatusBar1: TStatusBar;
     Memo1: TMemo;
+    Memo2: TMemo;
     procedure Button1Click(Sender: TObject);
     procedure Button2Click(Sender: TObject);
     procedure Button3Click(Sender: TObject);

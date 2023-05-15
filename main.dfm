@@ -20,11 +20,9 @@ object fmain: Tfmain
     ActivePage = TabSheet4
     Align = alClient
     TabOrder = 0
-    ExplicitHeight = 577
     object TabSheet0: TTabSheet
       Caption = '0'
       ImageIndex = 4
-      ExplicitHeight = 549
       object DBGrid0: TDBGrid
         Left = 0
         Top = 0
@@ -42,7 +40,6 @@ object fmain: Tfmain
     end
     object TabSheet1: TTabSheet
       Caption = '1'
-      ExplicitHeight = 549
       object DBGrid1: TDBGrid
         Left = 0
         Top = 0
@@ -152,7 +149,6 @@ object fmain: Tfmain
     object TabSheet2: TTabSheet
       Caption = '2'
       ImageIndex = 1
-      ExplicitHeight = 549
       object DBGrid2: TDBGrid
         Left = 0
         Top = 0
@@ -171,7 +167,6 @@ object fmain: Tfmain
     object TabSheet3: TTabSheet
       Caption = '3'
       ImageIndex = 2
-      ExplicitHeight = 549
       object DBGrid3: TDBGrid
         Left = 0
         Top = 0
@@ -190,7 +185,6 @@ object fmain: Tfmain
     object TabSheet4: TTabSheet
       Caption = '4'
       ImageIndex = 3
-      ExplicitHeight = 549
       object RemoteHost: TEdit
         Left = 24
         Top = 30
@@ -262,11 +256,19 @@ object fmain: Tfmain
         TabOrder = 7
         OnClick = Button7Click
       end
+      object Memo2: TMemo
+        Left = 180
+        Top = 160
+        Width = 201
+        Height = 221
+        Lines.Strings = (
+          'Memo2')
+        TabOrder = 8
+      end
     end
     object TabSheet5: TTabSheet
       Caption = 'm'
       ImageIndex = 5
-      ExplicitHeight = 549
       object ValueListEditor1: TValueListEditor
         Left = 0
         Top = 0
@@ -309,7 +311,6 @@ object fmain: Tfmain
             Text = #1057#1090#1072#1088#1090
             Width = 200
           end>
-        ExplicitTop = 530
       end
       object Memo1: TMemo
         Left = 0
@@ -318,7 +319,6 @@ object fmain: Tfmain
         Height = 282
         Align = alBottom
         TabOrder = 3
-        ExplicitTop = 248
       end
     end
   end
