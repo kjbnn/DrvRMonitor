@@ -35,6 +35,7 @@ type
     Button8: TButton;
     StatusBar1: TStatusBar;
     Memo1: TMemo;
+    Button9: TButton;
     procedure Button1Click(Sender: TObject);
     procedure Button2Click(Sender: TObject);
     procedure Button3Click(Sender: TObject);
@@ -43,6 +44,7 @@ type
     procedure Button6Click(Sender: TObject);
     procedure Button7Click(Sender: TObject);
     procedure Button8Click(Sender: TObject);
+    procedure Button9Click(Sender: TObject);
   private
     function NetProtocolDatabaseName(): String;
     function NetWorkDatabaseName(): String;
@@ -61,7 +63,8 @@ uses dm, IBX.IBServices;
 
 const
   ProtocolDatabaseName = 'c:\Рубеж\DB\Protocol\PROTOCOL.gdb';
-  WorkDatabaseName = 'c:\Рубеж\DB\R08Work.gdb';
+  //WorkDatabaseName = 'c:\Рубеж\DB\R08Work.gdb';
+  WorkDatabaseName = 'c:\bank\test\R08Work.gdb';
 
 function Tfmain.NetProtocolDatabaseName: String;
 begin
@@ -76,16 +79,14 @@ end;
 procedure Tfmain.Button1Click(Sender: TObject);
 begin
   try
-    dm.DataModule1.IBBackupService1_Protocol.Active := False;
-    dm.DataModule1.IBBackupService1_Protocol.ServerName := RemoteHost.Text;
-    dm.DataModule1.IBBackupService1_Protocol.Protocol := TCP;
-    dm.DataModule1.IBBackupService1_Protocol.DatabaseName :=
-      ProtocolDatabaseName;
-    dm.DataModule1.IBBackupService1_Protocol.BackupFile.Clear;
-    dm.DataModule1.IBBackupService1_Protocol.BackupFile.Add
-      (GetCurrentDir + '\mybp_p.gbk');
-    dm.DataModule1.IBBackupService1_Protocol.Active := True;
-    dm.DataModule1.IBBackupService1_Protocol.ServiceStart;
+    fdm.IBBackupService1_Protocol.Active := False;
+    fdm.IBBackupService1_Protocol.ServerName := RemoteHost.Text;
+    fdm.IBBackupService1_Protocol.Protocol := TCP;
+    fdm.IBBackupService1_Protocol.DatabaseName := ProtocolDatabaseName;
+    fdm.IBBackupService1_Protocol.BackupFile.Clear;
+    fdm.IBBackupService1_Protocol.BackupFile.Add(GetCurrentDir + '\mybp_p.gbk');
+    fdm.IBBackupService1_Protocol.Active := True;
+    fdm.IBBackupService1_Protocol.ServiceStart;
   except
     MessageBox(0, 'Error pack_p', 'MyCaption', 0);
   end;
@@ -94,15 +95,15 @@ end;
 procedure Tfmain.Button2Click(Sender: TObject);
 begin
   try
-    dm.DataModule1.IBBackupService1_Work.Active := False;
-    dm.DataModule1.IBBackupService1_Work.ServerName := RemoteHost.Text;
-    dm.DataModule1.IBBackupService1_Work.Protocol := TCP;
-    dm.DataModule1.IBBackupService1_Work.DatabaseName := WorkDatabaseName;
-    dm.DataModule1.IBBackupService1_Work.BackupFile.Clear;
-    dm.DataModule1.IBBackupService1_Work.BackupFile.Add
+    fdm.IBBackupService1_Work.Active := False;
+    fdm.IBBackupService1_Work.ServerName := RemoteHost.Text;
+    fdm.IBBackupService1_Work.Protocol := TCP;
+    fdm.IBBackupService1_Work.DatabaseName := WorkDatabaseName;
+    fdm.IBBackupService1_Work.BackupFile.Clear;
+    fdm.IBBackupService1_Work.BackupFile.Add
       (ExtractFilePath(Application.ExeName) + '\mybp_w.gbk');
-    dm.DataModule1.IBBackupService1_Work.Active := True;
-    dm.DataModule1.IBBackupService1_Work.ServiceStart;
+    fdm.IBBackupService1_Work.Active := True;
+    fdm.IBBackupService1_Work.ServiceStart;
   except
     MessageBox(0, 'Error pack_w', 'MyCaption', 0);
   end;
@@ -111,17 +112,16 @@ end;
 procedure Tfmain.Button7Click(Sender: TObject);
 begin
   try
-    dm.DataModule1.IBQuery4.Open;
+    fdm.IBQuery4.Open;
   except
     MessageBox(0, 'Error q4', 'MyCaption', 0);
   end;
 end;
 
-
 procedure Tfmain.Button3Click(Sender: TObject);
 begin
   try
-    dm.DataModule1.IBQuery1.Open;
+    fdm.IBQuery1.Open;
   except
     MessageBox(0, 'Error q1', 'MyCaption', 0);
   end;
@@ -130,7 +130,7 @@ end;
 procedure Tfmain.Button4Click(Sender: TObject);
 begin
   try
-    dm.DataModule1.IBQuery2.Open;
+    fdm.IBQuery2.Open;
   except
     MessageBox(0, 'Error q2', 'MyCaption', 0);
   end;
@@ -140,7 +140,7 @@ end;
 procedure Tfmain.Button5Click(Sender: TObject);
 begin
   try
-    dm.DataModule1.IBQuery3.Open;
+    fdm.IBQuery3.Open;
   except
     MessageBox(0, 'Error q3', 'MyCaption', 0);
   end;
@@ -148,16 +148,62 @@ end;
 
 procedure Tfmain.Button6Click(Sender: TObject);
 begin
-  dm.DataModule1.DB_Protocol.Close;
-  dm.DataModule1.DB_Protocol.DatabaseName := NetProtocolDatabaseName;
-  dm.DataModule1.DB_Work.Close;
-  dm.DataModule1.DB_Work.DatabaseName := NetWorkDatabaseName;
+  fdm.DB_Protocol.Close;
+  fdm.DB_Protocol.DatabaseName := NetProtocolDatabaseName;
+  fdm.DB_Work.Close;
+  fdm.DB_Work.DatabaseName := NetWorkDatabaseName;
 end;
 
 procedure Tfmain.Button8Click(Sender: TObject);
 begin
-  dm.DataModule1.IBScript1.ExecuteScript;
+  fdm.IBScript1.ExecuteScript;
 end;
 
+procedure Tfmain.Button9Click(Sender: TObject);
+var
+  i, j: longword;
+  ab: TBytes;
+  b: byte;
+  tf: Textfile;
+begin
+  AssignFile(tf, '.\blob.txt');
+  ReWrite(tf);
+  with fdm.qConfig do
+  begin
+    DisableControls;
+    Close;
+    Open;
+    try
+      while not Eof do
+      begin
+        WriteLn(tf, #13'----------------------------------------------------------');
+        WriteLn(tf, '------------------------ БЦП ' +
+                IntToStr(FieldByName('IDBCP').AsInteger) +
+                ' ---------------------------');
+        WriteLn(tf, '----------------------------------------------------------');
+        ab := FieldByName('BCPCONF').AsBytes;
+        j := 1;
+        for b in ab do
+        begin
+          case (j mod 16) of
+            0:
+              if j > 0 then
+                WriteLn(tf, b.ToHexString);
+          else
+            Write(tf, b.ToHexString + '-');
+          end;
+          inc(j);
+        end;
+        inc(i);
+        Next;
+      end;
+
+    finally
+      EnableControls;
+      CloseFile(tf);
+    end;
+  end;
+
+end;
 
 end.

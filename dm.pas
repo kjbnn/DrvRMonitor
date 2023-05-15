@@ -8,7 +8,7 @@ uses
   IBX.IBDatabase, IBX.IBServices, IBX.IBScript, IBX.IBEvents, IBX.IBSQL;
 
 type
-  TDataModule1 = class(TDataModule)
+  Tfdm = class(TDataModule)
     DB_Protocol: TIBDatabase;
     TR_Protocol: TIBTransaction;
     IBQuery1: TIBQuery;
@@ -25,6 +25,8 @@ type
     DataSource4: TDataSource;
     IBEvents1: TIBEvents;
     IBScript1: TIBScript;
+    qConfig: TIBQuery;
+    sConfig: TDataSource;
     procedure DataModuleCreate(Sender: TObject);
     procedure IBEvents1EventAlert(Sender: TObject; EventName: string;
       EventCount: Integer; var CancelAlerts: Boolean);
@@ -35,7 +37,7 @@ type
   end;
 
 var
-  DataModule1: TDataModule1;
+  fdm: Tfdm;
 
 implementation
 
@@ -45,12 +47,12 @@ uses main, Vcl.Dialogs;
 
 {$R *.dfm}
 
-procedure TDataModule1.DataModuleCreate(Sender: TObject);
+procedure Tfdm.DataModuleCreate(Sender: TObject);
 begin
  fmain.Button6Click(self);
 end;
 
-procedure TDataModule1.IBEvents1EventAlert(Sender: TObject; EventName: string;
+procedure Tfdm.IBEvents1EventAlert(Sender: TObject; EventName: string;
   EventCount: Integer; var CancelAlerts: Boolean);
 begin
   //ShowMessage('Есть событие.');

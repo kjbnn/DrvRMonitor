@@ -1,8 +1,8 @@
-object DataModule1: TDataModule1
+object fdm: Tfdm
   OldCreateOrder = False
   OnCreate = DataModuleCreate
-  Height = 414
-  Width = 490
+  Height = 526
+  Width = 871
   object DB_Protocol: TIBDatabase
     DatabaseName = 'C:\'#1056#1091#1073#1077#1078'\DB\Protocol\PROTOCOL.GDB'
     Params.Strings = (
@@ -25,7 +25,7 @@ object DataModule1: TDataModule1
       'rec_version'
       'nowait')
     Left = 48
-    Top = 80
+    Top = 70
   end
   object IBQuery1: TIBQuery
     Database = DB_Protocol
@@ -39,22 +39,21 @@ object DataModule1: TDataModule1
         ' IDOBJ AS OBJ, IDSOURCE, IDZON AS ZONE, NAMEEVT, NAMEOBJ, NAMESO' +
         'URCE, NAMEZON, OBJTYPE, TSTYPE AS TCOTYPE, TYPESOURCE AS TSOURCE' +
         ' from TABLE1')
-    Left = 48
-    Top = 144
+    Left = 452
+    Top = 284
   end
   object DataSource1: TDataSource
     DataSet = IBQuery1
-    Left = 48
-    Top = 208
+    Left = 452
+    Top = 348
   end
   object DB_Work: TIBDatabase
-    Connected = True
-    DatabaseName = 'C:\'#1056#1091#1073#1077#1078'\DB\R08Work.gdb'
+    DatabaseName = 'C:\'#1056#1091#1073#1077#1078'\DB\R08WORK.GDB'
     Params.Strings = (
       'user_name=sysdba'
       'password=masterkey'
       'lc_ctype=WIN1251'
-      'sql_role_name=PASSBUROEMPLOYEE')
+      '')
     LoginPrompt = False
     DefaultTransaction = TR_Work
     ServerType = 'IBServer'
@@ -63,7 +62,6 @@ object DataModule1: TDataModule1
     Top = 24
   end
   object TR_Work: TIBTransaction
-    Active = True
     DefaultDatabase = DB_Work
     Params.Strings = (
       'read'
@@ -71,7 +69,7 @@ object DataModule1: TDataModule1
       'rec_version'
       'nowait')
     Left = 144
-    Top = 80
+    Top = 70
   end
   object IBQuery2: TIBQuery
     Database = DB_Work
@@ -81,13 +79,13 @@ object DataModule1: TDataModule1
     ParamCheck = True
     SQL.Strings = (
       'select  IDBCP, IDZONE AS USR, FAMIL, IME, OTC, PODR from USR')
-    Left = 144
-    Top = 144
+    Left = 548
+    Top = 284
   end
   object DataSource2: TDataSource
     DataSet = IBQuery2
-    Left = 144
-    Top = 208
+    Left = 548
+    Top = 348
   end
   object IBQuery3: TIBQuery
     Database = DB_Work
@@ -97,12 +95,12 @@ object DataModule1: TDataModule1
     ParamCheck = True
     SQL.Strings = (
       'select IDPODR, NAMEPODR from PODRAZ')
-    Left = 240
-    Top = 152
+    Left = 444
+    Top = 142
   end
   object DataSource3: TDataSource
     DataSet = IBQuery3
-    Left = 240
+    Left = 444
     Top = 208
   end
   object IBBackupService1_Protocol: TIBBackupService
@@ -116,7 +114,7 @@ object DataModule1: TDataModule1
     BlockingFactor = 0
     Options = []
     PreAllocate = 0
-    Left = 364
+    Left = 528
     Top = 24
   end
   object IBBackupService1_Work: TIBBackupService
@@ -130,7 +128,7 @@ object DataModule1: TDataModule1
     BlockingFactor = 0
     Options = []
     PreAllocate = 0
-    Left = 364
+    Left = 528
     Top = 80
   end
   object IBQuery4: TIBQuery
@@ -145,12 +143,12 @@ object DataModule1: TDataModule1
         ' IDOBJ AS OBJ, IDSOURCE, IDZON AS ZONE, NAMEEVT, NAMEOBJ, NAMESO' +
         'URCE, NAMEZON, OBJTYPE, TSTYPE AS TCOTYPE, TYPESOURCE AS TSOURCE' +
         ' from TABLE1 ROWS 10')
-    Left = 240
+    Left = 444
     Top = 24
   end
   object DataSource4: TDataSource
     DataSet = IBQuery4
-    Left = 240
+    Left = 444
     Top = 88
   end
   object IBEvents1: TIBEvents
@@ -160,8 +158,8 @@ object DataModule1: TDataModule1
       'POST_YYYY')
     Registered = False
     OnEventAlert = IBEvents1EventAlert
-    Left = 140
-    Top = 272
+    Left = 524
+    Top = 212
   end
   object IBScript1: TIBScript
     Database = DB_Work
@@ -261,7 +259,23 @@ object DataModule1: TDataModule1
       
         '/***************************************************************' +
         '***************/')
-    Left = 360
+    Left = 524
     Top = 152
+  end
+  object qConfig: TIBQuery
+    Database = DB_Work
+    Transaction = TR_Work
+    BufferChunks = 1000
+    CachedUpdates = False
+    ParamCheck = True
+    SQL.Strings = (
+      'select * from CONFIG')
+    Left = 140
+    Top = 122
+  end
+  object sConfig: TDataSource
+    DataSet = qConfig
+    Left = 141
+    Top = 168
   end
 end
