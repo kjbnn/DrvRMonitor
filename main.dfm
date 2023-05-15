@@ -257,13 +257,22 @@ object fmain: Tfmain
         OnClick = Button7Click
       end
       object Memo2: TMemo
-        Left = 180
-        Top = 160
+        Left = 167
+        Top = 239
         Width = 201
-        Height = 221
+        Height = 161
         Lines.Strings = (
           'Memo2')
         TabOrder = 8
+      end
+      object Memo3: TMemo
+        Left = 247
+        Top = 82
+        Width = 201
+        Height = 161
+        Lines.Strings = (
+          'Memo2')
+        TabOrder = 9
       end
     end
     object TabSheet5: TTabSheet
