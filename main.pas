@@ -161,8 +161,9 @@ end;
 
 procedure Tfmain.Button9Click(Sender: TObject);
 var
-  i, j: longword;
-  ab: TBytes;
+  i: longword;
+  abb: TBytes;
+  ab: TArray<byte>;
   b: byte;
   tf: Textfile;
 begin
@@ -182,19 +183,18 @@ begin
                 ' ---------------------------');
         WriteLn(tf, '----------------------------------------------------------');
         ab := FieldByName('BCPCONF').AsBytes;
-        j := 1;
+        i := 1;
         for b in ab do
         begin
-          case (j mod 16) of
+          case (i mod 16) of
             0:
-              if j > 0 then
+              if i > 0 then
                 WriteLn(tf, b.ToHexString);
           else
             Write(tf, b.ToHexString + '-');
           end;
-          inc(j);
+          inc(i);
         end;
-        inc(i);
         Next;
       end;
 

@@ -17,7 +17,7 @@ object fmain: Tfmain
     Top = 0
     Width = 424
     Height = 476
-    ActivePage = TabSheet5
+    ActivePage = TabSheet4
     Align = alClient
     TabOrder = 0
     object TabSheet0: TTabSheet
