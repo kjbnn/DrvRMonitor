@@ -1,8 +1,10 @@
 object fmain: Tfmain
   Left = 0
   Top = 0
-  ClientHeight = 476
-  ClientWidth = 424
+  Width = 440
+  Height = 514
+  AutoScroll = True
+  Caption = #1044#1088#1072#1081#1074#1077#1088' '#1056#1091#1073#1077#1078'-'#1052#1086#1085#1080#1090#1086#1088
   Color = clBtnFace
   Font.Charset = DEFAULT_CHARSET
   Font.Color = clWindowText
@@ -264,6 +266,13 @@ object fmain: Tfmain
         Caption = 'GetConfig'
         TabOrder = 8
         OnClick = Button9Click
+      end
+      object Memo2: TMemo
+        Left = 140
+        Top = 120
+        Width = 221
+        Height = 271
+        TabOrder = 9
       end
     end
     object TabSheet5: TTabSheet
