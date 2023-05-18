@@ -13,9 +13,7 @@ begin
   Application.Initialize;
   Application.MainFormOnTaskbar := True;
   TStyleManager.TrySetStyle('Windows10 SlateGray');
-  Application.Title := 'кекекеке';
   Application.CreateForm(Tfmain, fmain);
   Application.CreateForm(Tfdm, fdm);
-  //  Application.Title:= 'erererer';
   Application.Run;
 end.

@@ -78,7 +78,6 @@
 {$WARN XML_NO_PARM ON}
 {$WARN XML_NO_MATCHING_PARM ON}
 {$WARN IMMUTABLE_STRINGS OFF}
-
 unit main;
 
 interface
@@ -130,7 +129,7 @@ type
   private
     function NetProtocolDatabaseName(): String;
     function NetWorkDatabaseName(): String;
-    function ParseConfig (a: TArray<byte>): boolean;
+    function ParseConfig(a: TArray<byte>): boolean;
   public
     { Public declarations }
   end;
@@ -146,11 +145,11 @@ uses dm, IBX.IBServices;
 
 const
   ProtocolDatabaseName = 'c:\Рубеж\DB\Protocol\PROTOCOL.gdb';
-  {$IF defined (DEVMODE)}
-    WorkDatabaseName = 'c:\bank\test\R08Work.gdb';
-  {$ELSE}
-      WorkDatabaseName = 'c:\Рубеж\DB\R08Work.gdb';
-  {$ENDIF}
+{$IF defined (DEVMODE)}
+  WorkDatabaseName = 'c:\bank\test\R08Work.gdb';
+{$ELSE}
+  WorkDatabaseName = 'c:\Рубеж\DB\R08Work.gdb';
+{$ENDIF}
 
 function Tfmain.NetProtocolDatabaseName: String;
 begin
@@ -160,34 +159,6 @@ end;
 function Tfmain.NetWorkDatabaseName: String;
 begin
   result := RemoteHost.Text + ':' + WorkDatabaseName;
-end;
-
-function Tfmain.ParseConfig(a: TArray<byte>): boolean;
-type
-  TOperation = (VERIFY, BCP, ZN_UMBER, TC_NUMBER, ZN, TC);
-
-var
-  b: byte;
-  i: longword;
-  op: TOperation;
-
-begin
-  i:= 0;
-  for b in a do
-  begin
-    case op of
-      VERIFY:;
-      BCP:;
-      ZN_UMBER:;
-      TC_NUMBER:;
-      ZN:;
-      TC:;
-    end;
-    inc(i);
-  end;
-
-
-
 end;
 
 procedure Tfmain.Button1Click(Sender: TObject);
@@ -276,7 +247,7 @@ end;
 procedure Tfmain.Button9Click(Sender: TObject);
 var
   i: longword;
-  //abb: TBytes;
+  // abb: TBytes;
   ab: TArray<byte>;
   b: byte;
   tf: Textfile;
@@ -292,14 +263,14 @@ begin
       while not Eof do
       begin
         ab := FieldByName('BCPCONF').AsBytes;
-        WriteLn(tf, #13'----------------------------------------------------------');
-        WriteLn(tf, '--------------------- БЦП ' +
-                IntToStr(FieldByName('IDBCP').AsInteger) +
-                ' config length - ' +
-                Length(ab).ToString +
-                ' ------------------------');
-        WriteLn(tf, '----------------------------------------------------------');
-        memo2.Lines.Add(Length(ab).ToString);
+        WriteLn(tf,
+          #13'----------------------------------------------------------');
+        WriteLn(tf, '--------------------- БЦП ' + IntToStr(FieldByName('IDBCP')
+          .AsInteger) + ' config length - ' + Length(ab).ToString +
+          ' ------------------------');
+        WriteLn(tf,
+          '----------------------------------------------------------');
+        Memo2.Lines.Add(Length(ab).ToString);
         i := 1;
         for b in ab do
         begin
@@ -322,5 +293,79 @@ begin
   end;
 
 end;
+
+
+
+function Tfmain.ParseConfig(a: TArray<byte>): boolean;
+type
+  TOperation = (OP_VERIFY, OP_BCP, OP_ZN_UMBER, OP_TC_NUMBER, OP_ZN, OP_TC);
+  TKindCfgNode = (CN_BCP, CN_NZN, CN_CU, CN_TC);
+
+  TCfgNode = record
+    Kind: TKindCfgNode;
+    Number: array [0 .. 3] of byte;
+    parentZone: array [0 .. 3] of byte;
+    HW: byte;
+
+  end;
+
+  function CreateCfgNode: boolean;
+  begin
+    result:= False;
+  end;
+
+var
+  i: longword;
+  len: longword;
+  op: TOperation;
+
+begin
+  len := Length(a);
+  op := OP_VERIFY;
+  result := False;
+
+  // Find start
+  i := 2;
+  if (a[0] <> $75) or (a[1] <> $01) or (i >= len) then
+    exit;
+
+  // Find BCP
+  i := 4;
+  if (i >= len) then
+    exit;
+
+  while i < len do
+  begin
+    case op of
+      OP_BCP:
+        ;
+      OP_ZN_UMBER:
+        ;
+      OP_TC_NUMBER:
+        ;
+      OP_ZN:;
+      OP_TC:
+        ;
+    end;
+    inc(i);
+  end;
+
+end;
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 end.

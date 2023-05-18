@@ -2,7 +2,7 @@ object fmain: Tfmain
   Left = 0
   Top = 0
   Width = 440
-  Height = 514
+  Height = 539
   AutoScroll = True
   Caption = #1044#1088#1072#1081#1074#1077#1088' '#1056#1091#1073#1077#1078'-'#1052#1086#1085#1080#1090#1086#1088
   Color = clBtnFace
@@ -18,8 +18,8 @@ object fmain: Tfmain
     Left = 0
     Top = 0
     Width = 424
-    Height = 476
-    ActivePage = TabSheet4
+    Height = 501
+    ActivePage = TabSheet5
     Align = alClient
     TabOrder = 0
     object TabSheet0: TTabSheet
@@ -29,7 +29,7 @@ object fmain: Tfmain
         Left = 0
         Top = 0
         Width = 416
-        Height = 448
+        Height = 473
         Align = alClient
         DataSource = fdm.DataSource4
         TabOrder = 0
@@ -46,7 +46,7 @@ object fmain: Tfmain
         Left = 0
         Top = 0
         Width = 416
-        Height = 448
+        Height = 473
         Align = alClient
         DataSource = fdm.DataSource1
         TabOrder = 0
@@ -155,7 +155,7 @@ object fmain: Tfmain
         Left = 0
         Top = 0
         Width = 416
-        Height = 448
+        Height = 473
         Align = alClient
         DataSource = fdm.DataSource2
         TabOrder = 0
@@ -173,7 +173,7 @@ object fmain: Tfmain
         Left = 0
         Top = 0
         Width = 416
-        Height = 448
+        Height = 473
         Align = alClient
         DataSource = fdm.DataSource3
         TabOrder = 0
@@ -282,28 +282,31 @@ object fmain: Tfmain
         Left = 0
         Top = 0
         Width = 416
-        Height = 201
+        Height = 232
         Align = alTop
         Options = [goFixedVertLine, goFixedHorzLine, goVertLine, goHorzLine, goColSizing, goRowSelect, goThumbTracking]
         Strings.Strings = (
           'IP '#1056#1091#1073#1077#1078' '#1052#1086#1085#1080#1090#1086#1088'=localhost'
           #1041#1072#1079#1072' Techbase=localhost:c:\Database\Techbase.gdb'
           #1041#1072#1079#1072' Passbase=localhost:c:\Database\Passbase.gdb'
-          'Id '#1080#1084#1087#1086#1088#1090#1072' '#1101#1083#1077#1084#1077#1085#1090#1086#1074'=0'
+          'Id '#1080#1084#1087#1086#1088#1090#1072' '#1101#1083#1077#1084#1077#1085#1090#1086#1074' Techbase=0'
+          'Id '#1080#1084#1087#1086#1088#1090#1072' '#1087#1086#1089#1077#1090#1080#1090#1077#1083#1077#1081' Passbase=0'
+          #1055#1088#1072#1074#1080#1083#1086' '#1085#1091#1084#1077#1088#1072#1094#1080#1080' '#1086#1073#1098#1077#1082#1090#1086#1074'='
+          #1060#1086#1088#1084#1072#1090' '#1080#1084#1077#1085#1080' '#1079#1086#1085#1099'='
+          #1060#1086#1088#1084#1072#1090' '#1080#1084#1077#1085#1080' '#1058#1057'='
           'NetDevice=1'
-          'BigDevice=1'
-          '=')
+          'BigDevice=1')
         TabOrder = 0
         TitleCaptions.Strings = (
           #1055#1072#1088#1072#1084#1077#1090#1088
           #1047#1085#1072#1095#1077#1085#1080#1077)
         ColWidths = (
-          144
-          266)
+          186
+          224)
       end
       object Button8: TButton
         Left = 3
-        Top = 207
+        Top = 259
         Width = 75
         Height = 25
         Caption = #1047#1072#1075#1088#1091#1079#1082#1072
@@ -312,7 +315,7 @@ object fmain: Tfmain
       end
       object StatusBar1: TStatusBar
         Left = 0
-        Top = 429
+        Top = 454
         Width = 416
         Height = 19
         Panels = <
@@ -323,9 +326,9 @@ object fmain: Tfmain
       end
       object Memo1: TMemo
         Left = 0
-        Top = 147
+        Top = 315
         Width = 416
-        Height = 282
+        Height = 139
         Align = alBottom
         TabOrder = 3
       end
