@@ -1,21 +1,18 @@
-object fdm: Tfdm
+object dmSigma: TdmSigma
   OldCreateOrder = False
-  OnCreate = DataModuleCreate
-  Height = 526
-  Width = 871
+  Height = 536
+  Width = 489
   object DB_Protocol: TIBDatabase
     DatabaseName = 'C:\'#1056#1091#1073#1077#1078'\DB\Protocol\PROTOCOL.GDB'
     Params.Strings = (
       'user_name=sysdba'
       'password=masterkey'
-      'lc_ctype=WIN1251'
-      'sql_role_name=PASSBUROEMPLOYEE')
+      'lc_ctype=WIN1251')
     LoginPrompt = False
     DefaultTransaction = TR_Protocol
     ServerType = 'IBServer'
-    SQLDialect = 1
-    Left = 48
-    Top = 24
+    Left = 50
+    Top = 20
   end
   object TR_Protocol: TIBTransaction
     DefaultDatabase = DB_Protocol
@@ -24,7 +21,7 @@ object fdm: Tfdm
       'read_committed'
       'rec_version'
       'nowait')
-    Left = 48
+    Left = 50
     Top = 70
   end
   object IBQuery1: TIBQuery
@@ -39,13 +36,13 @@ object fdm: Tfdm
         ' IDOBJ AS OBJ, IDSOURCE, IDZON AS ZONE, NAMEEVT, NAMEOBJ, NAMESO' +
         'URCE, NAMEZON, OBJTYPE, TSTYPE AS TCOTYPE, TYPESOURCE AS TSOURCE' +
         ' from TABLE1')
-    Left = 452
-    Top = 284
+    Left = 20
+    Top = 140
   end
   object DataSource1: TDataSource
     DataSet = IBQuery1
-    Left = 452
-    Top = 348
+    Left = 20
+    Top = 190
   end
   object DB_Work: TIBDatabase
     DatabaseName = 'C:\'#1056#1091#1073#1077#1078'\DB\R08WORK.GDB'
@@ -57,9 +54,8 @@ object fdm: Tfdm
     LoginPrompt = False
     DefaultTransaction = TR_Work
     ServerType = 'IBServer'
-    SQLDialect = 1
-    Left = 144
-    Top = 24
+    Left = 110
+    Top = 20
   end
   object TR_Work: TIBTransaction
     DefaultDatabase = DB_Work
@@ -68,7 +64,7 @@ object fdm: Tfdm
       'read_committed'
       'rec_version'
       'nowait')
-    Left = 144
+    Left = 110
     Top = 70
   end
   object IBQuery2: TIBQuery
@@ -79,13 +75,13 @@ object fdm: Tfdm
     ParamCheck = True
     SQL.Strings = (
       'select  IDBCP, IDZONE AS USR, FAMIL, IME, OTC, PODR from USR')
-    Left = 548
-    Top = 284
+    Left = 70
+    Top = 140
   end
   object DataSource2: TDataSource
     DataSet = IBQuery2
-    Left = 548
-    Top = 348
+    Left = 70
+    Top = 190
   end
   object IBQuery3: TIBQuery
     Database = DB_Work
@@ -95,41 +91,13 @@ object fdm: Tfdm
     ParamCheck = True
     SQL.Strings = (
       'select IDPODR, NAMEPODR from PODRAZ')
-    Left = 444
-    Top = 142
+    Left = 110
+    Top = 140
   end
   object DataSource3: TDataSource
     DataSet = IBQuery3
-    Left = 444
-    Top = 208
-  end
-  object IBBackupService1_Protocol: TIBBackupService
-    Protocol = TCP
-    Params.Strings = (
-      'user_name=SYSDBA'
-      'password=masterkey')
-    LoginPrompt = False
-    TraceFlags = []
-    ServerType = 'IBServer'
-    BlockingFactor = 0
-    Options = []
-    PreAllocate = 0
-    Left = 528
-    Top = 24
-  end
-  object IBBackupService1_Work: TIBBackupService
-    Protocol = TCP
-    Params.Strings = (
-      'user_name=SYSDBA'
-      'password=masterkey')
-    LoginPrompt = False
-    TraceFlags = []
-    ServerType = 'IBServer'
-    BlockingFactor = 0
-    Options = []
-    PreAllocate = 0
-    Left = 528
-    Top = 80
+    Left = 110
+    Top = 190
   end
   object IBQuery4: TIBQuery
     Database = DB_Protocol
@@ -143,13 +111,29 @@ object fdm: Tfdm
         ' IDOBJ AS OBJ, IDSOURCE, IDZON AS ZONE, NAMEEVT, NAMEOBJ, NAMESO' +
         'URCE, NAMEZON, OBJTYPE, TSTYPE AS TCOTYPE, TYPESOURCE AS TSOURCE' +
         ' from TABLE1 ROWS 10')
-    Left = 444
-    Top = 24
+    Left = 160
+    Top = 140
   end
   object DataSource4: TDataSource
     DataSet = IBQuery4
-    Left = 444
-    Top = 88
+    Left = 160
+    Top = 190
+  end
+  object qConfig: TIBQuery
+    Database = DB_Work
+    Transaction = TR_Work
+    BufferChunks = 1000
+    CachedUpdates = False
+    ParamCheck = True
+    SQL.Strings = (
+      'select * from CONFIG')
+    Left = 210
+    Top = 140
+  end
+  object sConfig: TDataSource
+    DataSet = qConfig
+    Left = 210
+    Top = 190
   end
   object IBEvents1: TIBEvents
     AutoRegister = True
@@ -158,8 +142,8 @@ object fdm: Tfdm
       'POST_YYYY')
     Registered = False
     OnEventAlert = IBEvents1EventAlert
-    Left = 524
-    Top = 212
+    Left = 260
+    Top = 190
   end
   object IBScript1: TIBScript
     Database = DB_Work
@@ -259,23 +243,7 @@ object fdm: Tfdm
       
         '/***************************************************************' +
         '***************/')
-    Left = 524
-    Top = 152
-  end
-  object qConfig: TIBQuery
-    Database = DB_Work
-    Transaction = TR_Work
-    BufferChunks = 1000
-    CachedUpdates = False
-    ParamCheck = True
-    SQL.Strings = (
-      'select * from CONFIG')
-    Left = 140
-    Top = 122
-  end
-  object sConfig: TDataSource
-    DataSet = qConfig
-    Left = 141
-    Top = 168
+    Left = 260
+    Top = 140
   end
 end

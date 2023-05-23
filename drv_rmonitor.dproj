@@ -60,7 +60,7 @@
         <VerInfo_Release>1</VerInfo_Release>
         <VerInfo_Locale>1049</VerInfo_Locale>
         <VerInfo_Keys>CompanyName=ООО Рост-ВСП;FileDescription=$(MSBuildProjectName);FileVersion=3.2.1.0;InternalName=$(MSBuildProjectName);LegalCopyright=ООО Рост-ВСП;LegalTrademarks=$(MSBuildProjectName);OriginalFilename=$(MSBuildProjectName);ProgramID=Rost-VSP$(MSBuildProjectName);ProductName=РОСТЭК;ProductVersion=3.2.1.0;Comments=$(MSBuildProjectName)</VerInfo_Keys>
-        <DCC_Define>DEVMODE;LIC-11829;$(DCC_Define)</DCC_Define>
+        <DCC_Define>DEVMODE1;LIC-11829;$(DCC_Define)</DCC_Define>
         <Custom_Styles>Auric|VCLSTYLE|$(BDSCOMMONDIR)\Styles\Auric.vsf;Carbon|VCLSTYLE|$(BDSCOMMONDIR)\Styles\Carbon.vsf;&quot;Cyan Dusk|VCLSTYLE|$(BDSCOMMONDIR)\Styles\CyanDusk.vsf&quot;;Glow|VCLSTYLE|$(BDSCOMMONDIR)\Styles\Glow.vsf;Light|VCLSTYLE|$(BDSCOMMONDIR)\Styles\Light.vsf;TabletDark|VCLSTYLE|$(BDSCOMMONDIR)\Styles\TabletDark.vsf;&quot;Windows10 SlateGray|VCLSTYLE|$(BDSCOMMONDIR)\Styles\Windows10SlateGray.vsf&quot;</Custom_Styles>
     </PropertyGroup>
     <PropertyGroup Condition="'$(Base_Win32)'!=''">
@@ -91,8 +91,8 @@
         <UWP_DelphiLogo44>SigmaIS.ico</UWP_DelphiLogo44>
         <UWP_DelphiLogo150>SigmaIS.ico</UWP_DelphiLogo150>
         <VerInfo_AutoIncVersion>true</VerInfo_AutoIncVersion>
-        <VerInfo_Build>5</VerInfo_Build>
-        <VerInfo_Keys>CompanyName=;FileDescription=$(MSBuildProjectName);FileVersion=1.2.1.5;InternalName=;LegalCopyright=;LegalTrademarks=;OriginalFilename=;ProgramID=com.embarcadero.$(MSBuildProjectName);ProductName=$(MSBuildProjectName);ProductVersion=1.0.0.0;Comments=</VerInfo_Keys>
+        <VerInfo_Build>8</VerInfo_Build>
+        <VerInfo_Keys>CompanyName=;FileDescription=$(MSBuildProjectName);FileVersion=1.2.1.8;InternalName=;LegalCopyright=;LegalTrademarks=;OriginalFilename=;ProgramID=com.embarcadero.$(MSBuildProjectName);ProductName=$(MSBuildProjectName);ProductVersion=1.0.0.0;Comments=</VerInfo_Keys>
         <VerInfo_MajorVer>1</VerInfo_MajorVer>
     </PropertyGroup>
     <PropertyGroup Condition="'$(Cfg_2)'!=''">
@@ -115,8 +115,8 @@
             <Form>fmain</Form>
             <FormType>dfm</FormType>
         </DCCReference>
-        <DCCReference Include="dm.pas">
-            <Form>fdm</Form>
+        <DCCReference Include="rostek.pas">
+            <Form>dmRostek</Form>
             <FormType>dfm</FormType>
             <DesignClass>TDataModule</DesignClass>
         </DCCReference>
@@ -133,6 +133,11 @@
         <DCCReference Include="KSBLib\KSBParam.pas"/>
         <DCCReference Include="KSBLib\NetService.pas"/>
         <DCCReference Include="KSBLib\SharedBuffer.pas"/>
+        <DCCReference Include="Sigma.pas">
+            <Form>dmSigma</Form>
+            <FormType>dfm</FormType>
+            <DesignClass>TDataModule</DesignClass>
+        </DCCReference>
         <None Include="drv_rmonitor.todo"/>
         <BuildConfiguration Include="Release">
             <Key>Cfg_2</Key>

@@ -21,13 +21,9 @@ type
     TabSheet3: TTabSheet;
     DBGrid3: TDBGrid;
     TabSheet4: TTabSheet;
-    RemoteHost: TEdit;
-    Button1: TButton;
-    Button2: TButton;
     Button3: TButton;
     Button4: TButton;
     Button5: TButton;
-    Button6: TButton;
     TabSheet0: TTabSheet;
     DBGrid0: TDBGrid;
     Button7: TButton;
@@ -35,18 +31,15 @@ type
     ValueListEditor1: TValueListEditor;
     StatusBar1: TStatusBar;
     Memo1: TMemo;
-    Button9: TButton;
-    Memo2: TMemo;
-    Button8: TButton;
-    procedure Button1Click(Sender: TObject);
-    procedure Button2Click(Sender: TObject);
+    DBTimer: TTimer;
     procedure Button3Click(Sender: TObject);
     procedure Button4Click(Sender: TObject);
     procedure Button5Click(Sender: TObject);
-    procedure Button6Click(Sender: TObject);
     procedure Button7Click(Sender: TObject);
-    procedure Button8Click(Sender: TObject);
-    procedure Button9Click(Sender: TObject);
+    procedure FormCreate(Sender: TObject);
+    procedure ValueListEditor1SetEditText(Sender: TObject; ACol, ARow: Integer;
+      const Value: string);
+    procedure DBTimerTimer(Sender: TObject);
 
   private
     function NetProtocolDatabaseName(): String;
@@ -54,6 +47,37 @@ type
     procedure GetBCPElements;
   public
     { Public declarations }
+  end;
+
+  TZn = packed record
+    zero3: array [0 .. 3] of byte;
+    flags: byte; // begin
+    number: array [0 .. 3] of byte;
+    stringNamePointer: byte;
+    status: byte;
+    kc: word; // end
+    zero4: array [0 .. 3] of byte;
+    pcNameLen: byte;
+    zero2: array [0 .. 1] of byte;
+  end;
+
+  TTc = packed record
+    zero3: array [0 .. 3] of byte;
+    bcp: word; // begin
+    id: word;
+    kind: byte; // 0-7
+    number: array [0 .. 3] of byte;
+    stringNamePointer: byte;
+    flags: byte;
+    parentZone: array [0 .. 3] of byte;
+    group: byte;
+    hwType: byte;
+    hwSerial: word;
+    hwElement: byte;
+    tcoConfig: array [0 .. 15] of byte;
+    kc: word; // end
+    pcNameLen: byte;
+    zero2: array [0 .. 1] of byte;
   end;
 
   TKindNode = (N_ZN, N_TC, N_CU, N_GR, N_TZ, N_AL, N_US);
@@ -65,23 +89,11 @@ type
 
   TZnNode = record
     node: TCommonNode;
-    flag: byte;
-    number: array [0 .. 3] of byte;
-    textIndex: byte;
-    status: byte;
-    kc: word;
-    zero4: array [0 .. 3] of byte;
-    pcNameLen: byte;
-    pcName: array of byte; // need_ask
-    zero36: array [0 .. 35] of byte; // need_ask
+    zn: TZn;
   end;
 
   TTcNode = record
     node: TCommonNode;
-    number: array [0 .. 3] of byte;
-    parentZone: array [0 .. 3] of byte;
-    HW: byte;
-    pcNameLen: byte;
     pcName: array of byte;
   end;
 
@@ -123,7 +135,7 @@ implementation
 {$R *.dfm}
 
 uses
-  dm, IBX.IBServices,
+  sigma, IBX.IBServices,
   constants, connection, SharedBuffer;
 
 const
@@ -134,53 +146,53 @@ const
   WorkDatabaseName = 'c:\Рубеж\DB\R08Work.gdb';
 {$ENDIF}
 
+procedure Tfmain.FormCreate(Sender: TObject);
+begin
+  inherited;
+  NumberApplication := 40;
+  NumberApplication := GetKey('NUMBER', 40);
+end;
+
+procedure Tfmain.DBTimerTimer(Sender: TObject);
+begin
+  try
+    if not dmSigma.DB_Protocol.Connected then
+    begin
+      dmSigma.DB_Protocol.Close;
+      dmSigma.DB_Protocol.DatabaseName := NetProtocolDatabaseName;
+    end;
+    if not dmSigma.DB_Work.Connected then
+    begin
+      dmSigma.DB_Work.Close;
+      dmSigma.DB_Work.DatabaseName := NetWorkDatabaseName;
+    end;
+
+  finally
+  end;
+end;
+
 function Tfmain.NetProtocolDatabaseName: String;
 begin
-  result := RemoteHost.Text + ':' + ProtocolDatabaseName;
+  result := ValueListEditor1.Values['IP адрес Рубеж-Монитор'] + ':' +
+    ProtocolDatabaseName;
 end;
 
 function Tfmain.NetWorkDatabaseName: String;
 begin
-  result := RemoteHost.Text + ':' + WorkDatabaseName;
+  result := ValueListEditor1.Values['IP адрес Рубеж-Монитор'] + ':' +
+    WorkDatabaseName;
 end;
 
-procedure Tfmain.Button1Click(Sender: TObject);
+procedure Tfmain.ValueListEditor1SetEditText(Sender: TObject;
+  ACol, ARow: Integer; const Value: string);
 begin
-  try
-    fdm.IBBackupService1_Protocol.Active := False;
-    fdm.IBBackupService1_Protocol.ServerName := RemoteHost.Text;
-    fdm.IBBackupService1_Protocol.Protocol := TCP;
-    fdm.IBBackupService1_Protocol.DatabaseName := ProtocolDatabaseName;
-    fdm.IBBackupService1_Protocol.BackupFile.Clear;
-    fdm.IBBackupService1_Protocol.BackupFile.Add(GetCurrentDir + '\mybp_p.gbk');
-    fdm.IBBackupService1_Protocol.Active := True;
-    fdm.IBBackupService1_Protocol.ServiceStart;
-  except
-    MessageBox(0, 'Error pack_p', 'MyCaption', 0);
-  end;
-end;
-
-procedure Tfmain.Button2Click(Sender: TObject);
-begin
-  try
-    fdm.IBBackupService1_Work.Active := False;
-    fdm.IBBackupService1_Work.ServerName := RemoteHost.Text;
-    fdm.IBBackupService1_Work.Protocol := TCP;
-    fdm.IBBackupService1_Work.DatabaseName := WorkDatabaseName;
-    fdm.IBBackupService1_Work.BackupFile.Clear;
-    fdm.IBBackupService1_Work.BackupFile.Add
-      (ExtractFilePath(Application.ExeName) + '\mybp_w.gbk');
-    fdm.IBBackupService1_Work.Active := True;
-    fdm.IBBackupService1_Work.ServiceStart;
-  except
-    MessageBox(0, 'Error pack_w', 'MyCaption', 0);
-  end;
+  //
 end;
 
 procedure Tfmain.Button7Click(Sender: TObject);
 begin
   try
-    fdm.IBQuery4.Open;
+    dmSigma.IBQuery4.Open;
   except
     MessageBox(0, 'Error q4', 'MyCaption', 0);
   end;
@@ -189,7 +201,7 @@ end;
 procedure Tfmain.Button3Click(Sender: TObject);
 begin
   try
-    fdm.IBQuery1.Open;
+    dmSigma.IBQuery1.Open;
   except
     MessageBox(0, 'Error q1', 'MyCaption', 0);
   end;
@@ -198,7 +210,7 @@ end;
 procedure Tfmain.Button4Click(Sender: TObject);
 begin
   try
-    fdm.IBQuery2.Open;
+    dmSigma.IBQuery2.Open;
   except
     MessageBox(0, 'Error q2', 'MyCaption', 0);
   end;
@@ -208,29 +220,15 @@ end;
 procedure Tfmain.Button5Click(Sender: TObject);
 begin
   try
-    fdm.IBQuery3.Open;
+    dmSigma.IBQuery3.Open;
   except
     MessageBox(0, 'Error q3', 'MyCaption', 0);
   end;
 end;
 
-procedure Tfmain.Button6Click(Sender: TObject);
-begin
-  fdm.DB_Protocol.Close;
-  fdm.DB_Protocol.DatabaseName := NetProtocolDatabaseName;
-  fdm.DB_Work.Close;
-  fdm.DB_Work.DatabaseName := NetWorkDatabaseName;
-end;
 
-procedure Tfmain.Button8Click(Sender: TObject);
-begin
-  fdm.IBScript1.ExecuteScript;
-end;
 
-procedure Tfmain.Button9Click(Sender: TObject);
-begin
-  GetBCPElements;
-end;
+
 
 { -------------- }
 { GetBCPElements }
@@ -348,84 +346,50 @@ var
 {$ENDREGION}
 {$REGION 'ParseConfig'}
   function ParseConfig(a: TArray<byte>): boolean;
-
+  const
+    LEN_START = 6;
+    LEN_ZONE = 2;
+    LEN_TC = 2;
 
   type
-    TOperation = (OP_VERIFY, OP_BCP, OP_ZN_UMBER, OP_TC_NUMBER, OP_ZN, OP_TC);
-    TKindCfgNode = (CN_BCP, CN_NZN, CN_CU, CN_TC);
+    TElememntType = (ET_ZONE, ET_TC);
 
-    function CreateCfgNode: boolean;
+  var
+    cur, len: longword;
+    zi, tci, ci, znCount, tcCount, cuCount: word;
+    et: TElememntType;
+
+    function TestZone(et: TElememntType): boolean;
     begin
-      result := False;
     end;
 
     function CreateBCP(a: TArray<byte>): boolean;
     begin
       result := False;
-      // need_code
     end;
 
-  var
-    i, j: longword;
-    len: longword;
-    op: TOperation;
-    znCount: word;
+    function CreateZone(a: TArray<byte>): boolean;
+    begin
+      result := False;
+    end;
 
+  // -------------------------
   begin
     len := Length(a);
     result := False;
 
     // start
-    i := 2;
-    if (a[0] <> $75) or (a[1] <> $01) or (i >= len) then
+    if (a[0] <> $75) or (a[1] <> $01) or (LEN_START >= len) then
       exit;
-
-    // BCP
-    i := 4;
-    if (i >= len) then
-      exit
-    else
-      CreateBCP(a);
-
-    // znCount
-    i := 6;
-    if (i >= len) then
-      exit
-    else
-      znCount := (a[i - 2] shl 8) + a[i - 1] shl 8;
-
-    // zn
-    i := 10;
-    for j := 1 to znCount do
-    begin
-      //ve(a[i-1], )
-    end;
-
-
-
-    while i < len do
-    begin
-      case op of
-        OP_BCP:
-          ;
-        OP_ZN_UMBER:
-          ;
-        OP_TC_NUMBER:
-          ;
-        OP_ZN:
-          ;
-        OP_TC:
-          ;
-      end;
-      inc(i);
-    end;
-
+    CreateBCP(a);
+    znCount := (a[4] shl 8) + a[5];
+    cur := LEN_START;
   end;
 {$ENDREGION}
 
 begin
   Clear;
-  with fdm.qConfig do
+  with dmSigma.qConfig do
   begin
     DisableControls;
     Close;
@@ -434,7 +398,7 @@ begin
       while not Eof do
       begin
         ConfigArray := FieldByName('BCPCONF').AsBytes;
-{$IFDEF DEVMODE}
+{$IFDEF DEVMODE1}
         PrintConfig(FieldByName('IDBCP').AsInteger, ConfigArray);
 {$ENDIF}
         ParseConfig(ConfigArray);
@@ -448,9 +412,7 @@ begin
 
 end;
 
-{ ----------- }
-{ ParseConfig }
-{ ----------- }
+
 
 Initialization
 

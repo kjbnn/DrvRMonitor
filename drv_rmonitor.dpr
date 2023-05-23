@@ -5,7 +5,7 @@ uses
   Vcl.Themes,
   Vcl.Styles,
   main in 'main.pas' {fmain},
-  dm in 'dm.pas' {fdm: TDataModule},
+  Rostek in 'rostek.pas' {dmRostek: TDataModule},
   cAppKsb in 'KSBLib\cAppKsb.pas',
   cBuilderAppKsb in 'KSBLib\cBuilderAppKsb.pas',
   cComm in 'KSBLib\cComm.pas',
@@ -15,7 +15,8 @@ uses
   cRights in 'KSBLib\cRights.pas',
   KSBParam in 'KSBLib\KSBParam.pas',
   NetService in 'KSBLib\NetService.pas',
-  SharedBuffer in 'KSBLib\SharedBuffer.pas';
+  SharedBuffer in 'KSBLib\SharedBuffer.pas',
+  Sigma in 'Sigma.pas' {dmSigma: TDataModule};
 
 {$R *.res}
 
@@ -23,7 +24,8 @@ begin
   Application.Initialize;
   Application.MainFormOnTaskbar := True;
   TStyleManager.TrySetStyle('Windows10 SlateGray');
+  Application.CreateForm(TdmSigma, dmSigma);
+  Application.CreateForm(TdmRostek, dmRostek);
   Application.CreateForm(Tfmain, fmain);
-  Application.CreateForm(Tfdm, fdm);
   Application.Run;
 end.
