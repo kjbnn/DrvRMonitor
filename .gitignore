@@ -60,9 +60,10 @@
 # Delphi history and backups
 __history/
 __recovery/
+D307/
+Tool/
 Win32/
 Win64/
-Tool/
 *.~*
 
 

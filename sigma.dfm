@@ -3,7 +3,7 @@ object dmSigma: TdmSigma
   Height = 536
   Width = 489
   object DB_Protocol: TIBDatabase
-    DatabaseName = 'C:\'#1056#1091#1073#1077#1078'\DB\Protocol\PROTOCOL.GDB'
+    DatabaseName = 'localhost:C:\'#1056#1091#1073#1077#1078'\DB\Protocol\PROTOCOL.GDB'
     Params.Strings = (
       'user_name=sysdba'
       'password=masterkey'
@@ -11,7 +11,8 @@ object dmSigma: TdmSigma
     LoginPrompt = False
     DefaultTransaction = TR_Protocol
     ServerType = 'IBServer'
-    Left = 50
+    SQLDialect = 1
+    Left = 30
     Top = 20
   end
   object TR_Protocol: TIBTransaction
@@ -21,10 +22,10 @@ object dmSigma: TdmSigma
       'read_committed'
       'rec_version'
       'nowait')
-    Left = 50
-    Top = 70
+    Left = 70
+    Top = 20
   end
-  object IBQuery1: TIBQuery
+  object qTable1: TIBQuery
     Database = DB_Protocol
     Transaction = TR_Protocol
     BufferChunks = 1000
@@ -35,12 +36,12 @@ object dmSigma: TdmSigma
         'select COD AS ID, DT AS EVENTTIME, IDBCP AS BCP, IDEVT AS EVENT,' +
         ' IDOBJ AS OBJ, IDSOURCE, IDZON AS ZONE, NAMEEVT, NAMEOBJ, NAMESO' +
         'URCE, NAMEZON, OBJTYPE, TSTYPE AS TCOTYPE, TYPESOURCE AS TSOURCE' +
-        ' from TABLE1')
+        ' from TABLE1 where COD >0')
     Left = 20
     Top = 140
   end
-  object DataSource1: TDataSource
-    DataSet = IBQuery1
+  object dsTable1: TDataSource
+    DataSet = qTable1
     Left = 20
     Top = 190
   end
@@ -54,7 +55,7 @@ object dmSigma: TdmSigma
     LoginPrompt = False
     DefaultTransaction = TR_Work
     ServerType = 'IBServer'
-    Left = 110
+    Left = 140
     Top = 20
   end
   object TR_Work: TIBTransaction
@@ -64,8 +65,8 @@ object dmSigma: TdmSigma
       'read_committed'
       'rec_version'
       'nowait')
-    Left = 110
-    Top = 70
+    Left = 180
+    Top = 20
   end
   object IBQuery2: TIBQuery
     Database = DB_Work
@@ -75,12 +76,12 @@ object dmSigma: TdmSigma
     ParamCheck = True
     SQL.Strings = (
       'select  IDBCP, IDZONE AS USR, FAMIL, IME, OTC, PODR from USR')
-    Left = 70
+    Left = 100
     Top = 140
   end
   object DataSource2: TDataSource
     DataSet = IBQuery2
-    Left = 70
+    Left = 100
     Top = 190
   end
   object IBQuery3: TIBQuery
@@ -91,12 +92,12 @@ object dmSigma: TdmSigma
     ParamCheck = True
     SQL.Strings = (
       'select IDPODR, NAMEPODR from PODRAZ')
-    Left = 110
+    Left = 140
     Top = 140
   end
   object DataSource3: TDataSource
     DataSet = IBQuery3
-    Left = 110
+    Left = 140
     Top = 190
   end
   object IBQuery4: TIBQuery
@@ -111,12 +112,12 @@ object dmSigma: TdmSigma
         ' IDOBJ AS OBJ, IDSOURCE, IDZON AS ZONE, NAMEEVT, NAMEOBJ, NAMESO' +
         'URCE, NAMEZON, OBJTYPE, TSTYPE AS TCOTYPE, TYPESOURCE AS TSOURCE' +
         ' from TABLE1 ROWS 10')
-    Left = 160
+    Left = 190
     Top = 140
   end
   object DataSource4: TDataSource
     DataSet = IBQuery4
-    Left = 160
+    Left = 190
     Top = 190
   end
   object qConfig: TIBQuery
@@ -127,12 +128,12 @@ object dmSigma: TdmSigma
     ParamCheck = True
     SQL.Strings = (
       'select * from CONFIG')
-    Left = 210
+    Left = 240
     Top = 140
   end
   object sConfig: TDataSource
     DataSet = qConfig
-    Left = 210
+    Left = 240
     Top = 190
   end
   object IBEvents1: TIBEvents
@@ -142,7 +143,7 @@ object dmSigma: TdmSigma
       'POST_YYYY')
     Registered = False
     OnEventAlert = IBEvents1EventAlert
-    Left = 260
+    Left = 290
     Top = 190
   end
   object IBScript1: TIBScript
@@ -243,7 +244,33 @@ object dmSigma: TdmSigma
       
         '/***************************************************************' +
         '***************/')
-    Left = 260
+    Left = 290
     Top = 140
+  end
+  object IBQuery5: TIBQuery
+    Database = DB_Protocol
+    Transaction = TR_Protocol
+    BufferChunks = 1000
+    CachedUpdates = False
+    ParamCheck = True
+    SQL.Strings = (
+      
+        'select COD AS ID, DT AS EVENTTIME, IDBCP AS BCP, IDEVT AS EVENT,' +
+        ' IDOBJ AS OBJ, IDSOURCE, IDZON AS ZONE, NAMEEVT, NAMEOBJ, NAMESO' +
+        'URCE, NAMEZON, OBJTYPE, TSTYPE AS TCOTYPE, TYPESOURCE AS TSOURCE' +
+        ' from TABLE1')
+    Left = 20
+    Top = 260
+  end
+  object FDConnection1: TFDConnection
+    Params.Strings = (
+      'Database=C:\'#1056#1091#1073#1077#1078'\DB\Protocol\PROTOCOL.GDB'
+      'User_Name=sysdba'
+      'Password=masterkey'
+      'Server=localhost'
+      'DriverID=FB')
+    LoginPrompt = False
+    Left = 230
+    Top = 320
   end
 end

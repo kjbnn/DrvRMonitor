@@ -3,35 +3,32 @@ inherited fmain: Tfmain
   Top = 0
   BorderStyle = bsSizeable
   Caption = #1044#1088#1072#1081#1074#1077#1088' '#1056#1091#1073#1077#1078'-'#1052#1086#1085#1080#1090#1086#1088
-  ClientHeight = 556
-  ClientWidth = 588
+  ClientHeight = 392
+  ClientWidth = 469
+  DoubleBuffered = True
   Font.Name = 'Tahoma'
-  ExplicitWidth = 604
-  ExplicitHeight = 594
+  ExplicitWidth = 485
+  ExplicitHeight = 430
   PixelsPerInch = 96
   TextHeight = 13
   object PageControl1: TPageControl [0]
     Left = 0
     Top = 0
-    Width = 588
-    Height = 556
-    ActivePage = TabSheet0
+    Width = 469
+    Height = 392
+    ActivePage = TabSheet5
     Align = alClient
     TabOrder = 0
-    ExplicitWidth = 435
-    ExplicitHeight = 571
     object TabSheet0: TTabSheet
       Caption = '0'
       ImageIndex = 4
-      ExplicitWidth = 427
-      ExplicitHeight = 543
       object DBGrid0: TDBGrid
         Left = 0
         Top = 0
-        Width = 580
-        Height = 528
+        Width = 461
+        Height = 364
         Align = alClient
-        DataSource = dmSigma.DataSource4
+        DataSource = dmSigma.dsTable1
         TabOrder = 0
         TitleFont.Charset = DEFAULT_CHARSET
         TitleFont.Color = clWindowText
@@ -42,15 +39,12 @@ inherited fmain: Tfmain
     end
     object TabSheet1: TTabSheet
       Caption = '1'
-      ExplicitWidth = 427
-      ExplicitHeight = 543
       object DBGrid1: TDBGrid
         Left = 0
         Top = 0
-        Width = 580
-        Height = 528
+        Width = 461
+        Height = 364
         Align = alClient
-        DataSource = dmSigma.DataSource1
         TabOrder = 0
         TitleFont.Charset = DEFAULT_CHARSET
         TitleFont.Color = clWindowText
@@ -153,13 +147,11 @@ inherited fmain: Tfmain
     object TabSheet2: TTabSheet
       Caption = '2'
       ImageIndex = 1
-      ExplicitWidth = 427
-      ExplicitHeight = 543
       object DBGrid2: TDBGrid
         Left = 0
         Top = 0
-        Width = 580
-        Height = 528
+        Width = 461
+        Height = 364
         Align = alClient
         DataSource = dmSigma.DataSource2
         TabOrder = 0
@@ -173,13 +165,11 @@ inherited fmain: Tfmain
     object TabSheet3: TTabSheet
       Caption = '3'
       ImageIndex = 2
-      ExplicitWidth = 427
-      ExplicitHeight = 543
       object DBGrid3: TDBGrid
         Left = 0
         Top = 0
-        Width = 580
-        Height = 528
+        Width = 461
+        Height = 364
         Align = alClient
         DataSource = dmSigma.DataSource3
         TabOrder = 0
@@ -193,8 +183,6 @@ inherited fmain: Tfmain
     object TabSheet4: TTabSheet
       Caption = '4'
       ImageIndex = 3
-      ExplicitWidth = 427
-      ExplicitHeight = 543
       object Button3: TButton
         Left = 24
         Top = 208
@@ -202,7 +190,6 @@ inherited fmain: Tfmain
         Height = 25
         Caption = '1'
         TabOrder = 0
-        OnClick = Button3Click
       end
       object Button4: TButton
         Left = 24
@@ -232,38 +219,32 @@ inherited fmain: Tfmain
         OnClick = Button7Click
       end
       object Memo1: TMemo
-        Left = 140
-        Top = 120
-        Width = 221
-        Height = 271
+        Left = 120
+        Top = 3
+        Width = 338
+        Height = 358
         TabOrder = 4
       end
     end
     object TabSheet5: TTabSheet
       Caption = 'm'
       ImageIndex = 5
-      ExplicitWidth = 427
-      ExplicitHeight = 543
-      object ValueListEditor1: TValueListEditor
+      object vle1: TValueListEditor
         Left = 0
         Top = 0
-        Width = 580
-        Height = 509
+        Width = 461
+        Height = 345
         Align = alClient
-        Options = [goFixedVertLine, goFixedHorzLine, goVertLine, goHorzLine, goColSizing, goRowSelect, goThumbTracking]
+        Options = [goFixedVertLine, goFixedHorzLine, goVertLine, goHorzLine, goColSizing, goEditing, goThumbTracking]
         Strings.Strings = (
-          'IP '#1072#1076#1088#1077#1089' '#1056#1091#1073#1077#1078'-'#1052#1086#1085#1080#1090#1086#1088'=localhost'
-          #1041#1072#1079#1072' Techbase=localhost/3051:c:\Database\Techbase.gdb'
-          #1055#1072#1088#1086#1083#1100'=Techbase'
-          #1041#1072#1079#1072' Passbase=localhost/3051:c:\Database\Passbase.gdb'
-          #1055#1072#1088#1086#1083#1100'=Passbase'
+          'IP '#1056#1091#1073#1077#1078'-'#1052#1086#1085#1080#1090#1086#1088'=localhost'
+          #1041#1072#1079#1072' Techbase=localhost/3051:d:\Database\Techbase.gdb'
+          #1041#1072#1079#1072' Passbase=localhost/3051:d:\Database\Passbase.gdb'
           'NetDevice=1'
           'BigDevice=1'
-          #1056#1086#1076#1080#1090#1077#1083#1100#1089#1082#1080#1081' '#1101#1083#1077#1084#1077#1085#1090' T=0'
-          #1056#1086#1076#1080#1090#1077#1083#1100#1089#1082#1080#1081' '#1101#1083#1077#1084#1077#1085#1090' P=0'
-          #1056#1086#1076#1080#1090#1077#1083#1100#1089#1082#1080#1081' '#1087#1086#1089#1077#1090#1080#1090#1077#1083#1100' T=0'
-          #1056#1086#1076#1080#1090#1077#1083#1100#1089#1082#1080#1081' '#1087#1086#1089#1077#1090#1080#1090#1077#1083#1100' P=0'
-          #1056#1086#1076#1080#1090#1077#1083#1100#1089#1082#1086#1077' '#1087#1086#1076#1088#1072#1079#1076#1077#1083#1077#1085#1080#1077' P=0'
+          #1056#1086#1076#1080#1090#1077#1083#1100#1089#1082#1080#1081' '#1101#1083#1077#1084#1077#1085#1090'=0'
+          #1056#1086#1076#1080#1090#1077#1083#1100#1089#1082#1080#1081' '#1087#1086#1089#1077#1090#1080#1090#1077#1083#1100'=0'
+          #1056#1086#1076#1080#1090#1077#1083#1100#1089#1082#1086#1077' '#1087#1086#1076#1088#1072#1079#1076#1077#1083#1077#1085#1080#1077'=0'
           #1057#1086#1073#1099#1090#1080#1077'=0'
           #1055#1088#1072#1074#1080#1083#1086' '#1085#1091#1084#1077#1088#1072#1094#1080#1080' '#1086#1073#1098#1077#1082#1090#1086#1074'='
           #1060#1086#1088#1084#1072#1090' '#1080#1084#1077#1085#1080' '#1079#1086#1085#1099'='
@@ -275,43 +256,46 @@ inherited fmain: Tfmain
         TitleCaptions.Strings = (
           #1055#1072#1088#1072#1084#1077#1090#1088
           #1047#1085#1072#1095#1077#1085#1080#1077)
-        OnSetEditText = ValueListEditor1SetEditText
-        ExplicitWidth = 471
-        ExplicitHeight = 471
+        ExplicitLeft = 3
+        ExplicitTop = 50
         ColWidths = (
-          224
-          350)
+          210
+          245)
       end
       object StatusBar1: TStatusBar
         Left = 0
-        Top = 509
-        Width = 580
+        Top = 345
+        Width = 461
         Height = 19
         Panels = <
           item
             Text = #1057#1090#1072#1088#1090
             Width = 200
           end>
-        ExplicitTop = 524
-        ExplicitWidth = 427
       end
     end
   end
   inherited InitTimer: TTimer
-    Left = 276
-    Top = 424
+    Left = 296
+    Top = 264
   end
   inherited TimerVisible: TTimer
-    Left = 250
-    Top = 424
+    Left = 270
+    Top = 264
   end
   inherited TimerStop: TTimer
-    Left = 222
-    Top = 424
+    Left = 242
+    Top = 264
   end
   object DBTimer: TTimer
     OnTimer = DBTimerTimer
+    Left = 334
+    Top = 264
+  end
+  object Table1Timer: TTimer
+    Interval = 50
+    OnTimer = Table1TimerTimer
     Left = 364
-    Top = 44
+    Top = 104
   end
 end

@@ -9,7 +9,7 @@ uses
   IBX.IBQuery, Vcl.Grids, Vcl.DBGrids, IBX.IBDatabase, Vcl.ComCtrls,
   Vcl.StdCtrls, Vcl.ValEdit, Vcl.ExtDlgs, Vcl.ExtCtrls, Vcl.StdActns,
   System.Actions, Vcl.ActnList, System.Types,
-  cMainKsb;
+  cMainKsb, sigmaEvent;
 
 type
   Tfmain = class(TaMainKsb)
@@ -28,18 +28,18 @@ type
     DBGrid0: TDBGrid;
     Button7: TButton;
     TabSheet5: TTabSheet;
-    ValueListEditor1: TValueListEditor;
+
+    vle1: TValueListEditor;
     StatusBar1: TStatusBar;
     Memo1: TMemo;
     DBTimer: TTimer;
-    procedure Button3Click(Sender: TObject);
+    Table1Timer: TTimer;
     procedure Button4Click(Sender: TObject);
     procedure Button5Click(Sender: TObject);
     procedure Button7Click(Sender: TObject);
     procedure FormCreate(Sender: TObject);
-    procedure ValueListEditor1SetEditText(Sender: TObject; ACol, ARow: Integer;
-      const Value: string);
     procedure DBTimerTimer(Sender: TObject);
+    procedure Table1TimerTimer(Sender: TObject);
 
   private
     function NetProtocolDatabaseName(): String;
@@ -126,16 +126,27 @@ type
   TPAlNode = ^TAlNode;
   TPUsNode = ^TUsNode;
 
+const
+  pRM_ADDRESS = 'Адрес Рубеж-Монитор';
+  pTB = 'База Techbase';
+  pPB = 'База Passbase';
+  pPARENT_ELEMENT = 'Родительский элемент';
+  pPARENT_USER = 'Родительский пользователь';
+  pPARENT_DEPARTMENT = 'Родительское подразделение';
+  pEVENT = 'Событие';
+
 var
   fmain: Tfmain;
+  curEvent: Int64 = 0;
   BCPElements: Tlist;
+  sigmaEvent: TSigmaEvent;
 
 implementation
 
 {$R *.dfm}
 
 uses
-  sigma, IBX.IBServices,
+  sigma, rostek, IBX.IBServices,
   constants, connection, SharedBuffer;
 
 const
@@ -146,47 +157,77 @@ const
   WorkDatabaseName = 'c:\Рубеж\DB\R08Work.gdb';
 {$ENDIF}
 
+
 procedure Tfmain.FormCreate(Sender: TObject);
 begin
   inherited;
   NumberApplication := 40;
   NumberApplication := GetKey('NUMBER', 40);
+  with vle1.Strings do
+  begin
+    Clear;
+    Add(pRM_ADDRESS + '=' + 'localhost');
+    Add(pTB + '=' + 'localhost/3051:d:\Database\Techbase.gdb');
+    Add(pPB + '=' + 'localhost/3051:d:\Database\Passbase.gdb');
+    Add('NetDevice' + '=' + '1');
+    Add('BigDevice' + '=' + '1');
+    Add(pPARENT_ELEMENT + '=' + '0');
+    Add(pPARENT_USER + '=' + '0');
+    Add(pPARENT_DEPARTMENT + '=' + '0');
+    Add(pEVENT + '=' + '0');
+  end;
+
+  with vle1 do
+  begin
+    Values[pRM_ADDRESS] := GetKey(pRM_ADDRESS, Values[pRM_ADDRESS]);
+    Values[pTB] := GetKey(pTB, Values[pTB]);
+    Values[pPB] := GetKey(pPB, Values[pPB]);
+    Values['NetDevice'] := GetKey('NetDevice', Values['NetDevice']);
+    Values['BigDevice'] := GetKey('BigDevice', Values['BigDevice']);
+    Values[pPARENT_ELEMENT] := GetKey(pPARENT_ELEMENT, Values[pPARENT_USER]);
+    Values[pPARENT_USER] := GetKey(pPARENT_USER, Values[pPARENT_USER]);
+    Values[pPARENT_DEPARTMENT] := GetKey(pPARENT_DEPARTMENT,
+      Values[pPARENT_DEPARTMENT]);
+    Values[pEVENT] := GetKey(pEVENT, Values[pEVENT]);
+    //
+    dmSigma.DB_Protocol.DatabaseName := NetProtocolDatabaseName;
+    dmSigma.DB_Work.DatabaseName := NetWorkDatabaseName;
+    dmRostek.DB_Techbase.DatabaseName := vle1.Values[pTB];
+    dmRostek.DB_Passbase.DatabaseName := vle1.Values[pPB];
+  end;
+
+  sigmaEvent:= TSigmaEvent.Create;
 end;
 
 procedure Tfmain.DBTimerTimer(Sender: TObject);
 begin
+  exit;
   try
     if not dmSigma.DB_Protocol.Connected then
-    begin
       dmSigma.DB_Protocol.Close;
-      dmSigma.DB_Protocol.DatabaseName := NetProtocolDatabaseName;
-    end;
     if not dmSigma.DB_Work.Connected then
-    begin
       dmSigma.DB_Work.Close;
-      dmSigma.DB_Work.DatabaseName := NetWorkDatabaseName;
-    end;
-
+    if not dmRostek.DB_Techbase.Connected then
+      dmRostek.DB_Techbase.Close;
+    if not dmRostek.DB_Passbase.Connected then
+      dmRostek.DB_Passbase.Close;
   finally
   end;
 end;
 
 function Tfmain.NetProtocolDatabaseName: String;
 begin
-  result := ValueListEditor1.Values['IP адрес Рубеж-Монитор'] + ':' +
-    ProtocolDatabaseName;
+  result := vle1.Values[pRM_ADDRESS] + ':' + ProtocolDatabaseName;
 end;
 
 function Tfmain.NetWorkDatabaseName: String;
 begin
-  result := ValueListEditor1.Values['IP адрес Рубеж-Монитор'] + ':' +
-    WorkDatabaseName;
+  result := vle1.Values[pRM_ADDRESS] + ':' + WorkDatabaseName;
 end;
 
-procedure Tfmain.ValueListEditor1SetEditText(Sender: TObject;
-  ACol, ARow: Integer; const Value: string);
+procedure Tfmain.Table1TimerTimer(Sender: TObject);
 begin
-  //
+  vle1.Values[pEVENT] := curEvent.ToString + ' (' + myindex.ToString + ')';
 end;
 
 procedure Tfmain.Button7Click(Sender: TObject);
@@ -195,15 +236,6 @@ begin
     dmSigma.IBQuery4.Open;
   except
     MessageBox(0, 'Error q4', 'MyCaption', 0);
-  end;
-end;
-
-procedure Tfmain.Button3Click(Sender: TObject);
-begin
-  try
-    dmSigma.IBQuery1.Open;
-  except
-    MessageBox(0, 'Error q1', 'MyCaption', 0);
   end;
 end;
 
@@ -225,10 +257,6 @@ begin
     MessageBox(0, 'Error q3', 'MyCaption', 0);
   end;
 end;
-
-
-
-
 
 { -------------- }
 { GetBCPElements }
@@ -411,8 +439,6 @@ begin
   end;
 
 end;
-
-
 
 Initialization
 

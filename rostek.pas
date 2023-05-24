@@ -9,22 +9,12 @@ uses
 
 type
   TdmRostek = class(TDataModule)
-    DB_Protocol: TIBDatabase;
-    TR_Protocol: TIBTransaction;
+    DB_Techbase: TIBDatabase;
+    TR_Techbase: TIBTransaction;
     IBQuery1: TIBQuery;
     DataSource1: TDataSource;
-    DB_Work: TIBDatabase;
-    TR_Work: TIBTransaction;
-    IBQuery2: TIBQuery;
-    DataSource2: TDataSource;
-    IBQuery3: TIBQuery;
-    DataSource3: TDataSource;
-    IBQuery4: TIBQuery;
-    DataSource4: TDataSource;
-    IBEvents1: TIBEvents;
-    IBScript1: TIBScript;
-    qConfig: TIBQuery;
-    sConfig: TDataSource;
+    DB_Passbase: TIBDatabase;
+    TR_Passbase: TIBTransaction;
     procedure IBEvents1EventAlert(Sender: TObject; EventName: string;
       EventCount: Integer; var CancelAlerts: Boolean);
   private

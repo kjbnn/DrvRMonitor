@@ -5,14 +5,17 @@ interface
 uses
   System.SysUtils, System.Classes, Data.DB, IBX.IBCustomDataSet, IBX.IBQuery,
   IBX.IBDatabase, IBX.IBServices, IBX.IBScript, IBX.IBEvents, IBX.IBSQL,
-  Vcl.ExtCtrls;
+  Vcl.ExtCtrls, FireDAC.Stan.Intf, FireDAC.Stan.Option, FireDAC.Stan.Error,
+  FireDAC.UI.Intf, FireDAC.Phys.Intf, FireDAC.Stan.Def, FireDAC.Stan.Pool,
+  FireDAC.Stan.Async, FireDAC.Phys, FireDAC.Phys.FB, FireDAC.Phys.FBDef,
+  FireDAC.VCLUI.Wait, FireDAC.Comp.Client;
 
 type
   TdmSigma = class(TDataModule)
     DB_Protocol: TIBDatabase;
     TR_Protocol: TIBTransaction;
-    IBQuery1: TIBQuery;
-    DataSource1: TDataSource;
+    qTable1: TIBQuery;
+    dsTable1: TDataSource;
     DB_Work: TIBDatabase;
     TR_Work: TIBTransaction;
     IBQuery2: TIBQuery;
@@ -25,6 +28,8 @@ type
     sConfig: TDataSource;
     IBEvents1: TIBEvents;
     IBScript1: TIBScript;
+    IBQuery5: TIBQuery;
+    FDConnection1: TFDConnection;
     procedure IBEvents1EventAlert(Sender: TObject; EventName: string;
       EventCount: Integer; var CancelAlerts: Boolean);
   private

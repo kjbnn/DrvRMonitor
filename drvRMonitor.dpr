@@ -1,11 +1,11 @@
-program drv_rmonitor;
+program drvRMonitor;
 
 uses
   Vcl.Forms,
   Vcl.Themes,
   Vcl.Styles,
   main in 'main.pas' {fmain},
-  Rostek in 'rostek.pas' {dmRostek: TDataModule},
+  rostek in 'rostek.pas' {dmRostek: TDataModule},
   cAppKsb in 'KSBLib\cAppKsb.pas',
   cBuilderAppKsb in 'KSBLib\cBuilderAppKsb.pas',
   cComm in 'KSBLib\cComm.pas',
@@ -16,7 +16,9 @@ uses
   KSBParam in 'KSBLib\KSBParam.pas',
   NetService in 'KSBLib\NetService.pas',
   SharedBuffer in 'KSBLib\SharedBuffer.pas',
-  Sigma in 'Sigma.pas' {dmSigma: TDataModule};
+  sigma in 'sigma.pas' {dmSigma: TDataModule},
+  event in 'event.pas',
+  sigmaEvent in 'sigmaEvent.pas';
 
 {$R *.res}
 

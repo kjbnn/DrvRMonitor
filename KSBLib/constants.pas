@@ -1,37 +1,8 @@
-// {$A-}
+{R08}
+
 unit constants;
 
 interface
-
-type
-    TReaderMode = array[0..6] of string;
-const 
-    ReaderMode : TReaderMode = ('Close','Card','Card/Cod','Card&Cod','Open','Facility','Unknow');
-
-const STATE_TAMPER    = $01;
-const STATE_FORCED    = $02;
-const STATE_HELD      = $04;
-const STATE_AUX       = $08;
-const STATE_DOOR_OPEN = $10;
-const STATE_BUTTON    = $40;
-const STATE_CARD      = $80;
-
-const WAIT_CARD=0;
-const WAIT_OPEN_DOOR1=1;
-const WAIT_PAUSE_DOOR1=3;
-const WAIT_CLOSE_DOOR1=4;
-const WAIT_CHECK_BIO=5;
-const WAIT_OPEN_DOOR2=6;
-const WAIT_PAUSE_DOOR2=7;
-const WAIT_CLOSE_DOOR2=8;
-
-const ALARM_OPEN_DOOR1      =9;
-const ALARM_PAUSE_DOOR1     =10;
-const ALARM_CLOSE_DOOR1     =11;
-const ERROR_NOTCLOSE_DOOR1  =12;
-const ERROR_NOTCLOSE_DOOR2  =13;
-const NOT_OPEN_DOOR1        =2;
-const NOT_OPEN_DOOR2        =14;
 
 const BIT_ALWAYS_ARMED                     =1;
 const BIT_RESET_ALARM_AFTER_DISARMED       =2;
@@ -47,15 +18,11 @@ const BIT_ENABLE      =$80;
 
 const TYPEDEVICE_UNKNOW        = 0;
 const TYPEDEVICE_RIC           = 1;
-const TYPEDEVICE_KBD           = 2;
 const TYPEDEVICE_VRIC          = 3;
+const TYPEDEVICE_KBD           = 2;
 const TYPEDEVICE_SIGRIC        = 4;
 const TYPEDEVICE_TRANE         = 5;
-const TYPEDEVICE_GATE          = 6;
 
-const         TYPE_OWNER_FIRES        =7;
-const         TYPE_OWNER_CAMERA       =6;
-const         TYPE_OWNER_TREE         =5;
 const         TYPE_OWNER_GROUP        =4;
 const         TYPE_OWNER_VISTA        =3;
 const         TYPE_OWNER_ZONE         =2;
@@ -89,46 +56,22 @@ const         TYPE_OWNER_OBJECT       =0;
   const APPLICATION_ANN100              =22;
   const APPLICATION_TESTER              =23;
   const APPLICATION_DRV_VISTA           =24;
-  const APPLICATION_DRV_FIRE            =25;
+  const APPLICATION_DRV_DS1820          =25;
   const APPLICATION_DRV_R7              =26;
   const APPLICATION_DRV_R7_2            =27;
-  const APPLICATION_DRV_GATE		=28;
-//29
-  const APPLICATION_DRV_PCE		=30;
-  const APPLICATION_SWORKTIME           =31;
+  const APPLICATION_DRV_R8              =29;  
   const APPLICATION_ANN100_2            =32;
-  const APPLICATION_DRV_UPSO            =34;
-  const APPLICATION_DRV_ARECONT	        =35;
-  const APPLICATION_DRV_HWS	        =36;
+  const APPLICATION_S20                 =33;
 
 // Подсистемы КСБ
   const SYSTEM_OPS                      =0;
   const SYSTEM_SUD                      =1;
   const SYSTEM_TV                       =2;
-  const SYSTEM_FIRE                     =3;
   const SYSTEM_PROGRAM                  =5;
-  const SYSTEM_HWS                      =6;
-  const SYSTEM_UPSO                     =7;
-
+  const SYSTEM_KLIMAT                   =6;
 
   const WORK_MONITOR                            =0;
   const ALARM_MONITOR                           =$4000;
-
-  const ERNITEC_TYPE                    =1; //Бибиков typeDevice для Ernitec
-  const ERNITEC_KEYBOARD_TYPE           =5; //Бибиков typeDevice для Ernitec
-  const UNIPLEX_TYPE                    =4; //Бибиков typeDevice для UNIPLEX
-  const RS_CONT_TYPE                    =0;
-  const AAN_CONT_TYPE                   =1;
-  const MEGA_CONT_TYPE                  =3;
-  const PCE_CONT_TYPE                   =4;
-  const RUBEJ_CONT_TYPE                 =99; //bsl, 05.03.2015 - переделать
-
-
-  const TYPE_HWS_COMPUTER               =0;
-  const TYPE_HWS_CPU                    =1;
-  const TYPE_HWS_MAINBOARD              =2;
-  const TYPE_HWS_HDD                    =3;
-  const TYPE_HWS_FAN                    =4;
 
   const         ZT_NOT_USED                    =00;
   const         ZT_ENTER_EXIT_1                =01;  //10  BURGLARY
@@ -165,17 +108,6 @@ const         TYPE_OWNER_OBJECT       =0;
   const      EXIT_READER                       =2;// изъятие
   const      PIN_READER                        =3;// изъятие
 
-  const      PCEBRANCHTYPE                     =4;
-  const      PCEREADERTYPE                     =0;// пульт PCE
-  const      PCENODETYPE                       =$55; //узел PCE
-  const      PCEVARTYPE                        =$57; //переменная PCE
-  const      PCEDRIVERTYPE                     =$54; //порт PCE
-  const      PCESTRINGTYPE                     =63; //строка PCE
-  const      PCESTRINGTYPEDEVICE               =8; //порт PCE
-  const      PCEPROGRAMTYPE                    =65; //микропрограмма PCE
-  const      PCECOMMANDTYPE                    =75; //
-
-
 // Состояние считывателя
   const      READER_CLOSE                      =0;
   const      READER_CARD                       =1;
@@ -187,7 +119,7 @@ const         TYPE_OWNER_OBJECT       =0;
   const      READER_ACCESS_GRANTED             =7;
 
 //-------------------------------------------------------------------------------------------
- const LINK_CLIEN2CARD                 = 3000;
+
  const MAN_ARMED_GROUP                 = 3010; // $0BC2
  const MAN_DISARMED_GROUP              = 3011; // $0BC3
  const MAN_BYPASS_ZONE                 = 3012; // $0BC4   обход зоны
@@ -198,7 +130,7 @@ const         TYPE_OWNER_OBJECT       =0;
  const VIRT_ALARM_GROUP                = 3018; //
  const VIRT_DISALARM_GROUP             = 3019; //
 
- const FIND_ELEMENT_ID                 = 3020; //
+ const FIND_ELEMENT_IN_GROUP           = 3020; //
 
  //-------------------------------------------------------------------------------------------
 
@@ -251,35 +183,8 @@ const         TYPE_OWNER_OBJECT       =0;
  const PRN_SKED_CHANGE                 = 4046;
  const PRN_FAIL_TO_COMM                = 4047;
  const PRN_DURESS                      = 4048;
- const PRN_ERROR_PROG                  = 4050; // неверный номер раздела в сообщ принт порта <Бибиков>
- const PRN_ERROR_PROG_RST              = 4051; // неверный номер раздела в сообщ принт порта сброшен <Бибиков>
 
  //------------------------------------------------------------------------------
- const CAM_SHOW_LIVE       = 5105;
- const CAM_ENABLE          = 5106;
- const CAM_DISABLE         = 5107;
- const CAM_FRAME_EXPORT    = 5108;
- const CAM_VIDEO_EXPORT    = 5110;
- const CAM_SET_SUBTITLES   = 5111;
- const CAM_CLEAR_SUBTITLES = 5112;
- const CAM_ARM             = 5113;
- const CAM_DISARM          = 5114;
- const CAM_CONFIG          = 5115;
- const CAM_SHOW_REC        = 5119;
- const CAM_GO_PRESET       = 5121;
- const CAM_START_REC       = 5122;
- const CAM_STOP_REC        = 5123;
- const CAM_SET_FPS         = 5124;
- const CAM_SET_BRIGHT      = 5125;
- const CAM_SET_COLOR       = 5126;
- const CAM_SET_SAT         = 5127;
- const MACRO_RUN           = 5150;
- const MACRO_ENABLE        = 5151;
- const MACRO_DISABLE       = 5152;
- const CAM_ZONE_ENABLE     = 5153;
- const CAM_ZONE_DISABLE    = 5154;
- const MONITOR_CONFIG      = 5155;
-
 
  const VIDEO_UNIPLEX_CAMERA_ONOFF      = 5022;
  const VIDEO_UNIPLEX_CAMERA_FAIL       = 5023;
@@ -311,346 +216,15 @@ const         TYPE_OWNER_OBJECT       =0;
  const VIDEO_SPRITE_ONLINE             = 5020;
  const VIDEO_SPRITE_OFFLINE            = 5021;
 
- const VIDEO_AV_SET_BRIGHTNESS	       = 5300;
- const VIDEO_AV_SETTED_BRIGHTNESS      = 5301;
- const VIDEO_AV_NOT_SET_BRIGHTNESS     = 5302;
- const VIDEO_AV_SET_SHARPNESS          = 5303;
- const VIDEO_AV_SETTED_SHARPNESS       = 5304;
- const VIDEO_AV_NOT_SET_SHARPNESS      = 5305;
- const VIDEO_AV_SET_SATURATION         = 5306;
- const VIDEO_AV_SETTED_SATURATION      = 5307;
- const VIDEO_AV_NOT_SET_SATURATION     = 5308;
- const VIDEO_AV_SET_BLUE	           = 5309;
- const VIDEO_AV_SETTED_BLUE	           = 5310;
- const VIDEO_AV_NOT_SET_BLUE	       = 5311;
- const VIDEO_AV_SET_RED                = 5312;
- const VIDEO_AV_SETTED_RED             = 5313;
- const VIDEO_AV_NOT_SET_RED            = 5314;
- const VIDEO_AV_SET_ILLUM              = 5315;
- const VIDEO_AV_SETTED_ILLUM           = 5316;
- const VIDEO_AV_NOT_SET_ILLUM          = 5317;
- const VIDEO_AV_SET_FREQ               = 5318;
- const VIDEO_AV_SETTED_FREQ            = 5319;
- const VIDEO_AV_NOT_SET_FREQ           = 5320;
- const VIDEO_AV_SET_LOWLIGHT           = 5321;
- const VIDEO_AV_SETTED_LOWLIGHT        = 5322;
- const VIDEO_AV_NOT_SET_LOWLIGHT       = 5323;
- const VIDEO_AV_SET_ROTATE             = 5324;
- const VIDEO_AV_SETTED_ROTATE          = 5325;
- const VIDEO_AV_NOT_SET_ROTATE         = 5326;
- const VIDEO_AV_SET_AUTOEXP            = 5327;
- const VIDEO_AV_SETTED_AUTOEXP         = 5328;
- const VIDEO_AV_NOT_SET_AUTOEXP        = 5329;
- const VIDEO_AV_SET_EXPWNDLEFT         = 5330;
- const VIDEO_AV_SETTED_EXPWNDLEFT      = 5331;
- const VIDEO_AV_NOT_SET_EXPWNDLEFT     = 5332;
- const VIDEO_AV_SET_EXPWNDTOP          = 5333;
- const VIDEO_AV_SETTED_EXPWNDTOP       = 5334;
- const VIDEO_AV_NOT_SET_EXPWNDTOP      = 5335;
- const VIDEO_AV_SET_EXPWNDWIDTH        = 5336;
- const VIDEO_AV_SETTED_EXPWNDWIDTH     = 5337;
- const VIDEO_AV_NOT_SET_EXPWNDWIDTH    = 5338;
- const VIDEO_AV_SET_EXPWNDHEIGHT       = 5339;
- const VIDEO_AV_SETTED_EXPWNDHEIGHT    = 5340;
- const VIDEO_AV_NOT_SET_EXPWNDHEIGHT   = 5341;
- const VIDEO_AV_SET_SENSORLEFT         = 5342;
- const VIDEO_AV_SETTED_SENSORLEFT      = 5343;
- const VIDEO_AV_NOT_SET_SENSORLEFT     = 5344;
- const VIDEO_AV_SET_SENSORTOP          = 5345;
- const VIDEO_AV_SETTED_SENSORTOP       = 5346;
- const VIDEO_AV_NOT_SET_SENSORTOP      = 5347;
- const VIDEO_AV_SET_SENSORWIDTH        = 5348;
- const VIDEO_AV_SETTED_SENSORWIDTH     = 5349;
- const VIDEO_AV_NOT_SET_SENSORWIDTH    = 5350;
- const VIDEO_AV_SET_SENSORHEIGHT       = 5351;
- const VIDEO_AV_SETTED_SENSORHEIGHT    = 5352;
- const VIDEO_AV_NOT_SET_SENSORHEIGHT   = 5353;
- const VIDEO_AV_SET_IMGLEFT            = 5354;
- const VIDEO_AV_SETTED_IMGLEFT         = 5355;
- const VIDEO_AV_NOT_SET_IMGLEFT        = 5357;
- const VIDEO_AV_SET_IMGTOP             = 5358;
- const VIDEO_AV_SETTED_IMGTOP          = 5359;
- const VIDEO_AV_NOT_SET_IMGTOP         = 5360;
- const VIDEO_AV_SET_IMGWIDTH           = 5361;
- const VIDEO_AV_SETTED_IMGWIDTH        = 5362;
- const VIDEO_AV_NOT_SET_IMGWIDTH       = 5363;
- const VIDEO_AV_SET_IMGHEIGHT          = 5364;
- const VIDEO_AV_SETTED_IMGHEIGHT       = 5365;
- const VIDEO_AV_NOT_SET_IMGHEIGHT      = 5366;
- const VIDEO_AV_SET_IMGQUALITY         = 5367;
- const VIDEO_AV_SETTED_IMGQUALITY      = 5368;
- const VIDEO_AV_NOT_SET_IMGQUALITY     = 5369;
- const VIDEO_AV_SET_IMGRES	           = 5370;
- const VIDEO_AV_SETTED_IMGRES          = 5371;
- const VIDEO_AV_NOT_SET_IMGRES	       = 5372;
- const VIDEO_AV_SET_AUTOIRIS           = 5373;
- const VIDEO_AV_SETTED_AUTOIRIS        = 5374;
- const VIDEO_AV_NOT_SET_AUTOIRIS       = 5375;
- const VIDEO_AV_SET_IRISGAIN           = 5376;
- const VIDEO_AV_SETTED_IRISGAIN        = 5377;
- const VIDEO_AV_NOT_SET_IRISGAIN       = 5378;
- const VIDEO_AV_SET_MOTIONDETECT       = 5379;
- const VIDEO_AV_SETTED_MOTIONDETECT    = 5380;
- const VIDEO_AV_NOT_SET_MOTIONDETECT   = 5381;
- const VIDEO_AV_SET_MDMODE             = 5382;
- const VIDEO_AV_SETTED_MDMODE          = 5383;
- const VIDEO_AV_NOT_SET_MDMODE         = 5384;
- const VIDEO_AV_SET_MDTOTALZONES       = 5385;
- const VIDEO_AV_SETTED_MDTOTALZONES    = 5386;
- const VIDEO_AV_NOT_SET_MDTOTALZONES   = 5387;
- const VIDEO_AV_SET_MDZONESIZE         = 5388;
- const VIDEO_AV_SETTED_MDZONESIZE      = 5389;
- const VIDEO_AV_NOT_SET_MDZONESIZE     = 5390;
- const VIDEO_AV_SET_MDLEVTHR           = 5391;
- const VIDEO_AV_SETTED_MDLEVTHR        = 5392;
- const VIDEO_AV_NOT_SET_MDLEVTHR       = 5393;
- const VIDEO_AV_SET_MDSENSITIVITY      = 5394;
- const VIDEO_AV_SETTED_MDSENSITIVITY   = 5395;
- const VIDEO_AV_NOT_SET_MDSENSITIVITY  = 5396;
- const VIDEO_AV_SET_MDDETAIL           = 5397;
- const VIDEO_AV_SETTED_MDDETAIL        = 5398;
- const VIDEO_AV_NOT_SET_MDDETAIL       = 5399;
- const VIDEO_AV_SET_MDPRIVASYMASK      = 5400;
- const VIDEO_AV_SETTED_MDPRIVASYMASK   = 5401;
- const VIDEO_AV_NOT_SET_MDPRIVASYMASK  = 5402;
- const VIDEO_AV_SET_ADMINPSWD          = 5403;
- const VIDEO_AV_SETTED_ADMINPSWD       = 5404;
- const VIDEO_AV_NOT_SET_ADMINPSWD      = 5405;
- const VIDEO_AV_SET_VIEWERPSWD         = 5406;
- const VIDEO_AV_SETTED_VIEWERPSWD      = 5407;
- const VIDEO_AV_NOT_SET_VIEWERPSWD     = 5408;
- const VIDEO_AV_SET_CROPPING           = 5409;
- const VIDEO_AV_SETTED_CROPPING        = 5410;
- const VIDEO_AV_NOT_SET_CROPPING       = 5411;
- const VIDEO_AV_SET_DAYBINNING         = 5412;
- const VIDEO_AV_SETTED_DAYBINNING      = 5413;
- const VIDEO_AV_NOT_SET_DAYBINNING     = 5414;
- const VIDEO_AV_SET_NIGHTBINNING       = 5415;
- const VIDEO_AV_SETTED_NIGHTBINNING    = 5416;
- const VIDEO_AV_NOT_SET_NIGHTBINNING   = 5417;
- const VIDEO_AV_SET_PMASK              = 5418;
- const VIDEO_AV_SETTED_PMASK           = 5419;
- const VIDEO_AV_NOT_SET_PMASK          = 5420;
- const VIDEO_AV_SET_PMASKLEFT          = 5421;
- const VIDEO_AV_SETTED_PMASKLEFT       = 5422;
- const VIDEO_AV_NOT_SET_PMASKLEFT      = 5423;
- const VIDEO_AV_SET_PMASKTOP           = 5424;
- const VIDEO_AV_SETTED_PMASKTOP        = 5425;
- const VIDEO_AV_NOT_SET_PMASKTOP       = 5426;
- const VIDEO_AV_SET_PMASKRIGHT         = 5427;
- const VIDEO_AV_SETTED_PMASKRIGHT      = 5428;
- const VIDEO_AV_NOT_SET_PMASKRIGHT     = 5429;
- const VIDEO_AV_SET_CASINO             = 5430;
- const VIDEO_AV_SETTED_CASINO          = 5431;
- const VIDEO_AV_NOT_SET_CASINO         = 5432;
- const VIDEO_AV_SET_DAYNIGHT           = 5433;
- const VIDEO_AV_SETTED_DAYNIGHT        = 5434;
- const VIDEO_AV_NOT_SET_DAYNIGHT       = 5435;
- const VIDEO_AV_SET_NIGHTGAIN          = 5436;
- const VIDEO_AV_SETTED_NIGHTGAIN       = 5437;
- const VIDEO_AV_NOT_SET_NIGHTGAIN      = 5438;
- const VIDEO_AV_SET_DAYGAIN            = 5439;
- const VIDEO_AV_SETTED_DAYGAIN         = 5440;
- const VIDEO_AV_NOT_SET_DAYGAIN        = 5441;
- const VIDEO_AV_SET_SHORTEXP           = 5442;
- const VIDEO_AV_SETTED_SHORTEXP        = 5443;
- const VIDEO_AV_NOT_SET_SHORTEXP       = 5444;
- const VIDEO_AV_SET_PMASKBOTTOM        = 5445;
- const VIDEO_AV_SETTED_PMASKBOTTOM     = 5446;
- const VIDEO_AV_NOT_SET_PMASKBOTTOM    = 5447;
- const VIDEO_AV_SET_PMASKBLOCK         = 5448;
- const VIDEO_AV_SETTED_PMASKBLOCK      = 5449;
- const VIDEO_AV_NOT_SET_PMASKBLOCK     = 5450;
-
- const VIDEO_AV_GET_BRIGHTNESS	       = 5500;
- const VIDEO_AV_GETTED_BRIGHTNESS      = 5501;
- const VIDEO_AV_NOT_GET_BRIGHTNESS     = 5502;
- const VIDEO_AV_GET_SHARPNESS          = 5503;
- const VIDEO_AV_GETTED_SHARPNESS       = 5504;
- const VIDEO_AV_NOT_GET_SHARPNESS      = 5505;
- const VIDEO_AV_GET_SATURATION         = 5506;
- const VIDEO_AV_GETTED_SATURATION      = 5507;
- const VIDEO_AV_NOT_GET_SATURATION     = 5508;
- const VIDEO_AV_GET_BLUE	           = 5509;
- const VIDEO_AV_GETTED_BLUE	           = 5510;
- const VIDEO_AV_NOT_GET_BLUE	       = 5511;
- const VIDEO_AV_GET_RED                = 5512;
- const VIDEO_AV_GETTED_RED             = 5513;
- const VIDEO_AV_NOT_GET_RED            = 5514;
- const VIDEO_AV_GET_ILLUM              = 5515;
- const VIDEO_AV_GETTED_ILLUM           = 5516;
- const VIDEO_AV_NOT_GET_ILLUM          = 5517;
- const VIDEO_AV_GET_FREQ               = 5518;
- const VIDEO_AV_GETTED_FREQ            = 5519;
- const VIDEO_AV_NOT_GET_FREQ           = 5520;
- const VIDEO_AV_GET_LOWLIGHT           = 5521;
- const VIDEO_AV_GETTED_LOWLIGHT        = 5522;
- const VIDEO_AV_NOT_GET_LOWLIGHT       = 5523;
- const VIDEO_AV_GET_ROTATE             = 5524;
- const VIDEO_AV_GETTED_ROTATE          = 5525;
- const VIDEO_AV_NOT_GET_ROTATE         = 5526;
- const VIDEO_AV_GET_AUTOEXP            = 5527;
- const VIDEO_AV_GETTED_AUTOEXP         = 5528;
- const VIDEO_AV_NOT_GET_AUTOEXP        = 5529;
- const VIDEO_AV_GET_EXPWNDLEFT         = 5530;
- const VIDEO_AV_GETTED_EXPWNDLEFT      = 5531;
- const VIDEO_AV_NOT_GET_EXPWNDLEFT     = 5532;
- const VIDEO_AV_GET_EXPWNDTOP          = 5533;
- const VIDEO_AV_GETTED_EXPWNDTOP       = 5534;
- const VIDEO_AV_NOT_GET_EXPWNDTOP      = 5535;
- const VIDEO_AV_GET_EXPWNDWIDTH        = 5536;
- const VIDEO_AV_GETTED_EXPWNDWIDTH     = 5537;
- const VIDEO_AV_NOT_GET_EXPWNDWIDTH    = 5538;
- const VIDEO_AV_GET_EXPWNDHEIGHT       = 5539;
- const VIDEO_AV_GETTED_EXPWNDHEIGHT    = 5540;
- const VIDEO_AV_NOT_GET_EXPWNDHEIGHT   = 5541;
- const VIDEO_AV_GET_SENSORLEFT         = 5542;
- const VIDEO_AV_GETTED_SENSORLEFT      = 5543;
- const VIDEO_AV_NOT_GET_SENSORLEFT     = 5544;
- const VIDEO_AV_GET_SENSORTOP          = 5545;
- const VIDEO_AV_GETTED_SENSORTOP       = 5546;
- const VIDEO_AV_NOT_GET_SENSORTOP      = 5547;
- const VIDEO_AV_GET_SENSORWIDTH        = 5548;
- const VIDEO_AV_GETTED_SENSORWIDTH     = 5549;
- const VIDEO_AV_NOT_GET_SENSORWIDTH    = 5550;
- const VIDEO_AV_GET_SENSORHEIGHT       = 5551;
- const VIDEO_AV_GETTED_SENSORHEIGHT    = 5552;
- const VIDEO_AV_NOT_GET_SENSORHEIGHT   = 5553;
- const VIDEO_AV_GET_IMGLEFT            = 5554;
- const VIDEO_AV_GETTED_IMGLEFT         = 5555;
- const VIDEO_AV_NOT_GET_IMGLEFT        = 5557;
- const VIDEO_AV_GET_IMGTOP             = 5558;
- const VIDEO_AV_GETTED_IMGTOP          = 5559;
- const VIDEO_AV_NOT_GET_IMGTOP         = 5560;
- const VIDEO_AV_GET_IMGWIDTH           = 5561;
- const VIDEO_AV_GETTED_IMGWIDTH        = 5562;
- const VIDEO_AV_NOT_GET_IMGWIDTH       = 5563;
- const VIDEO_AV_GET_IMGHEIGHT          = 5564;
- const VIDEO_AV_GETTED_IMGHEIGHT       = 5565;
- const VIDEO_AV_NOT_GET_IMGHEIGHT      = 5566;
- const VIDEO_AV_GET_IMGQUALITY         = 5567;
- const VIDEO_AV_GETTED_IMGQUALITY      = 5568;
- const VIDEO_AV_NOT_GET_IMGQUALITY     = 5569;
- const VIDEO_AV_GET_IMGRES	           = 5570;
- const VIDEO_AV_GETTED_IMGRES          = 5571;
- const VIDEO_AV_NOT_GET_IMGRES	       = 5572;
- const VIDEO_AV_GET_AUTOIRIS           = 5573;
- const VIDEO_AV_GETTED_AUTOIRIS        = 5574;
- const VIDEO_AV_NOT_GET_AUTOIRIS       = 5575;
- const VIDEO_AV_GET_IRISGAIN           = 5576;
- const VIDEO_AV_GETTED_IRISGAIN        = 5577;
- const VIDEO_AV_NOT_GET_IRISGAIN       = 5578;
- const VIDEO_AV_GET_MOTIONDETECT       = 5579;
- const VIDEO_AV_GETTED_MOTIONDETECT    = 5580;
- const VIDEO_AV_NOT_GET_MOTIONDETECT   = 5581;
- const VIDEO_AV_GET_MDMODE             = 5582;
- const VIDEO_AV_GETTED_MDMODE          = 5583;
- const VIDEO_AV_NOT_GET_MDMODE         = 5584;
- const VIDEO_AV_GET_MDTOTALZONES       = 5585;
- const VIDEO_AV_GETTED_MDTOTALZONES    = 5586;
- const VIDEO_AV_NOT_GET_MDTOTALZONES   = 5587;
- const VIDEO_AV_GET_MDZONESIZE         = 5588;
- const VIDEO_AV_GETTED_MDZONESIZE      = 5589;
- const VIDEO_AV_NOT_GET_MDZONESIZE     = 5590;
- const VIDEO_AV_GET_MDLEVTHR           = 5591;
- const VIDEO_AV_GETTED_MDLEVTHR        = 5592;
- const VIDEO_AV_NOT_GET_MDLEVTHR       = 5593;
- const VIDEO_AV_GET_MDSENSITIVITY      = 5594;
- const VIDEO_AV_GETTED_MDSENSITIVITY   = 5595;
- const VIDEO_AV_NOT_GET_MDSENSITIVITY  = 5596;
- const VIDEO_AV_GET_MDDETAIL           = 5597;
- const VIDEO_AV_GETTED_MDDETAIL        = 5598;
- const VIDEO_AV_NOT_GET_MDDETAIL       = 5599;
- const VIDEO_AV_GET_MDPRIVASYMASK      = 5600;
- const VIDEO_AV_GETTED_MDPRIVASYMASK   = 5601;
- const VIDEO_AV_NOT_GET_MDPRIVASYMASK  = 5602;
- const VIDEO_AV_GET_ADMINPSWD          = 5603;
- const VIDEO_AV_GETTED_ADMINPSWD       = 5604;
- const VIDEO_AV_NOT_GET_ADMINPSWD      = 5605;
- const VIDEO_AV_GET_VIEWERPSWD         = 5606;
- const VIDEO_AV_GETTED_VIEWERPSWD      = 5607;
- const VIDEO_AV_NOT_GET_VIEWERPSWD     = 5608;
- const VIDEO_AV_GET_CROPPING           = 5609;
- const VIDEO_AV_GETTED_CROPPING        = 5610;
- const VIDEO_AV_NOT_GET_CROPPING       = 5611;
- const VIDEO_AV_GET_DAYBINNING         = 5612;
- const VIDEO_AV_GETTED_DAYBINNING      = 5613;
- const VIDEO_AV_NOT_GET_DAYBINNING     = 5614;
- const VIDEO_AV_GET_NIGHTBINNING       = 5615;
- const VIDEO_AV_GETTED_NIGHTBINNING    = 5616;
- const VIDEO_AV_NOT_GET_NIGHTBINNING   = 5617;
- const VIDEO_AV_GET_PMASK              = 5618;
- const VIDEO_AV_GETTED_PMASK           = 5619;
- const VIDEO_AV_NOT_GET_PMASK          = 5620;
- const VIDEO_AV_GET_CASINO             = 5630;
- const VIDEO_AV_GETTED_CASINO          = 5631;
- const VIDEO_AV_NOT_GET_CASINO         = 5632;
- const VIDEO_AV_GET_DAYNIGHT           = 5633;
- const VIDEO_AV_GETTED_DAYNIGHT        = 5634;
- const VIDEO_AV_NOT_GET_DAYNIGHT       = 5635;
- const VIDEO_AV_GET_NIGHTGAIN          = 5636;
- const VIDEO_AV_GETTED_NIGHTGAIN       = 5637;
- const VIDEO_AV_NOT_GET_NIGHTGAIN      = 5638;
- const VIDEO_AV_GET_DAYGAIN            = 5639;
- const VIDEO_AV_GETTED_DAYGAIN         = 5640;
- const VIDEO_AV_NOT_GET_DAYGAIN        = 5641;
- const VIDEO_AV_GET_SHORTEXP           = 5642;
- const VIDEO_AV_GETTED_SHORTEXP        = 5643;
- const VIDEO_AV_NOT_GET_SHORTEXP       = 5644;
- const VIDEO_AV_GET_PMASKBOTTOM        = 5645;
-
- const VIDEO_AV_GET_JIMAGE             = 5701;
- const VIDEO_AV_GETTED_JIMAGE          = 5702;
- const VIDEO_AV_NOT_GET_JIMAGE         = 5703;
- const VIDEO_AV_GET_MJPEG              = 5705;
- const VIDEO_AV_GETTED_MJPEG           = 5706;
- const VIDEO_AV_NOT_GET_MJPEG          = 5707;
- const VIDEO_AV_SAVE                   = 5708;
- const VIDEO_AV_SAVED		           = 5709;
- const VIDEO_AV_NOT_SAVED	           = 5710;
- const VIDEO_AV_REC_MAC                = 5711;
- const VIDEO_AV_RECD_MAC               = 5712;
- const VIDEO_AV_NOT_RECD_MAC           = 5713;
- const VIDEO_AV_REC_MAKE               = 5714;
- const VIDEO_AV_RECD_MAKE              = 5715;
- const VIDEO_AV_NOT_RECD_MAKE          = 5716;
- const VIDEO_AV_REC_MODEL              = 5717;
- const VIDEO_AV_RECD_MODEL             = 5718;
- const VIDEO_AV_NOT_RECD_MODEL         = 5719;
- const VIDEO_AV_REC_FW                 = 5720;
- const VIDEO_AV_RECD_FW                = 5721;
- const VIDEO_AV_NOT_RECD_FW            = 5722;
- const VIDEO_AV_REC_PROC               = 5723;
- const VIDEO_AV_RECD_PROC              = 5724;
- const VIDEO_AV_NOT_RECD_PROC          = 5725;
- const VIDEO_AV_REC_NETVER             = 5726;
- const VIDEO_AV_RECD_NETVER            = 5727;
- const VIDEO_AV_NOT_RECD_NETVER        = 5728;
- const VIDEO_AV_REC_REVISION           = 5729;
- const VIDEO_AV_RECD_REVISION          = 5730;
- const VIDEO_AV_NOT_RECD_REVISION      = 5731;
- const VIDEO_AV_FACTORYRESET           = 5732;
- const VIDEO_AV_FACTORYRESETED         = 5733;
- const VIDEO_AV_NOT_FACTORYRESETED     = 5734;
- const VIDEO_AV_GET_MDRESULT           = 5736;
- const VIDEO_AV_GETTED_MDRESULT        = 5737;
- const VIDEO_AV_NOT_GET_MDRESULT       = 5738;
-
- const VIDEO_AV_LOW_CODE               = 5300;
- const VIDEO_AV_HIGH_CODE              = 5800;
- const VIDEO_AV_START_SET_CODE         = 5300;
- const VIDEO_AV_STOP_SET_CODE          = 5499;
- const VIDEO_AV_START_GET_CODE         = 5500;
- const VIDEO_AV_STOP_GET_CODE          = 5699;
-
 //-----------------------------------------------------------------------------
+ const SUD_AUX1_RIC                    = 223;
+ const SUD_RESETAUX1_RIC               = 208;
+ const SUD_SET_LINK_READER             = 194;
+ const SUD_LOST_LINK_READER            = 195;
 
- const SUD_SETTED_LEVEL                = 255;
- const SUD_SETTED_MASK                 = 254;
- const OUT_SET                         = 253;
+ const OUT_SET	                       = 253;
  const SUD_TIMEZONE_SETTED             = 252;
  const CONNECT_SET                     = 251;
- const SUD_BAD_PARAM                   = 250;
  const TRYLINK                         = 249;
  const START                           = 248;
  const HANGLOW                         = 247;
@@ -658,50 +232,32 @@ const         TYPE_OWNER_OBJECT       =0;
  const NOTNETDEVICE                    = 245;
  const RESTORE_NETDEVICE               = 244;
  const LOST_NETDEVICE                  = 243;
- const LOST_COMMAND_RIC                = 242;
- const SUD_CHANGE_GATE                 = 241;
- const NOT_ARMED_ZONE                  = 240;
- const SUD_TAMPER                      = 239;
- const SUD_RESET_TAMPER                = 238;
- const SUD_GRANTED_BUTTON              = 237;
- const SUD_BAD_WEIGHT                  = 236;
- const COMMAND_OPEN_DOOR               = 235;
- const SUD_CHANGE_GATE2                = 234;
- const SUD_GETTED_RIC_MODE	           = 226;
- const SUD_DOOR_OPENED		           = 1217;
- const SUD_DOOR_CLOSED		           = 1218;
- const SUD_ACCESS_VIOL		           = 1025;
- const SUD_ACCESS_VIOL_NOT_ENTER       = 1034;
- const SUD_ACCESS_VIOL_FAIL	           = 1040;
- const SUD_OK_ENTER                    = 1032;
- const SUD_OK_NOT_ENTER                = 1033;
 
  const ANTI_SET                        = 228;
  const NOTADDCARD_SET                  = 226;
  const SETCOMPUTER                     = 225;
  const LOSTCOMPUTER                    = 224;
-
- const SUD_AUX1                        = 223;
+ const SUD_GRANTED_BUTTON              = 237;
  const SUD_HELD                        = 222;
  const SUD_FORCED                      = 221;
- const SUD_RESET_HELD                  = 220;
- const SUD_RESET_FORCED                = 219;
- const SUD_DOOR_CLOSE                  = 218;
- const SUD_DOOR_OPEN                   = 217;
- const SUD_DOOR_NOT_OPEN	           = 1033;
- const SUD_RIC_SETTED_MODE	           = 250;
+ const SUD_RESETHELD                   = 220;
+ const SUD_RESETFORCED                 = 219;
+
+ const SUD_OK_ENTER                    = 1032; //Проход совершен
+ const SUD_OK_NOT_ENTER                = 1033; //Проход не совершен
+ const SUD_DOOR_CLOSE                  = {1}218;
+ const SUD_DOOR_OPEN                   = {1}217;
+ const SUD_LOCK_CLOSE                  = 1257;
+ const SUD_LOCK_OPEN                   = 1242;
 
  const ANTI_COM                        = 209;
- const SUD_RESET_AUX1                  = 208;
-
- const SUD_LOST_LINK_READER            = 195;
- const SUD_SET_LINK_READER             = 194;
  const BRANCH_UNSIGNED                 = 193;
  const START_RS90                      = 192;
  const RIC_MODE                        = 191;
  const BEGIN_COMMAND                   = 139;
  const END_COMMAND                     = 140;
 
+ const SUD_GRANTED_FACILITY            = 130; 
  const SUD_ACCESS_GRANTED              = 131;
  const SUD_BAD_FACILITY                = 132;
  const SUD_BAD_CARD_FORMAT             = 133;
@@ -710,26 +266,19 @@ const         TYPE_OWNER_OBJECT       =0;
  const SUD_BAD_PIN                     = 136;
  const SUD_BAD_LEVEL                   = 138;
  const SUD_BAD_APB                     = 148;
- const FIX_BAD_MAN                     = 149;
- const FIX_APB_MAN                     = 150;
- const GET_APB_MAN                     = 151;
-
- const SUD_PASSAGE_GRANTED             = 2001;
- const SUD_PASSAGE_FAIL                = 2002;
+ const SUD_CHECK_RIGHT                 = 238;
  const SUD_SET_READER_MODE             = 6000;
  const SUD_GET_MODE_READER             = 6001;
  const SUD_ADD_CARD                    = 6002;
  const SUD_DEL_CARD                    = 6003;
- const GLOBAL_ADD_CARD                 = 6102;
- const GLOBAL_DEL_CARD                 = 6103;
  const SUD_SET_DATETIME                = 6004;
  const SUD_SETTED_DATETIME             = 232;//6005;
- const SUD_FIX_NEWCARD                 = 233;
  const SUD_ADDED_CARD                  = 230;//6006;
  const SUD_DELETED_CARD                = 229;//6007;
  const SUD_SET_HOLIDAY                 = 6008;
  const SUD_SETTED_HOLIDAY              = 231;
  const SUD_SET_MASK                    = 6009;
+ const SUD_SETTED_MASK                 = 254;//6010;
  const SUD_SET_READER_FULL             = 6011;
  const SUD_GET_READER_DATABASE         = 6012;
  const SUD_SET_LEVEL                   = 6013;
@@ -738,11 +287,8 @@ const         TYPE_OWNER_OBJECT       =0;
  const SUD_SET_TIMEZONE                = 6016;
  const SUD_SET_TIMEZONES               = 6017;
  const SUD_CHANGE_BRANCH               = 6018;
- const SUD_GRANTED_FACILITY            = 130;
- const SUD_GRANTED_FACILITY_NO_ENTER   = 129;
- const SUD_OBJECT_IN_ZONE	           = 6998;
- const SUD_OBJECT_OUT_ZONE	           = 6999;
-
+ const SUD_SETTED_LEVEL                = 255;
+ const COMMAND_OPEN_DOOR               = 235;
  const SUD_TEST                        = 170;
  const AAN100_SET_TIMEZONE             = 6019;
  const AAN100_SET_LEVEL                = 6020;
@@ -753,27 +299,15 @@ const         TYPE_OWNER_OBJECT       =0;
  const SUD_ACCESS_DENIED               = 6025;
  const SUD_ACCESS_CHOOSE               = 6026;
  const SUD_UNKNOW_MESSAGE              = 6027;
+ const SUD_TAMPER_RIC                  = 6028;
+ const SUD_RESETTAMPER_RIC             = 6029;
  const AAN100_SET_HOLIDAY              = 6030;
  const AAN100_WW_FORMAT                = 6031;
  const DRIVERRIC_REQUEST               = 6032;
  const DRIVERRIC_GRANTED               = 6033;
  const DRIVERRIC_DENIED                = 6034;
  const DRIVERRIC_ERROR                 = 6035;
- const SUD_ADD_PCEDEVICE               = 6120;
- const SUD_DEL_PCEDEVICE               = 6121;
- const SUD_ADD_PCEDRIVER               = 6122;
- const SUD_DEL_PCEDRIVER               = 6123;
- const SUD_ADD_PCENODE                 = 6124;
- const SUD_DEL_PCENODE                 = 6125;
- const SUD_ADD_PCERIGHT                = 6126;
- const SUD_DEL_PCERIGHT                = 6127;
- const SUD_ADD_PCECOMMAND              = 6128;
- const SUD_DEL_PCECOMMAND              = 6129;
- const SUD_ADD_PCEPROG                 = 6130;
- const SUD_DEL_PCEPROG                 = 6131;
- const SUD_ADD_PCESTRING               = 6132;
- const SUD_DEL_PCESTRING               = 6133;
- const SUD_RUN_PCEPROGRAM              = 6134;
+
 
  const SUD_LINK_STATE                  = 6038;
  const SUD_TAMPER_STATE                = 6039;
@@ -787,9 +321,10 @@ const         TYPE_OWNER_OBJECT       =0;
  const SUD_DOWNLOADED_CARDS            = 6047;
 
  const SUD_FIND_METAL                  = 6048;
- const SUD_ONE_MAN                     = 6049;
- const SUD_SET_TIMEZONERD              = 6050;
- const SUD_SETTED_TIMEZONERD           = 6051;
+ const SUD_ONE_MAN                     = 6049; 
+
+ const PCE_OUTPUT_ENABLED              = 242;
+ const PCE_OUTPUT_DISABLED             = 257;
 
 //------------------------------------------------------------------------------
 
@@ -798,9 +333,6 @@ const         TYPE_OWNER_OBJECT       =0;
   const         LOST_LINK_TAGET                   =7000;
   const         SET_LINK_TAGET                    =7001;
 
-  const         SUD_RIC_COMMAND                   = 6052;
-  const         SUD_FAST_MODE                     = 6053;
-  const         SUD_FULL_PCE_CONFIG               = 6135;
 
   const         KEYBOARD_DRAW                     =7011;
   const         REQUEST_KEYBOARD_ARMED            =7012;
@@ -808,22 +340,19 @@ const         TYPE_OWNER_OBJECT       =0;
   const         REQUEST_KEYBOARD_STATUS           =7015;
 
   const         START_PROGRAM                     = 7014;
-  const         STOP_PROGRAM                      = 7017;//программа остановлена
+  const         STOP_PROGRAM                      = 7017;//программа останвлена
   const         NET_TEST                          = 7034;//
-  const         KILL_PROGRAM                      = 7022;//убить программу
-  const         RESTORE_LIVE_PROGRAM              = 7023;//
+  const         KILL_PROGRAM                      = 7022;//остановить программу
   const         CHECK_LIVE_PROGRAM                = 7025;//
   const         LOST_LIVE_PROGRAM                 = 7026;//
   const         I_LIVE_PROGRAM                    = 7027;//
   const         SET_TIME                          = 7028;//
   const         EXIT_PROGRAM                      = 7029;//оставить программу
-
+  
   const         CONTROLSTATE_ERROR_ARMED          = 7023;//
   const         CONTROLSTATE_OK_ARMED             = 7024;//
   const         CONTROLSTATE_ERROR_DISARMED       = 7032;//
   const         CONTROLSTATE_OK_DISARMED          = 7033;//
-
-  const         LOST_CONNECT_CONFIGOS             = 7032;//
 
   const         KEYVISTA_PART_READY               = 4100; // раздел готов
   const         KEYVISTA_PART_NOTREADY            = 4101; // раздел не готов
@@ -901,7 +430,6 @@ const         TYPE_OWNER_OBJECT       =0;
   const         COMMAND_ZONE_RESET_ALARM          = 4160;
   const         COMMAND_READ_PART                 = 4161;
   const         COMMAND_READ_ZONE                 = 4162;
-  const         KEY_ERROR_PROG_RST                = 4163; // неверный номер раздела в сообщ клав порта сброшен <Бибиков>
 
   const         VST_ARMED                         = 4204;
   const         VST_DISARMED                      = 4206;
@@ -917,584 +445,542 @@ const         TYPE_OWNER_OBJECT       =0;
   const         MEGA_ZONE_BYPASS                  = 1007;
   const         MEGA_ZONE_BYPASS_RESET            = 1008;
 
-  const         FIRE_START                        = 8000;
+  
+  //------------------------------------------------------
+  //                       Рубеж-08
+  //------------------------------------------------------
+  const         R8_CONNECT_FALSE                  = 9100;         //Отсутствие связи с БЦП+
+  const         R8_CONNECT_TRUE                   = 9101;         //БЦП на связи +
+  const         R8_SYSERROR                       = 9102;         //Системная ошибка БЦП+
+  const         R8_OK                             = 9103;         //БЦП в норме (Сброс систем. ошибок)+
+  const         R8_COMMAND_PANEL_REFRESH          = 9104;         //Запрос состояний БЦП,зон, ШС, СУ
+  const         R8_COMMAND_SH_ARM                 = 9105;         //ШС Поставить на охрану+
+  const         R8_COMMAND_SH_DISARM              = 9106;         //ШС Снять с охраны+
+  const         R8_COMMAND_SH_OFF                 = 9107;         //ШС отключить+
+  const         R8_COMMAND_SH_ON                  = 9108;         //ШС подключить+
+  const         R8_COMMAND_SH_RESTORE             = 9109;         //ШС восстановить+
+  const         R8_SH_ARMED                       = 9110;         //ШС под охраной+
+  const         R8_SH_DISARMED                    = 9111;         //ШС без охраны+
+  const         R8_SH_READY                       = 9112;         //ШС готов+
+  const         R8_SH_NOTREADY                    = 9113;         //ШС не готов+
+  const         R8_SH_CHECK                       = 9114;         //ШС неисправен+
+  const         R8_SH_ALARM                       = 9115;         //ШС в тревоге+
+  const         R8_SH_RESTORE                     = 9116;         //ШС восстановлен (исключен из тревож. сообщ.)
+  const         R8_SH_OFF                         = 9117;         //ШС отключен+
+  const         R8_SH_ON                          = 9118;         //ШС подключен+
+  const         R8_SH_HW_OK                       = 9119;         //ШС Оборудование в норме
+  const         R8_SH_HW_FAULT                    = 9120;         //ШС Оборудование неисправно
+  const         R8_BLOCK_SH_ENABLED               = 9121;         //Блок доступных ШС+
+  const         R8_BLOCK_SH_READY                 = 9122;         //Блок готовых ШС+
+  const         R8_BLOCK_SH_ALARM                 = 9123;         //Блок ШС в тревоге+
+  const         R8_BLOCK_SH_OFF                   = 9124;         //Блок отключенных ШС+
+  const         R8_BLOCK_SH_ARMED                 = 9125;         //Блок ШС под охранной+
+  const         R8_BLOCK_SH_CHECK                 = 9126;         //Блок неисправных ШС+
+  const         R8_BLOCK_SH_HW_FAULT              = 9127;         //Блок ШС на связи+
+  const         R8_COMMAND_ZONE_ARM               = 9128;         //Зона поставить на охрану+
+  const         R8_COMMAND_ZONE_DISARM            = 9129;         //Зона снять с охраны+
+  const         R8_ZONE_ARMED                     = 9130;         //Зона под охраной+
+  const         R8_ZONE_DISARMED                  = 9131;         //Зона без охраны+
+  const         R8_ZONE_READY                     = 9132;         //Зона готова+
+  const         R8_ZONE_NOTREADY                  = 9133;         //Зона не готова+
+  const         R8_ZONE_CHECK                     = 9134;         //Зона не исправена+
+  const         R8_ZONE_ALARM                     = 9135;         //Зона в тревоге+
+  const         R8_ZONE_RESTORE                   = 9136;         //Зона восстановлена+
+  const         R8_ZONE_SH_OFF                    = 9137;         //В зоне есть отключенные ШС
+  const         R8_ZONE_SH_ON                     = 9138;         //В зоне все ШС подключены
+  const         R8_BLOCK_ZONE_READY               = 9139;         //Блок готовых зон+
+  const         R8_BLOCK_ZONE_ALARM               = 9140;         //Блок зон в тревоге+
+  const         R8_BLOCK_ZONE_CHECK               = 9141;         //Блок неисправных зон+
+  const         R8_BLOCK_ZONE_ARMED               = 9142;         //Блок зон под охранной+
+  const         R8_BLOCK_ZONE_OFF                 = 9143;         //Блок отключенных зон+
+  const         R8_CU_CONNECT_OFF                 = 9144;         //СУ потеря связи+
+  const         R8_CU_CONNECT_ON                  = 9145;         //СУ восстановление связи+
+  const         R8_BLOCK_CU_CONNECT               = 9146;         //Блок СУ на линии     (!)
+  const         R8_COMMAND_RELAY_0                = 9147;         //Реле выключить+
+  const         R8_COMMAND_RELAY_1                = 9148;         //Реле включить+
+  const         R8_RELAY_0                        = 9149;         //Реле выключено+
+  const         R8_RELAY_1                        = 9150;         //Реле включено+
+  const         R8_RELAY_HW_OK                    = 9151;         //Реле Оборудование в норме
+  const         R8_RELAY_HW_FAULT                 = 9152;         //Реле Оборудование неисправно
+  const         R8_BLOCK_RELAY_1                  = 9153;         //Блок включенных реле
+  const         R8_BLOCK_RELAY_CONNECT            = 9154;         //Блок реле на связи
+  const         R8_UPS_ACCESS                     = 9155;         //вскрытие корпуса ИБП-
+  const         R8_UPS_OUT1_BAD                   = 9156;         //ИБП неисправность выхода 1+
+  const         R8_UPS_OUT1_OK                    = 9157;         //ИБП восстановление выхода 1+
+  const         R8_UPS_OUT2_BAD                   = 9158;         //ИБП неисправность выхода 2+
+  const         R8_UPS_OUT2_OK                    = 9159;         //ИБП восстановление выхода 2+
+  const         R8_UPS_IN220_BAD                  = 9160;         //ИБП неисправность входа 220+
+  const         R8_UPS_IN220_OK                   = 9161;         //ИБП восстановление входа 220+
+  const         R8_UPS_BAT_BAD                    = 9162;         //Разряд БА ИБП+
+  const         R8_UPS_BAT_OK                     = 9163;         //Заряд в норме БА ИБП БА+
+  const         R8_UPS_RESERV_ON                  = 9164;         //ИБП переход на резерв+
+  const         R8_UPS_RESERV_OFF                 = 9165;         //ИБП воостановление питания 220+
+  const         R8_UPS_BAT_DISCONNECT             = 9166;         //ИБП отключение БА+
+  const         R8_UPS_BAT_CONNECT                = 9167;         //ИБП подключение БА+
+  const         R8_USER_ENTER                     = 9168;         //Начало рабочей сессии БЦП+
+  const         R8_USER_EXIT                      = 9169;         //Конец рабочей сессии БЦП+
+  const         R8_POWER_UP                       = 9170;         //Включение БЦП+
+  const         R8_POWER_DOWN                     = 9171;         //Выключение БЦП+
+  const         R8_ENTER_CONF                     = 9172;         //Вход в конфигурирование БЦП+
+  const         R8_UNKNOWN_USER                   = 9173;         //Ошибка авторизации оператора+
+  const         R8_LOCK_KEYBOARD                  = 9174;         //Блокировка клавиатуры БЦП при авторизации+
+  const         R8_OPEN                           = 9175;         //Вскрытие корпуса БЦП+
+  const         R8_RESERV_POWER                   = 9176;         //Переход на резервное питание+
+  const         R8_NORMAL_POWER                   = 9177;         //Восстановление сетевого питания+
+  const         R8_WORKSETTINGS                   = 9178;         //Возврат к заводским установкам+
+  const         R8_SYNC_TIME                      = 9179;         //Синхронизация часов БЦП+
+  const         R8_TERM_ON                        = 9180;         //Терминал подключен, в норме+
+  const         R8_TERM_OFF                       = 9181;         //Терминал отключен+
+  const         R8_TERM_HW_OK                     = 9182;         //Терминал Оборудование в норме
+  const         R8_TERM_HW_FAULT                  = 9183;         //Терминал Оборудование неисправно
+  const         R8_BCP_OPEN                       = 9184;         //Вскрытие БЦП          (!)
+  const         R8_DRV_READY                      = 9185;         //Драйвер готов к работе
+  const         R8_CU_OPEN                        = 9186;         //Вскрытие СУ+  (!)
+  const         R8_SMALL_CONNECT_FALSE            = 9187;         //Кратковременное (менее минуты) отсутствие связи с БЦП+
+  const         R8_SH_NORIGTH                     = 9188;         //Нет прав на управление ШС
+  const         R8_RELAY_NORIGTH                  = 9189;         //Нет прав на управление реле
+  const         R8_TERM_NORIGTH                   = 9190;         //Нет прав на управление терминалом
+  const         R8_CU_CLOSE                       = 9191;         //СУ корпус закрыт
+  const         R8_BLOCK_CU_OPEN                  = 9192;         //Блок вскрытых СУ (!)
+  const         R8_RETURN_COMMAND_FROM_ROSTEK     = 9193;         //Возвращение команды с ВУ               (!)
+  const         R8_SH_RESET                       = 9194;         //ШС. Сброс                              (!)
+  const         R8_SH_BYPASS                      = 9195;         //ШС. пропуск не готового к постановке      (!)
+  const         R8_SH_INDELAY                     = 9196;         //ШС задержка на вход   (!)
+  const         R8_SH_OUTDELAY                    = 9197;         //ШС задержка на выход  (!)
+  const         R8_BAT_LOW                        = 9198;         //Разряд БА             (!)
+  const         R8_BAT_NORMAL                     = 9199;         //Восстановление БА     (!)
+  const         R8_COMMAND_CU_CREATE              = 9200;         //СУ создать+
+  const         R8_COMMAND_CU_CHANGE              = 9201;         //СУ редактировать+
+  const         R8_COMMAND_CU_DELETE              = 9202;         //СУ удалить+
+  const         R8_COMMAND_CU_CONFIG              = 9203;         //СУ запрос конфигурации+
+  const         R8_CU_CREATE                      = 9204;         //СУ создано+
+  const         R8_CU_CHANGE                      = 9205;         //СУ редактировано+
+  const         R8_CU_DELETE                      = 9206;         //СУ удалено+
+  const         R8_CU_CONFIG                      = 9207;         //СУ конфигурация+
+  const         R8_COMMAND_ZONE_CREATE            = 9208;         //Зону создать+
+  const         R8_COMMAND_ZONE_CHANGE            = 9209;         //Зону редактировать+
+  const         R8_COMMAND_ZONE_DELETE            = 9210;         //Зону удалить+
+  const         R8_COMMAND_ZONE_NAME_DELETE       = 9211;         //Зону по имени удалить+
+  const         R8_COMMAND_ZONE_CONFIG            = 9212;         //Зона запрос конфигурации+
+  const         R8_ZONE_CREATE                    = 9213;         //Зона создана+
+  const         R8_ZONE_CHANGE                    = 9214;         //Зона редактирована+
+  const         R8_ZONE_DELETE                    = 9215;         //Зона удалена+
+  const         R8_ZONE_CONFIG                    = 9216;         //Зона конфигурация+
+  const         R8_COMMAND_SH_CREATE              = 9217;         //ШС создать+
+  const         R8_COMMAND_SH_CHANGE              = 9218;         //ШС редактировать+
+  const         R8_COMMAND_SH_DELETE              = 9219;         //ШС удалить+
+  const         R8_COMMAND_SH_SERNUM_DELETE       = 9220;         //ШС удалить по sernum+
+  const         R8_COMMAND_SH_CONFIG              = 9221;         //ШС запрос конфигурации+
+  const         R8_SH_CREATE                      = 9222;         //ШС создан+
+  const         R8_SH_CHANGE                      = 9223;         //ШС редактирован+
+  const         R8_SH_DELETE                      = 9224;         //ШС удален+
+  const         R8_SH_CONFIG                      = 9225;         //ШС конфигурация+
+  const         R8_COMMAND_USER_CREATE            = 9226;         //Пользователь создать+
+  const         R8_COMMAND_USER_CHANGE            = 9227;         //Пользователь редактировать+
+  const         R8_COMMAND_USER_DELETE            = 9228;         //Пользователь удалить+
+  const         R8_USER_CREATE                    = 9229;         //Пользователь создан+
+  const         R8_USER_CHANGE                    = 9230;         //Пользователь редактирован+
+  const         R8_USER_DELETE                    = 9231;         //Пользователь удален+
+  const         R8_COMMAND_TZ_CREATE              = 9232;         //ВЗ создать+
+  const         R8_COMMAND_TZ_CHANGE              = 9233;         //ВЗ редактировать+
+  const         R8_COMMAND_TZ_DELETE              = 9234;         //ВЗ удалить+
+  const         R8_TZ_CREATE                      = 9235;         //ВЗ создана+
+  const         R8_TZ_CHANGE                      = 9236;         //ВЗ редактирована+
+  const         R8_TZ_DELETE                      = 9237;         //ВЗ удалена+
+  const         R8_COMMAND_RELAY_CREATE           = 9238;         //Реле создать
+  const         R8_COMMAND_RELAY_CHANGE           = 9239;         //Реле редактировать
+  const         R8_COMMAND_RELAY_DELETE           = 9240;         //Реле удалить
+  const         R8_RELAY_CREATE                   = 9241;         //Реле создано+
+  const         R8_RELAY_CHANGE                   = 9242;         //Реле редактировано+
+  const         R8_RELAY_DELETE                   = 9243;         //Реле удалено+
+  const         R8_COMMAND_SETTIME                = 9244;         //Время установить+
+  const         R8_SETTIME                        = 9245;         //Время установлено+
+  const         R8_COMMAND_GETTIME                = 9246;         //Время запросить+
+  const         R8_GETTIME                        = 9247;         //Время выдано+
+  const         R8_COMMAND_UD_CREATE              = 9248;         //УД создать+
+  const         R8_COMMAND_UD_CHANGE              = 9249;         //УД редактировать+
+  const         R8_COMMAND_UD_DELETE              = 9250;         //УД удалить+
+  const         R8_UD_CREATE                      = 9251;         //УД создан+
+  const         R8_UD_CHANGE                      = 9252;         //УД редактирован+
+  const         R8_UD_DELETE                      = 9253;         //УД удален+
+  const         R8_COMMAND_TERM_CREATE            = 9254;         //ТЕРМ создать
+  const         R8_COMMAND_TERM_CHANGE            = 9255;         //ТЕРМ редактировать
+  const         R8_COMMAND_TERM_DELETE            = 9256;         //ТЕРМ удалить
+  const         R8_COMMAND_TERM_SERNUM_DELETE     = 9257;         //ТЕРМ удалить по sernum
+  const         R8_COMMAND_TERM_CONFIG            = 9258;         //ТЕРМ запрос конфигурации
+  const         R8_TERM_CREATE                    = 9259;         //ТЕРМ создан
+  const         R8_TERM_CHANGE                    = 9260;         //ТЕРМ редактирован
+  const         R8_TERM_DELETE                    = 9261;         //ТЕРМ удален
+  const         R8_TERM_CONFIG                    = 9262;         //ТЕРМ конфигурация
+  const         R8_COMMAND_CU_ALL_DELETE          = 9263;         //Удалить все СУ
+  const         R8_CU_ALL_DELETE                  = 9264;         //Удалены все СУ
+  const         R8_COMMAND_ZONE_ALL_DELETE        = 9265;         //Удалить все зоны
+  const         R8_ZONE_ALL_DELETE                = 9266;         //Удалены все зоны
+  const         R8_COMMAND_TZ_ALL_DELETE          = 9267;         //Удалить все ВЗ
+  const         R8_TZ_ALL_DELETE                  = 9268;         //Удалены все ВЗ
+  const         R8_COMMAND_UD_ALL_DELETE          = 9269;         //Удалить все УД
+  const         R8_UD_ALL_DELETE                  = 9270;         //Удалены все УД
+  const         R8_COMMAND_USER_ALL_DELETE        = 9271;         //Удалить всех пользователей
+  const         R8_USER_ALL_DELETE                = 9272;         //Удалены все пользователи
+  const         R8_COMMAND_RELAY_RESTORE          = 9273;         //Реле восстановить
+  const         R8_COMMAND_AP_RESTORE             = 9274;         //ТД восстановить
+  const         R8_SH_TEST                        = 9275;         //ШС. Режим проверки
+  const         R8_SH_TESTPASSEDOK                = 9276;         //ШС. Проверка пройдена
+  const         R8_SH_TESTTIMEOUT                 = 9277;         //ШС. Проверка не пройдена
+  const         R8_SH_WAITFORREADY                = 9278;         //ШС. Ожидание готовности
+  const         R8_SH_WAITFORREADYCANCEL          = 9279;         //ШС. Отмена ожидания готовности
+  const         R8_COMMAND_GR_CREATE              = 9280;         //Группу создать
+  const         R8_GR_CREATE                      = 9281;         //Группа создана
+  const         R8_COMMAND_GR_CHANGE              = 9282;         //Группу редактировать
+  const         R8_GR_CHANGE                      = 9283;         //Группа редактирована
+  const         R8_COMMAND_GR_DELETE              = 9284;         //Группу удалить
+  const         R8_GR_DELETE                      = 9285;         //Группа удалена
+  const         R8_COMMAND_GR_DELETE_ALL          = 9286;         //Удалить все группы
+  const         R8_GR_DELETEALL                   = 9287;         //Группы удалены
+  const         R8_COMMAND_GR_GET                 = 9288;         //Группа. Запрос конфигурации
+  const         R8_GR_GET                         = 9289;         //Группа конфигурация
+  const         R8_COMMAND_GR_GETLIST             = 9290;         //Группа. Запрос конфигурации всех
+  const         R8_COMMAND_USER_APBRESET          = 9291;         //Польз. Сбросить APB
+  const         R8_USER_APBRESET                  = 9292;         //Польз. APB сброшен
+  const         R8_USER_BLOCKING                  = 9293;         //Польз. заблокирован
+  const         R8_USER_DEBLOCKING                = 9294;         //Польз. разблокирован
+  const         R8_RELAY_OFF                      = 9295;         //Реле отключено+
+  const         R8_RELAY_ON                       = 9296;         //Реле подключено+
+  const         R8_COMMAND_SH_BYPASS              = 9297;         //ШС Пропустить
+  const         R8_COMMAND_SH_RESET               = 9298;         //ШС Сбросить
+  const         R8_COMMAND_SH_TEST                = 9299;         //ШС Проверка
 
-//---------------------- Рубеж-08 ------------------------
+  // Уникальные вещи -----------------------------------------------------------
+  const         R8_BAD_ARG_IN_USER_CMD            = 9300;         //Неверный аргумент в команде User+/-/e для ServerRubeg  (!)
+  const         R8_BCP_ERROR                      = 9301;         //Отчет Р08 об ошибке на команду                         (!)
+  const         R8_RETURN_ROSTEK_CMD_ON_ERROR     = 9302;         //Возвращение команды с ВУ                               (!)
+  const         R8_BAD_ARG_IN_ROSTEK_CMD          = 9303;         //Неверный аргумент в команде от ВУ                      (!)
 
-  const         R8_CONNECT_FALSE                   = 9100;         //Потеря связи с панелью+
-  const         R8_CONNECT_TRUE                    = 9101;         //Восстановление связи с панелью+
-  const         R8_PANEL_FALSE                     = 9102;         //Отказ панели+
-  const         R8_PANEL_TRUE                      = 9103;         //Панель в норме+
-  const         R8_COMMAND_PANEL_REFRESH           = 9104;         //Запрос на чтение состояний зон и разделов ( драйвер отвечает STATE_... )+
-  const         R8_COMMAND_SH_ARMED                = 9105;         //Поставить на охрану зону+
-  const         R8_COMMAND_SH_DISARMED             = 9106;         //Снять с охраны зону+
-  const         R8_COMMAND_SH_BYPASS_ON            = 9107;         //Обход зоны включен+
-  const         R8_COMMAND_SH_BYPASS_OFF           = 9108;         //Обход зоны выключен+
-  const         R8_COMMAND_SH_ALARM_RESET          = 9109;         //Сбросить тревогу зоны+
-  const         R8_SH_ARMED                        = 9110;         //ШС под охраной+
-  const         R8_SH_DISARMED                     = 9111;         //ШС без охраны+
-  const         R8_SH_READY                        = 9112;         //ШС готова+
-  const         R8_SH_NOTREADY                     = 9113;         //ШС не готова+
-  const         R8_SH_CHECK                        = 9114;         //ШС не исправна+
-  const         R8_SH_ALARM                        = 9115;         //ШС в тревоге+
-  const         R8_SH_ALARM_RESET                  = 9116;         //ШС тревога сброшена+
-  const         R8_SH_BYPASS_ON                    = 9117;         //ШС в BYPASSe+
-  const         R8_SH_BYPASS_OFF                   = 9118;         //ШС вышла из BYPASSа+
-  const         R8_SH_CONNECT_ON                   = 9119;         //ШС связь ON+
-  const         R8_SH_CONNECT_OFF                  = 9120;         //ШС связь OFF+
-  const         R8_STATE_SH_ENABLED                = 9121;         //Блок данных содержит доступные ШС+
-  const         R8_STATE_SH_READY                  = 9122;         //Блок данных содержит готовности ШС+
-  const         R8_STATE_SH_ALARM                  = 9123;         //Блок данных содержит биты тревожных ШС+
-  const         R8_STATE_SH_BYPASS                 = 9124;         //Блок данных содержит биты ШС в байпассе+
-  const         R8_STATE_SH_ARMED                  = 9125;         //Блок данных содержит биты ШС под охранной+
-  const         R8_STATE_SH_CHECK                  = 9126;         //Блок данных содержит биты неисправности ШС+
-  const         R8_STATE_SH_CONNECT                = 9127;         //Блок данных содержит биты на связи ШС+
-  const         R8_COMMAND_ZONE_ARMED              = 9128;         //Зона поставить на охрану+
-  const         R8_COMMAND_ZONE_DISARMED           = 9129;         //Зона снять с охраны+
-  const         R8_ZONE_ARMED                      = 9130;         //Зона под охраной+
-  const         R8_ZONE_DISARMED                   = 9131;         //Зона без охраны+
-  const         R8_ZONE_READY                      = 9132;         //Зона готова+
-  const         R8_ZONE_NOTREADY                   = 9133;         //Зона не готова+
-  const         R8_ZONE_CHECK                      = 9134;         //Зона не исправен+
-  const         R8_ZONE_ALARM                      = 9135;         //Зона в тревоге+
-  const         R8_ZONE_ALARM_RESET                = 9136;         //Зона тревога сброшена+
-  const         R8_ZONE_BYPASS_ON                  = 9137;         //Зона в BYPASSe+
-  const         R8_ZONE_BYPASS_OFF                 = 9138;         //Зона вышла из BYPASSа+
-  const         R8_STATE_ZONE_READY                = 9139;         //Блок данных содержит готовности зон+
-  const         R8_STATE_ZONE_ALARM                = 9140;         //Блок данных содержит биты тревожных зон+
-  const         R8_STATE_ZONE_CHECK                = 9141;         //Блок данных содержит биты неисправности зон+
-  const         R8_STATE_ZONE_ARMED                = 9142;         //Блок данных содержит биты охраны зон+
-  const         R8_STATE_ZONE_BYPASS               = 9143;         //Блок данных содержит биты байпасных зон+
-  const         R8_CU_CONNECT_OFF                  = 9144;         //СУ потеря связи+
-  const         R8_CU_CONNECT_ON                   = 9145;         //СУ восстановление связи+
-  const         R8_STATE_CU_CONNECT                = 9146;         //Блок данных содержит байты состяний СУ (0,1-адрес, 2-состояние <0-off, 1-on>)
-  const         R8_COMMAND_RELAY_OFF               = 9147;         //Реле выключить+
-  const         R8_COMMAND_RELAY_ON                = 9148;         //Реле включить+
-  const         R8_RELAY_OFF                       = 9149;         //Реле выключено+
-  const         R8_RELAY_ON                        = 9150;         //Реле включено+
-  const         R8_RELAY_CONNECT_ON                = 9151;         //Реле связь ON+
-  const         R8_RELAY_CONNECT_OFF               = 9152;         //Реле связь OFF+
-  const         R8_STATE_RELAY_ON                  = 9153;         //Блок данных содержит байты включенных реле
-  const         R8_STATE_RELAY_CONNECT             = 9154;         //Блок данных содержит байты на связи реле
-  const         R8_UPS_ACCESS                      = 9155;         //вскрытие корпуса ИБП-
-  const         R8_UPS_OUT1_BAD                    = 9156;         //ИБП неисправность выхода 1+
-  const         R8_UPS_OUT1_OK                     = 9157;         //ИБП восстановление выхода 1+
-  const         R8_UPS_OUT2_BAD                    = 9158;         //ИБП неисправность выхода 2+
-  const         R8_UPS_OUT2_OK                     = 9159;         //ИБП восстановление выхода 2+
-  const         R8_UPS_IN220_BAD                   = 9160;         //ИБП неисправность входа 220+
-  const         R8_UPS_IN220_OK                    = 9161;         //ИБП восстановление входа 220+
-  const         R8_UPS_BAT_BAD                     = 9162;         //ИБП неисправность БА+
-  const         R8_UPS_BAT_OK                      = 9163;         //ИБП восстановление БА+
-  const         R8_UPS_RESERV_ON                   = 9164;         //ИБП переход на резерв+
-  const         R8_UPS_RESERV_OFF                  = 9165;         //ИБП воостановление питания 220+
-  const         R8_UPS_BAT_DISCONNECT              = 9166;         //ИБП отключение БА+
-  const         R8_UPS_BAT_CONNECT                 = 9167;         //ИБП подключение БА+
-  const         R8_USER_ENTER                      = 9168;         //Пользователь в сеансе+
-  const         R8_USER_EXIT                       = 9169;         //Пользователь из сеанса+
-  const         R8_POWER_UP                        = 9170;         //Питание включено+
-  const         R8_POWER_DOWN                      = 9171;         //Питание выключено+
-  const         R8_ENTER_CONF                      = 9172;         //Вход в конфигурирование БЦП+
-  const         R8_UNKNOWN_USER                    = 9173;         //Ошибка авторизации оператора+
-  const         R8_LOCK_KEYBOARD                   = 9174;         //Блокировка клавиауты БЦП при авторизации+
-  const         R8_ALARM_OPEN                      = 9175;         //Вскрытие корпуса БЦП+
-  const         R8_RESERV_POWER                    = 9176;         //Переход на резервное питание+
-  const         R8_NORMAL_POWER                    = 9177;         //Восстановление сетевого питания+
-  const         R8_RESET_CONF                      = 9178;         //Возврат к заводским установкам+
-  const         R8_SYNC_TIME                       = 9179;         //Синхронизация часов БЦП+
-  const         R8_TERM_ON                         = 9180;         //Терминал открыт+
-  const         R8_TERM_OFF                        = 9181;         //Терминал закрыт+
-  const         R8_TERM_CONNECT_ON                 = 9182;         //Терминал связь ON+
-  const         R8_TERM_CONNECT_OFF                = 9183;         //Терминал связь OFF+
-  const         R8_OBJECT_OFF                      = 9184;         //Объект отключен+
-  const         R8_DRV_READY                       = 9185;         //Драйвер готов к работе
-  const         R8_CU_ACCESS                       = 9186;         //вскрытие корпуса СУ+
-  const         R8_SMALL_CONNECT_FALSE             = 9187;         //Кратковременная потеря связи с панелью+
-  const         R8_SH_NORIGTH                      = 9188;         //Нет прав на управление ШС
-  const         R8_RELAY_NORIGTH                   = 9189;         //Нет прав на управление реле
-  const         R8_TERM_NORIGTH                    = 9190;         //Нет прав на управление терминалом
+  const         R8_SELFTEST                       = 9307;         //Самотестирование БЦП. Технологическая проверка на заводе
+  const         R8_RESET                          = 9308;         //Сброс БЦП
+  const         R8_HANDSHAKE                      = 9310;         //Нажали ПРИНЯТЬ
+  const         R8_SH_FIRE_ALARM                  = 9311;         // (!) ПОЖАР
+  const         R8_SH_FIRE_ATTENTION              = 9312;         // (!) Внимание
 
-  const         R8_COMMAND_CU_CREATE               = 9200;         //СУ создать+
-  const         R8_COMMAND_CU_CHANGE               = 9201;         //СУ редактировать+
-  const         R8_COMMAND_CU_DELETE               = 9202;         //СУ удалить+
-  const         R8_COMMAND_CU_CONFIG               = 9203;         //СУ запрос конфигурации+
-  const         R8_CU_CREATE                       = 9204;         //СУ создано+
-  const         R8_CU_CHANGE                       = 9205;         //СУ редактировано+
-  const         R8_CU_DELETE                       = 9206;         //СУ удалено+
-  const         R8_CU_CONFIG                       = 9207;         //СУ конфигурация+
-  const         R8_COMMAND_ZONE_CREATE             = 9208;         //Зона создать+
-  const         R8_COMMAND_ZONE_CHANGE             = 9209;         //Зона редактировать+
-  const         R8_COMMAND_ZONE_DELETE             = 9210;         //Зона удалить+
-  const         R8_COMMAND_ZONE_NAME_DELETE        = 9211;         //Зона по имени удалить+
-  const         R8_COMMAND_ZONE_CONFIG             = 9212;         //Зона запрос конфигурации+
-  const         R8_ZONE_CREATE                     = 9213;         //Зона создана+
-  const         R8_ZONE_CHANGE                     = 9214;         //Зона редактирована+
-  const         R8_ZONE_DELETE                     = 9215;         //Зона удалена+
-  const         R8_ZONE_CONFIG                     = 9216;         //Зона конфигурация+
-  const         R8_COMMAND_SH_CREATE               = 9217;         //ШС создать+
-  const         R8_COMMAND_SH_CHANGE               = 9218;         //ШС редактировать+
-  const         R8_COMMAND_SH_DELETE               = 9219;         //ШС удалить+
-  const         R8_COMMAND_SH_SERNUM_DELETE        = 9220;         //ШС удалить по sernum+
-  const         R8_COMMAND_SH_CONFIG               = 9221;         //ШС запрос конфигурации+
-  const         R8_SH_CREATE                       = 9222;         //ШС создан+
-  const         R8_SH_CHANGE                       = 9223;         //ШС редактирован+
-  const         R8_SH_DELETE                       = 9224;         //ШС удален+
-  const         R8_SH_CONFIG                       = 9225;         //ШС конфигурация+
-  const         R8_COMMAND_USER_CREATE             = 9226;         //Пользователь создать+
-  const         R8_COMMAND_USER_CHANGE             = 9227;         //Пользователь редактировать+
-  const         R8_COMMAND_USER_DELETE             = 9228;         //Пользователь удалить+
-  const         R8_USER_CREATE                     = 9229;         //Пользователь создан+
-  const         R8_USER_CHANGE                     = 9230;         //Пользователь редактирован+
-  const         R8_USER_DELETE                     = 9231;         //Пользователь удален+
-  const         R8_COMMAND_TZ_CREATE               = 9232;         //ВЗ создать+
-  const         R8_COMMAND_TZ_CHANGE               = 9233;         //ВЗ редактировать+
-  const         R8_COMMAND_TZ_DELETE               = 9234;         //ВЗ удалить+
-  const         R8_TZ_CREATE                       = 9235;         //ВЗ создана+
-  const         R8_TZ_CHANGE                       = 9236;         //ВЗ редактирована+
-  const         R8_TZ_DELETE                       = 9237;         //ВЗ удалена+
-  const         R8_COMMAND_RELAY_CREATE            = 9238;         //Реле создать
-  const         R8_COMMAND_RELAY_CHANGE            = 9239;         //Реле редактировать
-  const         R8_COMMAND_RELAY_DELETE            = 9240;         //Реле удалить
-  const         R8_COMMAND_RELAY_CONFIG            = 9254;         //Реле запрос конфигурации
-  const         R8_RELAY_CREATE                    = 9241;         //Реле создано+
-  const         R8_RELAY_CHANGE                    = 9242;         //Реле редактировано+
-  const         R8_RELAY_DELETE                    = 9243;         //Реле удалено+
-  const         R8_RELAY_CONFIG                    = 9255;         //Реле конфигурация+
-  const         R8_COMMAND_SETTIME                 = 9244;         //Время установить+
-  const         R8_SETTIME                         = 9245;         //Время установлено+
-  const         R8_COMMAND_GETTIME                 = 9246;         //Время запросить+
-  const         R8_GETTIME                         = 9247;         //Время выдано+
-  const         R8_COMMAND_UD_CREATE               = 9248;         //УД создать+
-  const         R8_COMMAND_UD_CHANGE               = 9249;         //УД редактировать+
-  const         R8_COMMAND_UD_DELETE               = 9250;         //УД удалить+
-  const         R8_UD_CREATE                       = 9251;         //УД создан+
-  const         R8_UD_CHANGE                       = 9252;         //УД редактирован+
-  const         R8_UD_DELETE                       = 9253;         //УД удален+
-  const         R8_BAD_ARGUMENT                    = 9300;         //неверный агрумент
+  const         R8_SH_NOTREADY_IN_CHECK           = 9319;         // (!) ШС не готов при неиспр.+
+  const         R8_SH_READY_IN_CHECK              = 9320;         // (!) ШС готов при неиспр.+
+  const         R8_SH_NOTREADY_IN_ALARM           = 9321;         // (!) ШС не готов при тревоге+
+  const         R8_SH_READY_IN_ALARM              = 9322;         // (!) ШС готов при тревоге+
 
-  const         SUD_ERR_ADDED_CARD                = 259;
-  const         SUD_ERR_DELETED_CARD              = 258;
-  const         PCE_OUTPUT_ENABLED                = 242;
-  const         PCE_OUTPUT_DISABLED               = 257;
-  const         PCE_INPUT_ENABLED                 = 217;
-  const         PCE_INPUT_ARMED                   = 932;
-  const         PCE_INPUT_DISARMED                = 933;
-  const         PCE_BLOCKED_USER			      = 934;
-  const         PCE_RDR_ADDED                     = 260;
-  const         PCE_RDR_CHANGED                   = 261;
-  const         PCE_RDR_DELETED                   = 262;
-  const         PCE_RDR_ERR_ADDED                 = 263;
-  const         PCE_RDR_ERR_CHANGED               = 264;
-  const         PCE_RDR_ERR_DELETED               = 265;
 
-  const PCE_INPUT_ADDED                   = 266;
-  const PCE_INPUT_CHANGED                 = 267;
-  const PCE_INPUT_DELETED                 = 268;
-  const PCE_INPUT_ERR_ADDED               = 269;
-  const PCE_INPUT_ERR_CHANGED             = 270;
-  const PCE_INPUT_ERR_DELETED             = 271;
 
-  const PCE_OUTPUT_ADDED                  = 272;
-  const PCE_OUTPUT_CHANGED                = 273;
-  const PCE_OUTPUT_DELETED                = 274;
-  const PCE_OUTPUT_ERR_ADDED              = 275;
-  const PCE_OUTPUT_ERR_CHANGED            = 276;
-  const PCE_OUTPUT_ERR_DELETED            = 277;
+  { N E W vv}
+  const         R8_TC_RESTORE                     = 9323;         // ТС восстановлен
+  const         R8_TC_HW_FAULT                    = 9324;         // ТС Оборудование неисправно
+  const         R8_TC_HW_OK                       = 9325;         // ТС Оборудование в норме
+  const         R8_TC_NORIGTH                     = 9326;         // ТС Нет прав управления
+  const         R8_TC_CREATE                      = 9327;         // ТС Создано
+  const         R8_TC_CHANGE                      = 9328;         // ТС Редактировано
+  const         R8_TC_DELETE                      = 9329;         // ТС Удалено
+  { N E W ^^}
 
-  const PCE_DSPL_ADDED                    = 278;
-  const PCE_DSPL_CHANGED                  = 279;
-  const PCE_DSPL_DELETED                  = 280;
-  const PCE_DSPL_ERR_ADDED                = 281;
-  const PCE_DSPL_ERR_CHANGED              = 282;
-  const PCE_DSPL_ERR_DELETED              = 283;
+  const         R8_COMMAND_CLEAR                  = 9331;         // БЦП Очистить конфигурацию
+  const         R8_COMMAND_CLEARSYSERROR          = 9332;         // БЦП Сбросить системную ошибку
+  const         R8_COMMAND_STARTCHECKCONFIG       = 9333;         // БЦП Проверить конфигурацию
+  const         R8_COMMAND_BCP_RESET              = 9334;         // БЦП Сбросить
+  const         R8_COMMAND_BCP_CONSOLELOCK        = 9335;         // Выход из сеанса в БЦП
+  const         R8_COMMAND_BCP_CONSOLEUNLOCK      = 9336;         // Сеанс админисратора в БЦП
+  const         R8_COMMAND_BCP_DMQCLEARNND        = 9337;         // Восстановление всех готовых СУ
+  const         R8_COMMAND_BCP_DMQCLEARTCO        = 9338;         // Восстановление всех готовых ШС
+  const         R8_COMMAND_BCP_VAR_ASSIGN         = 9339;         // Присвоить перменной значение
+  const         R8_COMMAND_BCP_ALLUSERSETSTATE    = 9340;         // Сбросить APB всех пользователей
+  const         R8_BCP_ALLUSERSETSTATE            = 9341;         // Сброс APB всех пользователей
 
-  const PCE_PART_CREATED                  = 284;
-  const PCE_PART_CHANGED                  = 285;
-  const PCE_PART_DELETED                  = 286;
-  const PCE_PART_ERR_CREATED              = 287;
-  const PCE_PART_ERR_CHANGED              = 288;
-  const PCE_PART_ERR_DELETED              = 289;
+  const         R8_COMMAND_RN_DELETE_ALL          = 9342;         // Удалить все названия
+  const         R8_COMMAND_RP_DELETE_ALL          = 9343;         // Удалить все программы
+  const         R8_COMMAND_HD_DELETE_ALL          = 9344;         // Удалить все праздники
 
-  const PCE_PART_ADDED_DEVICE             = 290;
-  const PCE_PART_DELETED_DEVICE           = 291;
-  const PCE_PART_ERR_ADDED_DEVICE         = 292;
-  const PCE_PART_ERR_DELETED_DEVICE       = 293;
+  const         R8_RN_ALL_DELETE                  = 9345;         // Удалены все названия
+  const         R8_RP_ALL_DELETE                  = 9346;         // Удалить все программы
+  const         R8_HD_ALL_DELETE                  = 9347;         // Удалить все праздники
+  const         R8_COMMAND_BCP_RSPDOACTION_RUN    = 9348;         // Выполнить скрипт
+  const         R8_COMMAND_BCP_RSPDOACTION_STOP   = 9349;         // Остановить скрипт
 
-  const PCE_RLIST_CREATED                 = 294;
-  const PCE_RLIST_DELETED                 = 295;
-  const PCE_RLIST_ERR_CREATED             = 296;
-  const PCE_RLIST_ERR_DELETED             = 297;
+  const         R8_PCCONNECT_OFF                  = 9351;         //Потеря связи с ПЭВМ
+  const         R8_PCCONNECT_ON                   = 9352;         //Восстановление связи с ПЭВМ
 
-  const PCE_RLIST_ITEM_ADDED              = 298;
-  const PCE_RLIST_ITEM_CLEARED            = 299;
-  const PCE_RLIST_ITEM_CHANGED            = 300;
-  const PCE_RLIST_ERR_ITEM_ADDED          = 301;
-  const PCE_RLIST_ERR_ITEM_CLEARED        = 302;
-  const PCE_RLIST_ERR_ITEM_CHANGED        = 303;
 
-  const PCE_RDR_ADDED_COMMAND             = 304;
-  const PCE_RDR_DELETED_COMMAND           = 305;
-  const PCE_RDR_ERR_ADDED_COMMAND         = 306;
-  const PCE_RDR_ERR_DELETED_COMMAND       = 307;
+  // ТШ, терминал, АСПТ, и др. -------------------------------------------------------
+  const         R8_RELAY_CHECK                    = 9401;         // (!) Реле неисправно
+  const         R8_RELAY_RESTORE                  = 9402;         // (!) Реле восстановлено
+  const         R8_RELAY_WAITON                   = 9403;         //Реле Задержка включения
+  const         R8_COMMAND_RELAY_CONFIG           = 9404;         //Реле запрос конфигурации
+  const         R8_RELAY_CONFIG                   = 9405;         //Реле конфигурация+
+  const         R8_COMMAND_RELAY_OFF              = 9406;         //Реле отключить
+  const         R8_COMMAND_RELAY_ON               = 9407;         //Реле подключить
 
-  const PCE_RIGHT_ADDED                   = 308;
-  const PCE_RIGHT_DELETED                 = 309;
-  const PCE_RIGHT_CHANGED                 = 310;
-  const PCE_RIGHT_ERR_ADDED               = 311;
-  const PCE_RIGHT_ERR_DELETED             = 312;
-  const PCE_RIGHT_ERR_CHANGED             = 313;
+  const         R8_TERM_REQUEST                   = 9411;         // (!) Запрос пользователя
+  const         R8_TERM_BLOCKING                  = 9412;         // (!) Блокирование работы терминала
+  const         R8_TERM_AUTHORIZATIONERROR        = 9413;         // (!) Ошибка авторизации пользователя
+  const         R8_TERM_CODEFORGERY               = 9414;         // (!) Попытка подбора кода. Событие выдается после трех, сделанных подряд, ошибок авторизации пользователя.обл.
+  const         R8_TERM_RESET                     = 9415;         // (!) Восстановление работы терминала после блокирования
+  const         R8_TERM_USERCOMMAND               = 9416;         // (!) Пользовательская команда
+  const         R8_TERM_CHECK                     = 9417;         // (!) Терминал неисправен
+  const         R8_TERM_RESTORE                   = 9418;         // (!) Терминал восстановлен
+  const         R8_COMMAND_TERM_RESTORE           = 9419;         // Терминал восстановить
+  
+  const         R8_TECHNO_AREA0 	          = 9421;         // (!) обл.0. Переход физического ШС в состояние в обл 0. Замкнуто для дискретных ШС
+  const         R8_TECHNO_AREA1 	          = 9422; 	  // (!) обл 1. Переход физического ШС в состояние в обл 1. Разомкнуто для дискретных ШС
+  const         R8_TECHNO_AREA2 	          = 9423; 	  // (!) обл 2. Переход физического ШС в состояние в обл 2
+  const         R8_TECHNO_AREA3 	          = 9424; 	  // (!) обл 3. Переход физического ШС в состояние в обл 3
+  const         R8_TECHNO_ALARM 	          = 9425; 	  // (!) Тревога тех. ШС
+  const         R8_COMMAND_TERM_BLOCK             = 9426;         // Терминал заблокировать
+  const         R8_COMMAND_TERM_RESET             = 9427;         // Терминал сбросить
+  const         R8_COMMAND_TERM_OFF               = 9428;         // Терминал отключить
+  const         R8_COMMAND_TERM_ON                = 9429;         // Терминал подключить
 
-  const PCE_TS_CREATED                    = 314;
-  const PCE_TS_DELETED                    = 315;
-  const PCE_TS_ERR_CREATED                = 316;
-  const PCE_TS_ERR_DELETED                = 317;
+  const         R8_COMMAND_HOLIDAY_EDIT           = 9431;         // Редактировать праздники (код учтен в СКУД)
+  const         R8_HOLIDAY_EDITED                 = 9432;         // Редактированы праздники (код учтен в СКУД)
 
-  const PCE_TS_DAY_ADDED                  = 318;
-  const PCE_TS_DAY_DELETED                = 319;
-  const PCE_TS_DAY_ERR_ADDED              = 320;
-  const PCE_TS_DAY_ERR_DELETED            = 321;
+  const         R8_ASPT_AUTOMATICON               = 9433;         // АСПТ. Автоматика включена
+  const         R8_ASPT_AUTOMATICOFF              = 9434;         // АСПТ. Автоматика отключена
+  const         R8_ASPT_DOOROPEN                  = 9435;         // АСПТ. Открывание двери
+  const         R8_ASPT_DOORCLOSE                 = 9436;         // АСПТ. Закрывание двери
+  const         R8_ASPT_AUTOMATICSTART            = 9437;         // АСПТ. Автоматический пуск
+  const         R8_ASPT_REMOTESTART               = 9438;         // АСПТ. Дистанционный пуск
+  const         R8_ASPT_MANUALSTART               = 9439;         // АСПТ. Ручной пуск 
+  const         R8_ASPT_CANCELSTART               = 9440;         // АСПТ. Отмена пуска
+  const         R8_ASPT_EVACUATIONDELAY           = 9441;         // АСПТ. Задержка на эвакуацию
+  const         R8_ASPT_FIREEXTINGUISHING	  = 9442;         // АСПТ. Пуск ОТВ
+  const         R8_ASPT_FIREEXTINGUISHINGCOMPLETE = 9443;         // АСПТ. Пуск прошел
+  const         R8_ASPT_AUTHORIZATIONERROR        = 9444;         // АСПТ. Ошибка авторизации пользователя
+  const         R8_ASPT_TIMEOUT                   = 9445;         // АСПТ. Таймаут
+  const         R8_ASPT_OUTLAUNCHSUCCESS          = 9446;         // АСПТ. Срабатывание выхода СКУП-01
+  const         R8_ASPT_OUTLAUNCHERROR	          = 9447;         // АСПТ. Ошибка срабатывания выхода СКУП-01
+  const         R8_ASPT_TROUBLE                   = 9448;         // АСПТ. Неисправность
+  const         R8_ASPT_SDU                       = 9449;         // АСПТ. Срабатывание СДУ
+  const         R8_ASPT_WEIGHTSENSOR              = 9450;         // АСПТ. Срабатывание датчика наличия ОТВ
+  const         R8_ASPT_RESET                     = 9451;         // АСПТ. Сброс
+  const         R8_ASPT_FIRE                      = 9452;         // АСПТ. Пожар
 
-  const PCE_TS_REG_ADDED                  = 322;
-  const PCE_TS_REG_DELETED                = 323;
-  const PCE_TS_ERR_REG_ADDED              = 324;
-  const PCE_TS_ERR_REG_DELETED            = 325;
+  const         R8_CMD_ASPT_AUTOMATICON        	  = 9453;         // АСПТ. Включить автоматику 0901h
+  const         R8_CMD_ASPT_AUTOMATICOFF          = 9454;         // АСПТ. Отключить автоматику 0902h
+  const         R8_CMD_ASPT_REMOTESTART	          = 9455;         // АСПТ. Дистанционный пуск 0904h
+  const         R8_CMD_ASPT_CANCELSTART	          = 9456;         // АСПТ. Отмена пуска 0906h
+  const         R8_CMD_ASPT_RESET	          = 9457;         // АСПТ. Сбросить 0907h
 
-  const PCE_TS_VDAY_ADDED                 = 326;
-  const PCE_TS_VDAY_DELETED               = 327;
-  const PCE_TS_VDAY_ERR_ADDED             = 328;
-  const PCE_TS_VDAY_ERR_DELETED           = 329;
+  const         R8_ASPT_HW_FAULT                  = 9458;         // АСПТ. Оборудование неисправно
+  const         R8_ASPT_HW_OK                     = 9459;         // АСПТ. Оборудование в норме
+  const         R8_ASPT_NORIGTH                   = 9460;         // АСПТ. Нет прав на управление
+  const         R8_ASPT_CREATE                    = 9461;         // АСПТ создан
+  const         R8_ASPT_CHANGE                    = 9462;         // АСПТ редактирован
+  const         R8_ASPT_DELETE                    = 9463;         // АСПТ удален
+  const         R8_ASPT_CONFIG                    = 9464;         // АСПТ конфигурация
+  const         R8_ASPT_RESTORE                   = 9465;         // АСПТ. Восстановлен
+  const         R8_CMD_ASPT_RESTORE               = 9466;         // АСПТ. Восстановить
+  const         R8_ASPT_ON                        = 9467;         // АСПТ подключен
+  const         R8_ASPT_OFF                       = 9468;         // АСПТ отключен
 
-  const PCE_TZ_CREATED                    = 330;
-  const PCE_TZ_DELETED                    = 331;
-  const PCE_TZ_ERR_CREATED                = 332;
-  const PCE_TZ_ERR_DELETED                = 333;
 
-  const PCE_TZ_TI_ADDED                   = 334;
-  const PCE_TZ_TI_DELETED                 = 335;
-  const PCE_TZ_ERR_TI_ADDED               = 336;
-  const PCE_TZ_ERR_TI_DELETED             = 337;
 
-  const PCE_TI_CREATED                    = 338;
-  const PCE_TI_DELETED                    = 339;
-  const PCE_TI_CHANGED                    = 340;
-  const PCE_TI_ERR_CREATED                = 350;
-  const PCE_TI_ERR_DELETED                = 351;
-  const PCE_TI_ERR_CHANGED                = 352;
 
-  const PCE_VDAY_CREATED                  = 353;
-  const PCE_VDAY_DELETED                  = 354;
-  const PCE_VDAY_CHANGED                  = 355;
-  const PCE_VDAY_ERR_CREATED              = 356;
-  const PCE_VDAY_ERR_DELETED              = 357;
-  const PCE_VDAY_ERR_CHANGED              = 358;
+  const         R8_VIDEO_ARM                      = 9471;         // Видео. Постановка на охрану
+  const         R8_VIDEO_DISARM                   = 9472;         // Видео. Снятие с охраны
+  const         R8_VIDEO_ALARM                    = 9473;         // Видео. Тревога
+  const         R8_VIDEO_TROUBLE                  = 9474;         // Видео. Неисправность
+  const         R8_VIDEO_STARTRECORD              = 9475;         // Видео. Начало записи
+  const         R8_VIDEO_STOPRECORD               = 9476;         // Видео. Конец записи
 
-  const PCE_OPERCMD_CREATED               = 359;
-  const PCE_OPERCMD_DELETED               = 360;
-  const PCE_OPERCMD_CHANGED               = 361;
-  const PCE_OPERCMD_ERR_CREATED           = 362;
-  const PCE_OPERCMD_ERR_DELETED           = 363;
-  const PCE_OPERCMD_ERR_CHANGED           = 364;
+{
+Коды состояния ТС «АСПТ»
+STATE_ASPT_AUTOMATICON 0901h Автоматика включена
+STATE_ASPT_AUTOMATICOFF 0902h Автоматика отключена
+STATE_ASPT_DOOROPEN 0903h Дверь открыта
+STATE_ASPT_FIRE 0904h Пожар
+STATE_ASPT_ATTENTION 0905h Внимание
+STATE_ASPT_TROUBLE 0906h Неисправность
+STATE_ASPT_EVACUATIONDELAY 0907h Задержка на эвакуацию
+STATE_ASPT_FIREEXTINGUISHING 0908h Пуск ОТВ
+STATE_ASPT_FIREEXTINGUISHINGCOMPLETE 0909h Пуск прошел
+STATE_ASPT_TROUBLEWEIGHTSENSOR 090Ah Неисправность датчика ОТВё
+STATE_ASPT_TROUBLESDU 090Bh Неисправность СДУ
+STATE_ASPT_TROUBLELAUNCH 090Ch Неисправность выходов СКУП-01
+STATE_ASPT_TROUBLEPPO01 090Dh Неисправность ППО-01
+STATE_ASPT_TROUBLEDOORSENSOR 090Eh Неисправность датчика двери
+STATE_ASPT_TROUBLENOTIFIER 090Fh Неисправность оповещения
 
-  const PCE_PROGRAMM_CREATED              = 365;
-  const PCE_PROGRAMM_DELETED              = 366;
-  const PCE_PROGRAMM_CLEARED              = 367;
-  const PCE_PROGRAMM_ERR_CREATED          = 368;
-  const PCE_PROGRAMM_ERR_DELETED          = 369;
-  const PCE_PROGRAMM_ERR_CLEARED          = 370;
-  const PCE_PROGRAMM_INST_ADDED           = 372;
-  const PCE_PROGRAMM_INST_ERR_ADDED       = 373;
+}
 
-  const PCE_TRS_CREATED                   = 374;
-  const PCE_TRS_DELETED                   = 375;
-  const PCE_TRS_ERR_CREATED               = 376;
-  const PCE_TRS_ERR_DELETED               = 377;
-  const PCE_TRS_TI_ADDED                  = 378;
-  const PCE_TRS_TI_DELETED                = 379;
-  const PCE_TRS_ERR_TI_ADDED              = 380;
-  const PCE_TRS_ERR_TI_DELETED            = 381;
 
-  const PCE_VAR_CREATED                   = 920;
-  const PCE_VAR_DELETED                   = 921;
-  const PCE_VAR_CHANGED                   = 922;
-  const PCE_VAR_ERR_CREATED               = 923;
-  const PCE_VAR_ERR_DELETED               = 924;
-  const PCE_VAR_ERR_CHANGED               = 925;
 
-  const PCE_VOBJ_CREATED                  = 926;
-  const PCE_VOBJ_DELETED                  = 927;
-  const PCE_VOBJ_ERR_CREATED              = 928;
-  const PCE_VOBJ_ERR_DELETED              = 929;
 
-  const PCE_STRING_CREATED                = 382;
-  const PCE_STRING_DELETED                = 383;
-  const PCE_STRING_CHANGED                = 384;
-  const PCE_STRING_ERR_CREATED            = 385;
-  const PCE_STRING_ERR_DELETED            = 386;
-  const PCE_STRING_ERR_CHANGED            = 387;
 
-  const PCE_ADGROUP_CREATED               = 388;
-  const PCE_ADGROUP_DELETED               = 389;
-  const PCE_ADGROUP_ERR_CREATED           = 390;
-  const PCE_ADGROUP_ERR_DELETED           = 391;
-  const PCE_ADGROUP_DSPL_ADDED            = 392;
-  const PCE_ADGROUP_DSPL_DELETED          = 393;
-  const PCE_ADGROUP_DSPL_ERR_ADDED        = 394;
-  const PCE_ADGROUP_DSPL_ERR_DELETED      = 395;
+  // -------------------
+  // --- Д О С Т У П ---
+  // -------------------
+  // BCP события
+  //------------------------
+  const         R8_AP_IN                          = 9501;         //ТД Вход. Проход пользователя через ТД, сконфигурированную на вход.
+  const         R8_AP_OUT                         = 9502;         //ТД Выход. Проход пользователя через ТД, сконфигурированную на выход.
+  const         R8_AP_PASSENABLE                  = 9503;         //ТД Проход разрешен командой «Открыть замок».
+  const         R8_AP_DOOROPEN                    = 9504;         //ТД Открывание двери.
+  const         R8_AP_DOORNOCLOSED                = 9505;         //ТД Удержание двери
+  const         R8_AP_DOORALARM                   = 9506;         //ТД Взлом двери
+  const         R8_AP_DOORCLOSE                   = 9507;         //ТД Закрывание двери
+  const         R8_AP_BLOCKING                    = 9508;         //ТД Блокирование
+  const         R8_AP_DEBLOCKING                  = 9509;         //ТД Разблокирование
+  const         R8_AP_EXITBUTTON                  = 9510;         //ТД Выход по кнопке
+  const         R8_AP_RESET                       = 9511;         //ТД в норме (сброс). Восстановление после блокирования или разблокирования
+  const         R8_AP_AUTHORIZATIONERROR          = 9512;         //ТД Ошибка авторизации пользователя
+  const         R8_AP_CODEFORGERY                 = 9513;         //ТД Попытка подбора кода
+  const         R8_AP_REQUESTPASS                 = 9514;         //ТД Запрос прохода. Выдается, когда ТД сконфигурирована на проход с запросом
+  const         R8_AP_FORCING                     = 9515;         //ТД Нападение
+  const         R8_AP_APBERROR                    = 9516;         //ТД Нарушение правил прохода
+  const         R8_AP_ACCESSGRANTED               = 9517;         //ТД Доступ разрешен
+  const         R8_AP_ACCESSTIMEOUT               = 9518;         //ТД Таймаут
 
-  const PCE_ALGCLASS_CREATED              = 396;
-  const PCE_ALGCLASS_DELETED              = 397;
-  const PCE_ALGCLASS_CHANGED              = 398;
-  const PCE_ALGCLASS_ERR_CREATED          = 399;
-  const PCE_ALGCLASS_ERR_DELETED          = 400;
-  const PCE_ALGCLASS_ERR_CHANGED          = 401;
+  // BCP команды
+  //------------------------
+  const         R8_COMMAND_AP_PASS                = 9521;         //ТД Разрешить проход
+  const         R8_COMMAND_AP_LOCK                = 9522;         //ТД Закрыть
+  const         R8_COMMAND_AP_UNLOCK              = 9523;         //ТД Открыть
+  const         R8_COMMAND_AP_RESET               = 9524;         //ТД Сброс
+  const         R8_COMMAND_AP_OFF                 = 9525;         //ТД отключить
+  const         R8_COMMAND_AP_ON                  = 9526;         //ТД подключить
 
-  const PCE_ALGORITHM_CREATED             = 402;
-  const PCE_ALGORITHM_DELETED             = 403;
-  const PCE_ALGORITHM_CHANGED             = 404;
-  const PCE_ALGORITHM_ERR_CREATED         = 405;
-  const PCE_ALGORITHM_ERR_DELETED         = 406;
-  const PCE_ALGORITHM_ERR_CHANGED         = 407;
+  // мои события
+  //------------------------
+  const         R8_AP_CHECK                       = 9531;         //ТД. Неисправность
+  const         R8_AP_RESTORE                     = 9532;         //ТД. Восстановлена (исключен из тревож. сообщ.)
+  const         R8_AP_NORIGTH                     = 9533;         //ТД. Нет прав на управление
+  const         R8_AP_HW_OK                       = 9534;         //ТД. Оборудование в норме
+  const         R8_AP_HW_FAULT                    = 9535;         //ТД. Оборудование неисправно
+  const         R8_BLOCK_AP_DATA                  = 9536;         //ТД. Блок режимов и состояний
+  //const       R8_BLOCK_AP_STATE                 = 9537;         //ТД. Блок состояний
 
-  const PCE_EVT_CFG_CHANGED               = 408;
-  const PCE_EVT_CFG_DELETED               = 409;
-  const PCE_EVT_CFG_ERR_CHANGED           = 410;
-  const PCE_EVT_CFG_ERR_DELETED           = 411;
-  const PCE_EVT_CFG_ARR_CHANGED           = 412;
-  const PCE_EVT_CFG_ERR_ARR_CHANGED       = 413;
+  // BCP конфигурирование
+  //------------------------
+  const         R8_COMMAND_AP_CREATE              = 9541;         //ТД создать +
+  const         R8_COMMAND_AP_CHANGE              = 9542;         //ТД редактировать +
+  const         R8_COMMAND_AP_DELETE              = 9543;         //ТД удалить +
+  const         R8_COMMAND_AP_SERNUM_DELETE       = 9544;         //ТД удалить по sernum
+  const         R8_COMMAND_AP_CONFIG              = 9545;         //ТД запрос конфигурации
+  const         R8_AP_CREATE                      = 9546;         //ТД создана +
+  const         R8_AP_CHANGE                      = 9547;         //ТД редактирована +
+  const         R8_AP_DELETE                      = 9548;         //ТД удалена +
+  const         R8_AP_CONFIG                      = 9549;         //ТД конфигурация
+  const         R8_AP_OFF                         = 9550;         //ТД выключена
+  const         R8_AP_ON                          = 9551;         //ТД включена
+  const         R8_COMMAND_APSHZMK_SET            = 9552;         //установить ШС замка
+  const         R8_APSHZMK_SET                    = 9553;         //установлен ШС замка 
+  const         R8_COMMAND_APSHZMK_DELETE         = 9554;         //удалить ШС замка
+  const         R8_APSHZMK_DELETE                 = 9555;         //удален ШС замка
 
-  const PCE_CONTROLLER_CREATED            = 414;
-  const PCE_CONTROLLER_DELETED            = 415;
-  const PCE_CONTROLLER_CHANGED            = 416;
-  const PCE_CONTROLLER_CLEARED            = 417;
-  const PCE_CONTROLLER_ERR_CREATED        = 418;
-  const PCE_CONTROLLER_ERR_DELETED        = 419;
-  const PCE_CONTROLLER_ERR_CHANGED        = 420;
-  const PCE_CONTROLLER_ERR_CLEARED        = 421;
-  const PCE_CONTROLLER_COMMAND_ADDED      = 422;
-  const PCE_CONTROLLER_COMMAND_DELETED    = 423;
-  const PCE_CONTROLLER_ERR_COMMAND_ADDED  = 424;
-  const PCE_CONTROLLER_ERR_COMMAND_DELETED= 425;
-  const PCE_CONTROLLER_ARRCOMMAND_ADDED   = 426;
-  const PCE_CONTROLLER_ERR_ARRCOMMAND_ADDED=427;
+  //------------------------
+  // СКУ команды и ответы
+  //------------------------
+  const         SCU_GET_DEVVER                    = 9801;         //
+  const         SCU_DEVVER                        = 9802;         //
+  const         SCU_GET_BOOTVER                   = 9803;         //
+  const         SCU_BOOTVER                       = 9804;         //
+  const         SCU_GET_DEVSTATE                  = 9805;         //
+  const         SCU_DEVSTATE                      = 9806;         //
+  const         SCU_GET_ALTDEVSTATE               = 9807;         //
+  const         SCU_ALTDEVSTATE                   = 9808;         //
+  const         SCU_GET_STATEWORD                 = 9809;         //
+  const         SCU_STATEWORD                     = 9810;         //
+  const         SCU_GET_PARAMARRAY                = 9811;         //
+  const         SCU_PARAMARRAY                    = 9812;         //
+  const         SCU_TIME_GET                      = 9813;         //
+  const         SCU_TIME                          = 9814;         //
+  const         SCU_TIME_EDIT                     = 9815;         //
+  const         SCU_TIME_EDITED                   = 9816;         //
+  const         SCU_TIME_SYNC                     = 9817;         //
+  const         SCU_TIME_SYNCED                   = 9818;         //
+  const         SCU_NETWORK_GET                   = 9819;         //
+  const         SCU_NETWORK                       = 9820;         //
+  const         SCU_NETWORK_EDIT                  = 9821;         //
+  const         SCU_NETWORK_EDITED                = 9822;         //
+  const         SCU_CARD_REQUEST                  = 9823;         //
+  const         SCU_CARD_REQUESTED                = 9824;         //
+  const         SCU_PRG_WRITE                     = 9825;         //
+  const         SCU_PRG_READ                      = 9826;         //
+  const         SCU_PRG_DATA                      = 9827;         //
 
-  const PCE_DRIVER_CREATED                = 428;
-  const PCE_DRIVER_DELETED                = 429;
-  const PCE_DRIVER_CHANGED                = 430;
-  const PCE_DRIVER_ERR_CREATED            = 431;
-  const PCE_DRIVER_ERR_DELETED            = 432;
-  const PCE_DRIVER_ERR_CHANGED            = 433;
-  const PCE_DRIVER_NODE_ADDED             = 434;
-  const PCE_DRIVER_NODE_DELETED           = 435;
-  const PCE_DRIVER_NODE_ERR_ADDED         = 436;
-  const PCE_DRIVER_NODE_ERR_DELETED       = 437;
+  const         SCU_SH_EDIT                       = 9831;         // -
+  const         SCU_SH_EDITED                     = 9832;         // -
+  const         SCU_SH_GET                        = 9833;         // -
+  const         SCU_SH                            = 9834;         // -
+  const         SCU_RELAY_EDIT                    = 9835;         // -
+  const         SCU_RELAY_EDITED                  = 9836;         // -
+  const         SCU_RELAY_GET                     = 9837;         // -
+  const         SCU_RELAY                         = 9838;         // -
+  const         SCU_USK_EDIT                      = 9839;         // -
+  const         SCU_USK_EDITED                    = 9840;         // -
+  const         SCU_USK_GET                       = 9841;         // -
+  const         SCU_USK                           = 9842;         // -
+  const         SCU_AP_EDIT                       = 9843;         // -
+  const         SCU_AP_EDITED                     = 9844;         // -
+  const         SCU_AP_GET                        = 9845;         // -
+  const         SCU_AP                            = 9846;         // -
+  const         SCU_USER_ADD                      = 9847;         // -
+  const         SCU_USER_ADDED                    = 9848;         // -
+  const         SCU_USER_ADDNOCHECK               = 9849;         // -
+  const         SCU_USER_EDIT                     = 9850;         // -
+  const         SCU_USER_EDITED                   = 9851;         // -
+  const         SCU_USER_DELETE                   = 9852;         // -
+  const         SCU_USER_DELETED                  = 9853;         // -
+  const         SCU_USER_DELETE_ALL               = 9854;         // -
+  const         SCU_USER_DELETED_ALL              = 9855;         // -
+  const         SCU_USER_GET                      = 9856;         // -
+  const         SCU_USER                          = 9857;         // -
+  const         SCU_USER_GETLIST                  = 9858;         //
 
-  const PCE_HANDLER_SETTED                = 438;
-  const PCE_HANDLER_DELETED               = 439;
-  const PCE_HANDLER_ERR_SETTED            = 440;
-  const PCE_HANDLER_ERR_DELETED           = 441;
+  const         SCU_TC_RESTORE                    = 9861;         //
+  const         SCU_TC_RESTORED                   = 9862;         //
+  const         SCU_SHOCHR_DISARM                 = 9863;         //
+  const         SCU_SHOCHR_DISARMED               = 9864;         //
+  const         SCU_SHOCHR_ARM                    = 9865;         //
+  const         SCU_SHOCHR_ARMED                  = 9866;         //
+  const         SCU_SHOCHR_RESET                  = 9867;         //
+  const         SCU_SHTREV_RESET                  = 9868;         //
+  const         SCU_SHFIRE_RESET                  = 9869;         //
+  const         SCU_SH_RESETED                    = 9870;         //
+  const         SCU_RELAY_1                       = 9871;         //
+  const         SCU_RELAY_IS_1                    = 9872;         //
+  const         SCU_RELAY_0                       = 9873;         //
+  const         SCU_RELAY_IS_0                    = 9874;         //
 
-  const PCE_SYSCONFIG_GETTED              = 900;
-  const PCE_SYSCONFIG_SETTED              = 901;
-  const PCE_SYSTIME_GETTED                = 902;
-  const PCE_SYSCONFIG_CLEANED             = 904;
-  const PCE_SYSTIME_STARTED               = 905;
-  const PCE_SYSTIME_FINISHED              = 906;
+  const         SCU_AP_PASS                       = 9875;         //
+  const         SCU_AP_PASSED                     = 9876;         //
+  const         SCU_AP_LOCK                       = 9877;         //
+  const         SCU_AP_LOCKED                     = 9878;         //
+  const         SCU_AP_UNLOCK                     = 9879;         //
+  const         SCU_AP_UNLOCKED                   = 9880;         //
+  const         SCU_AP_RESET                      = 9881;         //
+  const         SCU_AP_RESETED                    = 9882;         //
 
-  const PCE_ERR_SYSCONFIG_GETTED          = 907;
-  const PCE_ERR_SYSCONFIG_SETTED          = 908;
-  const PCE_ERR_SYSTIME_GETTED            = 909;
-  const SUD_ERR_SETTED_DATETIME           = 910;
-  const PCE_ERR_SYSCONFIG_CLEANED         = 911;
-  const PCE_ERR_SYSTIME_STARTED           = 912;
-  const PCE_ERR_SYSTIME_FINISHED          = 913;
+  //------------------------
+  // СКУ мои события
+  //------------------------
+  const         SCU_NOTANSWER                     = 9891;         //
+  const         SCU_INCORRECTANSWER               = 9892;         //
 
-  const PCE_KEY_PRESSED			        = 914;
-  const PCE_KEY_UNPRESSED			        = 915;
-  const PCE_ILLEGIAL_CMD                  = 916;
-  const PCE_UNKNOWN_CMD                   = 917;
-  const PCE_READER_BLOCKED                = 918;
-  const PCE_READER_DEBLOCKED              = 919;
-  const PCE_NOCONFIG_READER               = 930;
-  const PCE_FORMAT_ERROR_RDR		        = 931;
+  //------------------------
+  // СКУ конфигурирование
+  //------------------------
+  const         SCU_HW_EDIT                       = 9893;         //+
+  const         SCU_HW_EDITED                     = 9894;         //+
+  const         SCU_HW_GET                        = 9895;         //
+  const         SCU_HW                            = 9896;         //
+  //------------------------
+  // СКУ мои события
+  //------------------------
+  const         SCU_CARD_ADD                     = 9901;         // -
+  const         SCU_CARD_ADDED                   = 9902;         // -
+  const         SCU_CARD_DELETE                  = 9903;         // -
+  const         SCU_CARD_DELETED                 = 9904;         // -
+  const         SCU_USERMAP_WR_PERMIT            = 9905;         // -
+  const         SCU_USERMAP_WR_ALL               = 9906;         // -
 
-  const PCE_CODE_MIN                     = 18000;
-  const PCE_CODE_MAX                     = 18999;
 
-  const PCE_DRV_NOTCONNECT               = 18000;
-  const PCE_DRV_READY                    = 18001;
-  const PCE_CONNECT                      = 18002; //поключение к панели
-  const PCE_DISCONNECT                   = 18003; //отключение от панели
-
-  //пользователь
-  const PCE_USER_CREATE                  = 18007; //добавить пользователя
-  const PCE_USER_DELETE                  = 18008; //удалить пользовтаеля
-  const PCE_USER_CHANGE                  = 18009; //изменить
-  //раздел
-  const PCE_PART_CREATE                  = 18010; //создать
-  const PCE_PART_DELETE                  = 18011; //удалить
-  const PCE_PART_CHANGE                  = 18012; //изменить
-  const PCE_PART_ADD_DEV                 = 18013; //добавить устройство
-  const PCE_PART_DEL_DEV                 = 18014; //удалить устройство
-  //область
-  const PCE_AREA_CREATE                  = 18015;
-  const PCE_AREA_DELETE                  = 18016;
-  const PCE_AREA_CHANGE                  = 18017;
-  //считыватель
-  const PCE_RDR_CREATE                   = 18018;
-  const PCE_RDR_DELETE                   = 18019;
-  const PCE_RDR_CHANGE                   = 18020;
-  const PCE_RDR_ADD_CMD                  = 18021; //разрешить команду
-  const PCE_RDR_DEL_CMD                  = 18022; //запретить команду
-  //вход
-  const PCE_INPUT_CREATE                 = 18023;
-  const PCE_INPUT_DELETE                 = 18024;
-  const PCE_INPUT_CHANGE                 = 18025;
-  //выход
-  const PCE_OUTPUT_CREATE                = 18026;
-  const PCE_OUTPUT_DELETE                = 18027;
-  const PCE_OUTPUT_CHANGE                = 18028;
-  //дисплей
-  const PCE_DISPLAY_CREATE               = 18029;
-  const PCE_DISPLAY_DELETE               = 18030;
-  const PCE_DISPLAY_CHANGE               = 18031;
-  //группа тревожных дисплеев
-  const PCE_DSPLGRP_CREATE               = 18032;
-  const PCE_DSPLGRP_DELETE               = 18033;
-  const PCE_DSPLGRP_ADD                  = 18034;
-  const PCE_DSPLGRP_CLEAR                = 18035;
-  //строка
-  const PCE_STRING_CREATE                = 18036;
-  const PCE_STRING_DELETE                = 18037;
-  const PCE_STRING_CHANGE                = 18038;
-  //полномочие
-  const PCE_RLIST_CREATE                 = 18039;
-  const PCE_RLIST_DELETE                 = 18040;
-  const PCE_RLIST_ADD                    = 18041; //add item
-  const PCE_RLIST_CLEAR                  = 18042; //delete item
-  const PCE_RLIST_CHANGE                 = 18043; //change item
-  //права
-  const PCE_RIGHT_CREATE                 = 18044;
-  const PCE_RIGHT_DELETE                 = 18045;
-  const PCE_RIGHT_CHANGE                 = 18046;
-  //раписание
-  const PCE_TS_CREATE                    = 18047;
-  const PCE_TS_DELETE                    = 18048;
-  const PCE_TS_ADD_DAY                   = 18049; //добавить день
-  const PCE_TS_DEL_DAY                   = 18050; //удалить день
-  const PCE_TS_ADD_REG                   = 18051; //добавить регулярное расписание
-  const PCE_TS_DEL_REG                   = 18052; //удалить регулярное расписание
-  const PCE_TS_ADD_VDAY                  = 18053; //добавить виртуальный день
-  const PCE_TS_DEL_VDAY                  = 18054; //удалить виртуальный день
-  //временная зона
-  const PCE_TZ_CREATE                    = 18055;
-  const PCE_TZ_DELETE                    = 18056;
-  const PCE_TZ_ADD_TI                    = 18057; //добавить временной интервал
-  const PCE_TZ_DEL_TI                    = 18058; //удалить временной интервал
-  //временной интервал
-  const PCE_TI_CREATE                    = 18059;
-  const PCE_TI_DELETE                    = 18060;
-  const PCE_TI_CHANGE                    = 18061;
-  //виртуальный день
-  const PCE_VDAY_CREATE                  = 18062;
-  const PCE_VDAY_DELETE                  = 18063;
-  const PCE_VDAY_CHANGE                  = 18064;
-  //регулярное расписание
-  const PCE_REG_CREATE                   = 18065;
-  const PCE_REG_DELETE                   = 18066;
-  const PCE_REG_ADD                      = 18067; //добавить item
-  const PCE_REG_CLEAR                    = 18068; //удалить item
-  //микропрограмма
-  const PCE_PRG_CREATE                   = 18069;
-  const PCE_PRG_DELETE                   = 18070;
-  const PCE_PRG_ADD                      = 18071;
-  const PCE_PRG_CLEAR                    = 18072;
-  //команды оператора
-  const PCE_OPERCMD_CREATE               = 18073;
-  const PCE_OPERCMD_DELETE               = 18074;
-  const PCE_OPERCMD_CHANGE               = 18075;
-  //переменная
-  const PCE_VARIABLE_CREATE              = 18076;
-  const PCE_VARIABLE_DELETE              = 18077;
-  const PCE_VARIABLE_CHANGE              = 18078;
-  //виртуальный объект
-  const PCE_VOBJECT_CREATE               = 18079;
-  const PCE_VOBJECT_DELETE               = 18080;
-  //алгоритм
-  const PCE_ALG_CREATE                   = 18081;
-  const PCE_ALG_DELETE                   = 18082;
-  const PCE_ALG_CHANGE                   = 18083;
-  //класс алгоритмов
-  const PCE_CLSALG_CREATE                = 18084;
-  const PCE_CLSALG_DELETE                = 18085;
-  const PCE_CLSALG_ADD                   = 18086;
-  //система
-  const PCE_SYSCONFIG_GET                = 18087; //запрос конфигурации
-  const PCE_SYSCONFIG_SET                = 18112;
-  const PCE_GET_TIME                     = 18088; //запрос времени
-  const PCE_SET_TIME                     = 18089; //установка времени
-  const PCE_START_CFG                    = 18090; //старт конфигурации
-  const PCE_STOP_CFG                     = 18091; //стоп конфигурации
-  const PCE_FULL_CLEAR                   = 18092; //полная очистка конфигурации
-  //событие
-  const PCE_EVT_CHANGE                   = 18093;
-  const PCE_EVT_DELETE                   = 18097;    
-  const PCE_EVT_ARRCHANGE                = 18098;
-  //панель
-  const PCE_PANEL_CREATE                 = 18099;
-  const PCE_PANEL_DELETE                 = 18100;
-  const PCE_PANEL_CHANGE                 = 18101;
-  const PCE_PANEL_CLEAR                  = 18102;
-  const PCE_PANEL_SETLOCAL               = 18103; //разрешить команду
-  const PCE_PANEL_DELLOCAL               = 18104; //запредить команду
-  //драйвер шины
-  const PCE_DRIVER_CREATE                = 18105;
-  const PCE_DRIVER_DELETE                = 18106;
-  const PCE_DRIVER_CHANGE                = 18107;
-  const PCE_DRIVER_ADD                   = 18108; //добавить node
-  const PCE_DRIVER_CLEAR                 = 18109; //удалить node
-  //все
-  const PCE_SET_HANDLER                  = 18110;
-  const PCE_CLEAR_HANDLER                = 18111;
-
-  //команды управления
-  const PCE_DOOR_CONTROL                 = 18200;
-  const PCE_DOOR_OPEN                    = 1;
-  const PCE_DOOR_CLOSE                   = 0;
-  const PCE_SET_READER_MODE              = 18201;
-  //неисправность!
-  const PCE_MULFUNCTION			 = 18300;
-
-  const PCE_ALL                          = 18999;
-
-  //мониторинг аппаратного обеспечения
-  const HWS_LOW_CODE                     = 7100;
-  const HWS_HIGH_CODE                    = 7200;
-
-  const HWS_MON_STARTED                  = 7100;
-
-  const HWS_TEMP_NORMAL                  = 7101;
-  const HWS_TEMP_ALARM                   = 7102;
-  const HWS_FAN_NORMAL                   = 7103;
-  const HWS_FAN_ALARM                    = 7104;
-  const HWS_VOLT_NORMAL                  = 7105;
-  const HWS_VOLT_ALARM                   = 7106;
-  const HWS_DISK_NORMAL                  = 7107;
-  const HWS_DISK_ALARM                   = 7108;
-
-  const HWS_GET_TEMP                     = 7110;
-  const HWS_GETTED_TEMP                  = 7111;
-  const HWS_NOT_GET_TEMP                 = 7112;
-  const HWS_GET_FAN                      = 7113;
-  const HWS_GETTED_FAN                   = 7114;
-  const HWS_NOT_GET_FAN                  = 7115;
-  const HWS_GET_VOLT                     = 7116;
-  const HWS_GETTED_VOLT                  = 7117;
-  const HWS_NOT_GET_VOLT                 = 7118;
-  const HWS_GET_DISK_STATE               = 7119;
-  const HWS_GETTED_DISK_STATE            = 7120;
-  const HWS_NOT_GET_DISK_STATE           = 7121;
-
-  const HWS_NOT_SPEEDFAN                 = 7130;
 
 implementation
 
 end.
+
