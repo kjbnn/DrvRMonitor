@@ -56,11 +56,17 @@
 *.projdata
 *.tvsconfig
 *.dsk
+*.state
+setting.ini
+
 
 # Delphi history and backups
 __history/
 __recovery/
+Bin/
 D307/
+temp/
+Testing/
 Tool/
 Win32/
 Win64/

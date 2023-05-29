@@ -22,8 +22,8 @@ object dmSigma: TdmSigma
       'read_committed'
       'rec_version'
       'nowait')
-    Left = 70
-    Top = 20
+    Left = 30
+    Top = 60
   end
   object qTable1: TIBQuery
     Database = DB_Protocol
@@ -46,7 +46,7 @@ object dmSigma: TdmSigma
     Top = 190
   end
   object DB_Work: TIBDatabase
-    DatabaseName = 'C:\'#1056#1091#1073#1077#1078'\DB\R08WORK.GDB'
+    DatabaseName = 'localhost:C:\'#1056#1091#1073#1077#1078'\DB\R08WORK.GDB'
     Params.Strings = (
       'user_name=sysdba'
       'password=masterkey'
@@ -55,7 +55,7 @@ object dmSigma: TdmSigma
     LoginPrompt = False
     DefaultTransaction = TR_Work
     ServerType = 'IBServer'
-    Left = 140
+    Left = 110
     Top = 20
   end
   object TR_Work: TIBTransaction
@@ -65,10 +65,10 @@ object dmSigma: TdmSigma
       'read_committed'
       'rec_version'
       'nowait')
-    Left = 180
-    Top = 20
+    Left = 110
+    Top = 60
   end
-  object IBQuery2: TIBQuery
+  object qUsr: TIBQuery
     Database = DB_Work
     Transaction = TR_Work
     BufferChunks = 1000
@@ -76,28 +76,28 @@ object dmSigma: TdmSigma
     ParamCheck = True
     SQL.Strings = (
       'select  IDBCP, IDZONE AS USR, FAMIL, IME, OTC, PODR from USR')
-    Left = 100
+    Left = 70
     Top = 140
   end
-  object DataSource2: TDataSource
-    DataSet = IBQuery2
-    Left = 100
+  object dsUsr: TDataSource
+    DataSet = qUsr
+    Left = 70
     Top = 190
   end
-  object IBQuery3: TIBQuery
+  object qPodraz: TIBQuery
     Database = DB_Work
     Transaction = TR_Work
     BufferChunks = 1000
     CachedUpdates = False
     ParamCheck = True
     SQL.Strings = (
-      'select IDPODR, NAMEPODR from PODRAZ')
-    Left = 140
+      'select IDPODR, IDPAR, NAMEPODR from PODRAZ order by IDPAR')
+    Left = 120
     Top = 140
   end
-  object DataSource3: TDataSource
-    DataSet = IBQuery3
-    Left = 140
+  object dsPodraz: TDataSource
+    DataSet = qPodraz
+    Left = 120
     Top = 190
   end
   object IBQuery4: TIBQuery
@@ -112,13 +112,13 @@ object dmSigma: TdmSigma
         ' IDOBJ AS OBJ, IDSOURCE, IDZON AS ZONE, NAMEEVT, NAMEOBJ, NAMESO' +
         'URCE, NAMEZON, OBJTYPE, TSTYPE AS TCOTYPE, TYPESOURCE AS TSOURCE' +
         ' from TABLE1 ROWS 10')
-    Left = 190
-    Top = 140
+    Left = 350
+    Top = 400
   end
   object DataSource4: TDataSource
     DataSet = IBQuery4
-    Left = 190
-    Top = 190
+    Left = 350
+    Top = 450
   end
   object qConfig: TIBQuery
     Database = DB_Work
@@ -128,13 +128,13 @@ object dmSigma: TdmSigma
     ParamCheck = True
     SQL.Strings = (
       'select * from CONFIG')
-    Left = 240
-    Top = 140
+    Left = 290
+    Top = 190
   end
   object sConfig: TDataSource
     DataSet = qConfig
-    Left = 240
-    Top = 190
+    Left = 400
+    Top = 450
   end
   object IBEvents1: TIBEvents
     AutoRegister = True
@@ -143,8 +143,8 @@ object dmSigma: TdmSigma
       'POST_YYYY')
     Registered = False
     OnEventAlert = IBEvents1EventAlert
-    Left = 290
-    Top = 190
+    Left = 430
+    Top = 340
   end
   object IBScript1: TIBScript
     Database = DB_Work
@@ -244,33 +244,46 @@ object dmSigma: TdmSigma
       
         '/***************************************************************' +
         '***************/')
-    Left = 290
-    Top = 140
+    Left = 430
+    Top = 290
   end
-  object IBQuery5: TIBQuery
-    Database = DB_Protocol
-    Transaction = TR_Protocol
+  object qZone: TIBQuery
+    Database = DB_Work
+    Transaction = TR_Work
     BufferChunks = 1000
     CachedUpdates = False
     ParamCheck = True
     SQL.Strings = (
-      
-        'select COD AS ID, DT AS EVENTTIME, IDBCP AS BCP, IDEVT AS EVENT,' +
-        ' IDOBJ AS OBJ, IDSOURCE, IDZON AS ZONE, NAMEEVT, NAMEOBJ, NAMESO' +
-        'URCE, NAMEZON, OBJTYPE, TSTYPE AS TCOTYPE, TYPESOURCE AS TSOURCE' +
-        ' from TABLE1')
-    Left = 20
-    Top = 260
+      'select IDBCP, IDZONE from ZONE')
+    Left = 170
+    Top = 140
   end
-  object FDConnection1: TFDConnection
-    Params.Strings = (
-      'Database=C:\'#1056#1091#1073#1077#1078'\DB\Protocol\PROTOCOL.GDB'
-      'User_Name=sysdba'
-      'Password=masterkey'
-      'Server=localhost'
-      'DriverID=FB')
-    LoginPrompt = False
-    Left = 230
-    Top = 320
+  object dsZone: TDataSource
+    DataSet = qZone
+    Left = 170
+    Top = 190
+  end
+  object IBQuery2: TIBQuery
+    Database = DB_Work
+    Transaction = TR_Work
+    BufferChunks = 1000
+    CachedUpdates = False
+    ParamCheck = True
+    SQL.Strings = (
+      'select IDPODR, NAMEPODR from PODRAZ')
+    Left = 220
+    Top = 140
+  end
+  object DataSource2: TDataSource
+    DataSet = IBQuery2
+    Left = 220
+    Top = 190
+  end
+  object IBQuery1: TIBQuery
+    BufferChunks = 1000
+    CachedUpdates = False
+    ParamCheck = True
+    Left = 120
+    Top = 350
   end
 end

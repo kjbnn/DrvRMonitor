@@ -3,7 +3,7 @@
         <ProjectGuid>{D43280A6-460B-45C5-8E94-54037EFF6DA9}</ProjectGuid>
         <ProjectVersion>18.3</ProjectVersion>
         <FrameworkType>VCL</FrameworkType>
-        <MainSource>drvRMonitor.dpr</MainSource>
+        <MainSource>DrvRMonitor.dpr</MainSource>
         <Base>True</Base>
         <Config Condition="'$(Config)'==''">Debug</Config>
         <Platform Condition="'$(Platform)'==''">Win32</Platform>
@@ -53,14 +53,14 @@
         <Icon_MainIcon>$(BDS)\bin\delphi_PROJECTICON.ico</Icon_MainIcon>
         <UWP_DelphiLogo44>$(BDS)\bin\Artwork\Windows\UWP\delphi_UwpDefault_44.png</UWP_DelphiLogo44>
         <UWP_DelphiLogo150>$(BDS)\bin\Artwork\Windows\UWP\delphi_UwpDefault_150.png</UWP_DelphiLogo150>
-        <SanitizedProjectName>drvRMonitor</SanitizedProjectName>
+        <SanitizedProjectName>DrvRMonitor</SanitizedProjectName>
         <VerInfo_IncludeVerInfo>true</VerInfo_IncludeVerInfo>
         <VerInfo_MajorVer>3</VerInfo_MajorVer>
         <VerInfo_MinorVer>2</VerInfo_MinorVer>
         <VerInfo_Release>1</VerInfo_Release>
         <VerInfo_Locale>1049</VerInfo_Locale>
         <VerInfo_Keys>CompanyName=ООО Рост-ВСП;FileDescription=$(MSBuildProjectName);FileVersion=3.2.1.0;InternalName=$(MSBuildProjectName);LegalCopyright=ООО Рост-ВСП;LegalTrademarks=$(MSBuildProjectName);OriginalFilename=$(MSBuildProjectName);ProgramID=Rost-VSP$(MSBuildProjectName);ProductName=РОСТЭК;ProductVersion=3.2.1.0;Comments=$(MSBuildProjectName)</VerInfo_Keys>
-        <DCC_Define>DEVMODE1;LIC-11829;$(DCC_Define)</DCC_Define>
+        <DCC_Define>DEVMODE;LIC-11829;$(DCC_Define)</DCC_Define>
         <Custom_Styles>Auric|VCLSTYLE|$(BDSCOMMONDIR)\Styles\Auric.vsf;Carbon|VCLSTYLE|$(BDSCOMMONDIR)\Styles\Carbon.vsf;&quot;Cyan Dusk|VCLSTYLE|$(BDSCOMMONDIR)\Styles\CyanDusk.vsf&quot;;Glow|VCLSTYLE|$(BDSCOMMONDIR)\Styles\Glow.vsf;Light|VCLSTYLE|$(BDSCOMMONDIR)\Styles\Light.vsf;TabletDark|VCLSTYLE|$(BDSCOMMONDIR)\Styles\TabletDark.vsf;&quot;Windows10 SlateGray|VCLSTYLE|$(BDSCOMMONDIR)\Styles\Windows10SlateGray.vsf&quot;</Custom_Styles>
     </PropertyGroup>
     <PropertyGroup Condition="'$(Base_Win32)'!=''">
@@ -91,9 +91,10 @@
         <UWP_DelphiLogo44>SigmaIS.ico</UWP_DelphiLogo44>
         <UWP_DelphiLogo150>SigmaIS.ico</UWP_DelphiLogo150>
         <VerInfo_AutoIncVersion>true</VerInfo_AutoIncVersion>
-        <VerInfo_Build>13</VerInfo_Build>
-        <VerInfo_Keys>CompanyName=;FileDescription=$(MSBuildProjectName);FileVersion=1.2.1.13;InternalName=;LegalCopyright=;LegalTrademarks=;OriginalFilename=;ProgramID=com.embarcadero.$(MSBuildProjectName);ProductName=$(MSBuildProjectName);ProductVersion=1.0.0.0;Comments=</VerInfo_Keys>
+        <VerInfo_Build>36</VerInfo_Build>
+        <VerInfo_Keys>CompanyName=;FileDescription=$(MSBuildProjectName);FileVersion=1.2.1.36;InternalName=;LegalCopyright=;LegalTrademarks=;OriginalFilename=;ProgramID=com.embarcadero.$(MSBuildProjectName);ProductName=$(MSBuildProjectName);ProductVersion=1.0.0.0;Comments=</VerInfo_Keys>
         <VerInfo_MajorVer>1</VerInfo_MajorVer>
+        <DCC_Optimize>true</DCC_Optimize>
     </PropertyGroup>
     <PropertyGroup Condition="'$(Cfg_2)'!=''">
         <DCC_LocalDebugSymbols>false</DCC_LocalDebugSymbols>
@@ -111,11 +112,11 @@
         <DelphiCompile Include="$(MainSource)">
             <MainSource>MainSource</MainSource>
         </DelphiCompile>
-        <DCCReference Include="main.pas">
+        <DCCReference Include="Main.pas">
             <Form>fmain</Form>
             <FormType>dfm</FormType>
         </DCCReference>
-        <DCCReference Include="rostek.pas">
+        <DCCReference Include="Rostek.pas">
             <Form>dmRostek</Form>
             <FormType>dfm</FormType>
             <DesignClass>TDataModule</DesignClass>
@@ -125,7 +126,6 @@
         <DCCReference Include="KSBLib\cComm.pas"/>
         <DCCReference Include="KSBLib\cMainKsb.pas">
             <Form>aMainKsb</Form>
-            <FormType>dfm</FormType>
         </DCCReference>
         <DCCReference Include="KSBLib\connection.pas"/>
         <DCCReference Include="KSBLib\constants.pas"/>
@@ -133,14 +133,16 @@
         <DCCReference Include="KSBLib\KSBParam.pas"/>
         <DCCReference Include="KSBLib\NetService.pas"/>
         <DCCReference Include="KSBLib\SharedBuffer.pas"/>
-        <DCCReference Include="sigma.pas">
+        <DCCReference Include="Sigma.pas">
             <Form>dmSigma</Form>
             <FormType>dfm</FormType>
             <DesignClass>TDataModule</DesignClass>
         </DCCReference>
-        <DCCReference Include="event.pas"/>
-        <DCCReference Include="sigmaEvent.pas"/>
-        <None Include="drvRMonitor.todo"/>
+        <DCCReference Include="Event.pas"/>
+        <DCCReference Include="Process.pas"/>
+        <None Include="DrvRMonitor.todo"/>
+        <None Include="ModelSupport_DrvRMonitor\default.txvpck"/>
+        <None Include="ModelSupport_DrvRMonitor\default.txaPackage"/>
         <BuildConfiguration Include="Release">
             <Key>Cfg_2</Key>
             <CfgParent>Base</CfgParent>
@@ -159,7 +161,7 @@
         <BorlandProject>
             <Delphi.Personality>
                 <Source>
-                    <Source Name="MainSource">drvRMonitor.dpr</Source>
+                    <Source Name="MainSource">DrvRMonitor.dpr</Source>
                 </Source>
                 <Excluded_Packages>
                     <Excluded_Packages Name="$(BDSBIN)\dcloffice2k250.bpl">Microsoft Office 2000 Sample Automation Server Wrapper Components</Excluded_Packages>
@@ -167,7 +169,13 @@
                 </Excluded_Packages>
             </Delphi.Personality>
             <Deployment Version="3">
-                <DeployFile LocalName="drvRMonitor.todo" Configuration="Debug" Class="ProjectFile">
+                <DeployFile LocalName="Win32\Debug\DrvRMonitor.exe" Configuration="Debug" Class="ProjectOutput">
+                    <Platform Name="Win32">
+                        <RemoteName>DrvRMonitor.exe</RemoteName>
+                        <Overwrite>true</Overwrite>
+                    </Platform>
+                </DeployFile>
+                <DeployFile LocalName="DrvRMonitor.todo" Configuration="Debug" Class="ProjectFile">
                     <Platform Name="Win32">
                         <RemoteDir>.\</RemoteDir>
                         <Overwrite>true</Overwrite>
@@ -180,9 +188,15 @@
                         <Overwrite>true</Overwrite>
                     </Platform>
                 </DeployFile>
-                <DeployFile LocalName="Win32\Debug\drvRMonitor.exe" Configuration="Debug" Class="ProjectOutput">
+                <DeployFile LocalName="ModelSupport_DrvRMonitor\default.txvpck" Configuration="Debug" Class="ProjectFile">
                     <Platform Name="Win32">
-                        <RemoteName>drvRMonitor.exe</RemoteName>
+                        <RemoteDir>.\</RemoteDir>
+                        <Overwrite>true</Overwrite>
+                    </Platform>
+                </DeployFile>
+                <DeployFile LocalName="ModelSupport_DrvRMonitor\default.txaPackage" Configuration="Debug" Class="ProjectFile">
+                    <Platform Name="Win32">
+                        <RemoteDir>.\</RemoteDir>
                         <Overwrite>true</Overwrite>
                     </Platform>
                 </DeployFile>
@@ -605,6 +619,7 @@
             <Platforms>
                 <Platform value="Win32">True</Platform>
             </Platforms>
+            <ModelSupport>False</ModelSupport>
         </BorlandProject>
         <ProjectFileVersion>12</ProjectFileVersion>
     </ProjectExtensions>

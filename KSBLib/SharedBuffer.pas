@@ -1,4 +1,3 @@
-// {$A-}
 unit SharedBuffer;
 
 interface
@@ -11,7 +10,7 @@ type
     PARRAYBYTE = ^ARRAYBYTE;
 
 type
-  KSBMES = record
+  KSBMES = packed record
     VerMinor : BYTE;         // Младший байт версии
     VerMajor : BYTE;         // Старший байт версии
     Num : DWORD;             // Порядковый номер сообщения

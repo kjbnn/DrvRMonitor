@@ -1,20 +1,23 @@
-unit rostek;
+unit Rostek;
 
 
 interface
 
 uses
   System.SysUtils, System.Classes, Data.DB, IBX.IBCustomDataSet, IBX.IBQuery,
-  IBX.IBDatabase, IBX.IBServices, IBX.IBScript, IBX.IBEvents, IBX.IBSQL;
+  IBX.IBDatabase, IBX.IBServices, IBX.IBScript, IBX.IBEvents, IBX.IBSQL,
+  IBX.IBUpdateSQL, IBX.IBTable;
 
 type
   TdmRostek = class(TDataModule)
     DB_Techbase: TIBDatabase;
     TR_Techbase: TIBTransaction;
-    IBQuery1: TIBQuery;
-    DataSource1: TDataSource;
     DB_Passbase: TIBDatabase;
     TR_Passbase: TIBTransaction;
+    tElement: TIBTable;
+    Query1: TIBSQL;
+    IBQuery1: TIBQuery;
+    IBQuery2: TIBQuery;
     procedure IBEvents1EventAlert(Sender: TObject; EventName: string;
       EventCount: Integer; var CancelAlerts: Boolean);
   private

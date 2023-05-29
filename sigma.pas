@@ -1,4 +1,4 @@
-unit sigma;
+unit Sigma;
 
 interface
 
@@ -18,18 +18,21 @@ type
     dsTable1: TDataSource;
     DB_Work: TIBDatabase;
     TR_Work: TIBTransaction;
-    IBQuery2: TIBQuery;
-    DataSource2: TDataSource;
-    IBQuery3: TIBQuery;
-    DataSource3: TDataSource;
+    qUsr: TIBQuery;
+    dsUsr: TDataSource;
+    qPodraz: TIBQuery;
+    dsPodraz: TDataSource;
     IBQuery4: TIBQuery;
     DataSource4: TDataSource;
     qConfig: TIBQuery;
     sConfig: TDataSource;
     IBEvents1: TIBEvents;
     IBScript1: TIBScript;
-    IBQuery5: TIBQuery;
-    FDConnection1: TFDConnection;
+    qZone: TIBQuery;
+    dsZone: TDataSource;
+    IBQuery2: TIBQuery;
+    DataSource2: TDataSource;
+    IBQuery1: TIBQuery;
     procedure IBEvents1EventAlert(Sender: TObject; EventName: string;
       EventCount: Integer; var CancelAlerts: Boolean);
   private
