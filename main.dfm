@@ -3,238 +3,50 @@ inherited fmain: Tfmain
   Top = 0
   BorderStyle = bsSizeable
   Caption = #1044#1088#1072#1081#1074#1077#1088' '#1056#1091#1073#1077#1078'-'#1052#1086#1085#1080#1090#1086#1088
-  ClientHeight = 382
-  ClientWidth = 459
+  ClientHeight = 434
+  ClientWidth = 611
   DoubleBuffered = True
   Font.Name = 'Tahoma'
-  ExplicitWidth = 475
-  ExplicitHeight = 420
+  ExplicitWidth = 627
+  ExplicitHeight = 472
   PixelsPerInch = 96
   TextHeight = 13
   object PageControl1: TPageControl [0]
     Left = 0
     Top = 0
-    Width = 459
-    Height = 382
-    ActivePage = TabSheet5
+    Width = 611
+    Height = 415
+    ActivePage = TabSheet4
     Align = alClient
     TabOrder = 0
-    ExplicitWidth = 469
-    ExplicitHeight = 392
-    object TabSheet0: TTabSheet
-      Caption = '0'
-      ImageIndex = 4
-      ExplicitWidth = 461
-      ExplicitHeight = 364
-      object DBGrid0: TDBGrid
-        Left = 0
-        Top = 0
-        Width = 451
-        Height = 354
-        Align = alClient
-        DataSource = dmSigma.dsTable1
-        TabOrder = 0
-        TitleFont.Charset = DEFAULT_CHARSET
-        TitleFont.Color = clWindowText
-        TitleFont.Height = -11
-        TitleFont.Name = 'Tahoma'
-        TitleFont.Style = []
-      end
-    end
-    object TabSheet1: TTabSheet
-      Caption = '1'
-      ExplicitWidth = 461
-      ExplicitHeight = 364
-      object DBGrid1: TDBGrid
-        Left = 0
-        Top = 0
-        Width = 451
-        Height = 354
-        Align = alClient
-        TabOrder = 0
-        TitleFont.Charset = DEFAULT_CHARSET
-        TitleFont.Color = clWindowText
-        TitleFont.Height = -11
-        TitleFont.Name = 'Tahoma'
-        TitleFont.Style = []
-        Columns = <
-          item
-            Expanded = False
-            FieldName = 'ID'
-            Title.Alignment = taCenter
-            Visible = True
-          end
-          item
-            Expanded = False
-            FieldName = 'EVENTTIME'
-            Title.Alignment = taCenter
-            Visible = True
-          end
-          item
-            Expanded = False
-            FieldName = 'BCP'
-            Title.Alignment = taCenter
-            Visible = True
-          end
-          item
-            Expanded = False
-            FieldName = 'EVENT'
-            Title.Alignment = taCenter
-            Visible = True
-          end
-          item
-            Expanded = False
-            FieldName = 'OBJ'
-            Title.Alignment = taCenter
-            Visible = True
-          end
-          item
-            Expanded = False
-            FieldName = 'IDSOURCE'
-            Title.Alignment = taCenter
-            Visible = True
-          end
-          item
-            Expanded = False
-            FieldName = 'ZONE'
-            Title.Alignment = taCenter
-            Visible = True
-          end
-          item
-            Expanded = False
-            FieldName = 'NAMEEVT'
-            Title.Alignment = taCenter
-            Width = 191
-            Visible = True
-          end
-          item
-            Expanded = False
-            FieldName = 'NAMEOBJ'
-            Title.Alignment = taCenter
-            Width = 224
-            Visible = True
-          end
-          item
-            Expanded = False
-            FieldName = 'NAMESOURCE'
-            Title.Alignment = taCenter
-            Visible = True
-          end
-          item
-            Expanded = False
-            FieldName = 'NAMEZON'
-            Title.Alignment = taCenter
-            Width = 120
-            Visible = True
-          end
-          item
-            Expanded = False
-            FieldName = 'OBJTYPE'
-            Title.Alignment = taCenter
-            Width = 39
-            Visible = True
-          end
-          item
-            Expanded = False
-            FieldName = 'TCOTYPE'
-            Title.Alignment = taCenter
-            Width = 45
-            Visible = True
-          end
-          item
-            Expanded = False
-            FieldName = 'TSOURCE'
-            Title.Alignment = taCenter
-            Width = 48
-            Visible = True
-          end>
-      end
-    end
-    object TabSheet2: TTabSheet
-      Caption = '2'
-      ImageIndex = 1
-      ExplicitWidth = 461
-      ExplicitHeight = 364
-      object DBGrid2: TDBGrid
-        Left = 0
-        Top = 0
-        Width = 451
-        Height = 354
-        Align = alClient
-        DataSource = dmSigma.dsUsr
-        TabOrder = 0
-        TitleFont.Charset = DEFAULT_CHARSET
-        TitleFont.Color = clWindowText
-        TitleFont.Height = -11
-        TitleFont.Name = 'Tahoma'
-        TitleFont.Style = []
-      end
-    end
-    object TabSheet3: TTabSheet
-      Caption = '3'
-      ImageIndex = 2
-      ExplicitWidth = 461
-      ExplicitHeight = 364
-      object DBGrid3: TDBGrid
-        Left = 0
-        Top = 0
-        Width = 451
-        Height = 354
-        Align = alClient
-        DataSource = dmSigma.dsPodraz
-        TabOrder = 0
-        TitleFont.Charset = DEFAULT_CHARSET
-        TitleFont.Color = clWindowText
-        TitleFont.Height = -11
-        TitleFont.Name = 'Tahoma'
-        TitleFont.Style = []
-      end
-    end
+    ExplicitWidth = 810
+    ExplicitHeight = 385
     object TabSheet4: TTabSheet
-      Caption = '4'
+      Caption = #1055#1088#1086#1090#1086#1082#1086#1083
       ImageIndex = 3
-      ExplicitWidth = 461
-      ExplicitHeight = 364
-      object btUpdate: TButton
-        Left = 14
-        Top = 13
-        Width = 75
-        Height = 25
-        Caption = 'Update'
-        TabOrder = 0
-        OnClick = btUpdateClick
-      end
+      ExplicitWidth = 802
+      ExplicitHeight = 357
       object Memo1: TMemo
-        Left = 113
+        Left = 0
         Top = 0
-        Width = 338
-        Height = 354
-        Align = alRight
-        TabOrder = 1
-        ExplicitLeft = 120
-        ExplicitTop = 3
-        ExplicitHeight = 358
-      end
-      object Button1: TButton
-        Left = 14
-        Top = 44
-        Width = 75
-        Height = 25
-        Caption = 'sent test'
-        TabOrder = 2
-        OnClick = Button1Click
+        Width = 603
+        Height = 387
+        Align = alClient
+        TabOrder = 0
+        ExplicitWidth = 802
+        ExplicitHeight = 357
       end
     end
     object TabSheet5: TTabSheet
-      Caption = 'm'
+      Caption = #1053#1072#1089#1090#1088#1086#1081#1082#1080
       ImageIndex = 5
-      ExplicitWidth = 461
-      ExplicitHeight = 364
+      ExplicitWidth = 802
+      ExplicitHeight = 357
       object vle1: TValueListEditor
         Left = 0
         Top = 0
-        Width = 451
-        Height = 335
+        Width = 603
+        Height = 387
         Align = alClient
         Options = [goFixedVertLine, goFixedHorzLine, goVertLine, goHorzLine, goColSizing, goEditing, goThumbTracking]
         Strings.Strings = (
@@ -256,41 +68,51 @@ inherited fmain: Tfmain
         TitleCaptions.Strings = (
           #1055#1072#1088#1072#1084#1077#1090#1088
           #1047#1085#1072#1095#1077#1085#1080#1077)
+        ExplicitWidth = 608
+        ExplicitHeight = 392
         ColWidths = (
           210
-          235)
-      end
-      object StatusBar1: TStatusBar
-        Left = 0
-        Top = 335
-        Width = 451
-        Height = 19
-        Panels = <
-          item
-            Text = #1057#1090#1072#1088#1090
-            Width = 200
-          end>
-        ExplicitTop = 345
-        ExplicitWidth = 461
+          387)
       end
     end
   end
+  object StatusBar1: TStatusBar [1]
+    Left = 0
+    Top = 415
+    Width = 611
+    Height = 19
+    Panels = <
+      item
+        Text = #1057#1090#1072#1088#1090
+        Width = 200
+      end>
+    ExplicitTop = 385
+    ExplicitWidth = 810
+  end
   inherited InitTimer: TTimer
-    Left = 296
-    Top = 264
+    Left = 416
+    Top = 344
   end
   inherited TimerVisible: TTimer
-    Left = 270
-    Top = 264
+    Left = 390
+    Top = 344
   end
   inherited TimerStop: TTimer
-    Left = 242
-    Top = 264
+    Left = 362
+    Top = 344
   end
   object RefreshTimer: TTimer
-    Interval = 50
+    Interval = 100
     OnTimer = RefreshTimerTimer
-    Left = 364
-    Top = 104
+    Left = 294
+    Top = 344
+  end
+  object PopupMenu1: TPopupMenu
+    Left = 224
+    Top = 344
+    object N1: TMenuItem
+      Caption = #1058#1077#1089#1090#1086#1074#1086#1077' '#1089#1086#1086#1073#1097#1077#1085#1080#1077
+      OnClick = N1Click
+    end
   end
 end

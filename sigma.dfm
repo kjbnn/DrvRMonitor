@@ -3,6 +3,7 @@ object dmSigma: TdmSigma
   Height = 536
   Width = 489
   object DB_Protocol: TIBDatabase
+    Connected = True
     DatabaseName = 'localhost:C:\'#1056#1091#1073#1077#1078'\DB\Protocol\PROTOCOL.GDB'
     Params.Strings = (
       'user_name=sysdba'
@@ -25,25 +26,14 @@ object dmSigma: TdmSigma
     Left = 30
     Top = 60
   end
-  object qTable1: TIBQuery
+  object Query1: TIBQuery
     Database = DB_Protocol
     Transaction = TR_Protocol
     BufferChunks = 1000
     CachedUpdates = False
     ParamCheck = True
-    SQL.Strings = (
-      
-        'select COD AS ID, DT AS EVENTTIME, IDBCP AS BCP, IDEVT AS EVENT,' +
-        ' IDOBJ AS OBJ, IDSOURCE, IDZON AS ZONE, NAMEEVT, NAMEOBJ, NAMESO' +
-        'URCE, NAMEZON, OBJTYPE, TSTYPE AS TCOTYPE, TYPESOURCE AS TSOURCE' +
-        ' from TABLE1 where COD >0')
     Left = 20
     Top = 140
-  end
-  object dsTable1: TDataSource
-    DataSet = qTable1
-    Left = 20
-    Top = 190
   end
   object DB_Work: TIBDatabase
     DatabaseName = 'localhost:C:\'#1056#1091#1073#1077#1078'\DB\R08WORK.GDB'
@@ -79,11 +69,6 @@ object dmSigma: TdmSigma
     Left = 70
     Top = 140
   end
-  object dsUsr: TDataSource
-    DataSet = qUsr
-    Left = 70
-    Top = 190
-  end
   object qPodraz: TIBQuery
     Database = DB_Work
     Transaction = TR_Work
@@ -94,11 +79,6 @@ object dmSigma: TdmSigma
       'select IDPODR, IDPAR, NAMEPODR from PODRAZ order by IDPAR')
     Left = 120
     Top = 140
-  end
-  object dsPodraz: TDataSource
-    DataSet = qPodraz
-    Left = 120
-    Top = 190
   end
   object IBQuery4: TIBQuery
     Database = DB_Protocol
@@ -258,11 +238,6 @@ object dmSigma: TdmSigma
     Left = 170
     Top = 140
   end
-  object dsZone: TDataSource
-    DataSet = qZone
-    Left = 170
-    Top = 190
-  end
   object IBQuery2: TIBQuery
     Database = DB_Work
     Transaction = TR_Work
@@ -273,11 +248,6 @@ object dmSigma: TdmSigma
       'select IDPODR, NAMEPODR from PODRAZ')
     Left = 220
     Top = 140
-  end
-  object DataSource2: TDataSource
-    DataSet = IBQuery2
-    Left = 220
-    Top = 190
   end
   object IBQuery1: TIBQuery
     BufferChunks = 1000

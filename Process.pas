@@ -6,24 +6,27 @@ uses
   System.Classes;
 
 type
-  TSigmaOperation = (OP_NONE, OP_UPDATE_CFG, OP_CFG, OP_EVENT);
+  TSigmaOperation = (OP_NONE, OP_START, OP_UPDATE_CFG, OP_CFG, OP_EVENT);
 
   TProcess = class(TThread)
   private
   protected
-    str: String;
+    NetDevice: word;
+    logStr: String;
     procedure Execute; override;
     procedure GetBCPElements;
-    procedure MemoLog;
+    procedure Log;
+    procedure GetNetDevice;
   end;
 
 var
   testSigmaDb: Int64 = 0;
-  sigmaOperation: TSigmaOperation = OP_UPDATE_CFG;
+  sigmaOperation: TSigmaOperation = OP_START; // need check
 
 implementation
 
-uses sigma, main, Sysutils, rostek, Event;
+uses
+  sigma, main, Sysutils, rostek, Event;
 
 { TProcess }
 
@@ -35,18 +38,44 @@ var
 
 begin
   NameThreadForDebugging('Process');
+  Synchronize(GetNetDevice);
 
   while not Terminated do
   begin
     case sigmaOperation of
 
+      OP_START:
+        begin
+
+          if curEvent = 0 then
+          begin
+            with dmSigma.Query1 do
+              try
+                Close;
+                SQL.Clear;
+                SQL.Text := 'select max(COD) as MAXCOD from TABLE1';
+                Open;
+                curEvent := FieldByName('MAXCOD').AsInteger;
+                Close;
+              except
+                Close;
+                logStr := 'Exception: OP_START';
+                Synchronize(Log);
+              end;
+          end;
+
+          sigmaOperation := OP_EVENT;
+        end;
+
       OP_UPDATE_CFG:
+{$REGION 'OP_UPDATE_CFG'}
         begin
           GetBCPElements;
           sigmaOperation := OP_EVENT;
         end;
-
+{$ENDREGION}
       OP_CFG:
+{$REGION 'OP_CFG'}
         begin
           {
             s:TMemoryStream;
@@ -187,59 +216,89 @@ begin
 
           sigmaOperation := OP_EVENT;
         end;
-
+{$ENDREGION}
       OP_EVENT:
         begin
 
           try
-            with dmSigma.qTable1 do
+            with dmSigma.Query1 do
             begin
               Close;
               SQL.Clear;
               SQL.Text := 'select COD, DT, IDBCP, IDEVT' +
                 ', IDOBJ, IDSOURCE, IDZON, NAMEEVT, NAMEOBJ, NAMESOURCE' +
                 ', NAMEZON, OBJTYPE, TSTYPE, TYPESOURCE from TABLE1' +
-                ' where COD > ' + curEvent.ToString + 'order by COD';
-
+                ' where COD > ' + IntToStr(curEvent) +
+                ' and IDBCP in (0, 11829) order by COD';
               Open;
               while not Eof do
               begin
-                if FieldByName('IDBCP').AsInteger <> 11829 then
-                  continue;
-                // обработка
-                EventHandler(FieldByName('IDBCP').AsInteger, // bcp
-                  FieldByName('DT').AsDateTime, // DATE
-                  FieldByName('OBJTYPE').AsInteger, // TC, US, PC
-                  FieldByName('IDOBJ').AsInteger, // значение TC, US, PC
-                  FieldByName('IDZON').AsInteger, // номер зоны в Ростэк
-                  FieldByName('TYPESOURCE').AsInteger,
-                  // Тип (инициатора события) soure (0-никто, 1-пользователь, 2-система, 4-скрипт, 6-ПЭВМ, 9-неисправность, 11-АРМ, 61-БЦП s/n
-                  FieldByName('IDSOURCE').AsInteger, // ID source
-                  FieldByName('IDEVT').AsInteger, // Номер эвента
-                  FieldByName('TSTYPE').AsInteger // тип TC (1-9), 0-не ТС
-                  );
-
+                  EventHandler(NetDevice, FieldByName('IDBCP').AsInteger, // bcp
+                    FieldByName('DT').AsDateTime, // DATE
+                    FieldByName('OBJTYPE').AsInteger, // TC, US, PC
+                    FieldByName('IDOBJ').AsInteger, // значение TC, US, PC
+                    FieldByName('IDZON').AsInteger, // номер зоны в Ростэк
+                    FieldByName('TYPESOURCE').AsInteger,
+                    // Тип (инициатора события) soure (0-никто, 1-пользователь, 2-система, 4-скрипт, 6-ПЭВМ, 9-неисправность, 11-АРМ, 61-БЦП s/n
+                    FieldByName('IDSOURCE').AsInteger, // ID source
+                    FieldByName('IDEVT').AsInteger, // Номер эвента
+                    FieldByName('TSTYPE').AsInteger // тип TC (1-9), 0-не ТС
+                    );
                 curEvent := FieldByName('COD').AsLargeInt;
                 Next;
-                sleep(1);
-              end;
+                sleep(0);
 
+                { vvv DEMO --------------------------------------------------- }
+                case FieldByName('TSTYPE').AsInteger of
+                  0:
+                    case FieldByName('OBJTYPE').AsInteger of
+                      1:
+                        logStr := 'Зона';
+                      3:
+                        logStr := 'Сетевое устройство';
+                      4:
+                        logStr := 'Пользователь ';
+                      63:
+                        logStr := 'Рубеж Сервер ';
+                    end;
+                  1 .. 4:
+                    logStr := 'Шлейф';
+                  5:
+                    logStr := 'Реле';
+                  6:
+                    logStr := 'Точка доступа';
+                  7:
+                    logStr := 'Терминал';
+                end;
+                logStr := Format('%s %s: %s -> %s',
+                  [DateTimeToStr(FieldByName('DT').AsDateTime), logStr,
+                  FieldByName('NAMEOBJ').AsString, FieldByName('NAMEEVT')
+                  .AsString]);
+                if length(FieldByName('NAMESOURCE').AsString) > 2 then
+                  logStr := logStr + '  (' + FieldByName('NAMESOURCE')
+                    .AsString + ')';
+                Synchronize(Log);
+                { ^^^ DEMO --------------------------------------------------- }
+
+              end;
             end;
           except
+            logStr := 'Exception: OP_EVENT';
+            Synchronize(Log);
             dmSigma.DB_Protocol.Close;
           end;
+
           inc(testSigmaDb);
           sleep(1000);
         end;
 
     end;
-    sleep(10);
+    sleep(1);
   end;
 end;
 
-{ -------------- }
 { GetBCPElements }
-{ -------------- }
+
 procedure TProcess.GetBCPElements;
 var
   ConfigArray: TArray<byte>; // TBytes;
@@ -250,13 +309,15 @@ var
     pNode: TPNode;
 
   begin
-    for pNode in BCPElements do
+    {
+      for pNode in BCPElements do
       if pNode <> nil then
       begin
-        pNode^.pcName := '';
-        Dispose(pNode);
-        BCPElements.Remove(pNode);
+      pNode^.pcName := '';
+      Dispose(pNode);
+      BCPElements.Remove(pNode);
       end;
+    }
   end;
 {$ENDREGION}
 {$REGION 'PrintConfig'}
@@ -271,7 +332,7 @@ var
       ReWrite(tf);
       WriteLn(tf,
         #13'----------------------------------------------------------');
-      WriteLn(tf, 'БЦП: ' + bcpNumber.ToString + '  data: ' + Length(a)
+      WriteLn(tf, 'БЦП: ' + bcpNumber.ToString + '  data: ' + length(a)
         .ToString);
       WriteLn(tf, '----------------------------------------------------------');
       i := 1;
@@ -306,22 +367,22 @@ var
 
     function StringToBytes(const Value: WideString): TBytes;
     begin
-      SetLength(result, Length(Value) * SizeOf(WideChar));
-      if Length(result) > 0 then
-        Move(Value[1], result[0], Length(result));
+      SetLength(result, length(Value) * SizeOf(WideChar));
+      if length(result) > 0 then
+        Move(Value[1], result[0], length(result));
     end;
 
     function BytesToString(const Value: TBytes): WideString;
     begin
-      SetLength(result, Length(Value) div SizeOf(WideChar));
-      if Length(result) > 0 then
-        Move(Value[0], result[1], Length(Value));
+      SetLength(result, length(Value) div SizeOf(WideChar));
+      if length(result) > 0 then
+        Move(Value[0], result[1], length(Value));
     end;
 
     function CreateBCP(a: TArray<byte>): boolean;
     begin
-      str := 'BCP: ' + IntToStr(a[0] + a[1] shl 8);
-      Synchronize(MemoLog);
+      logStr := 'BCP: ' + IntToStr(a[0] + a[1] shl 8);
+      // Synchronize(Log);
       result := False;
     end;
 
@@ -334,8 +395,9 @@ var
       len1 := SizeOf(TZone);
       len2 := a[len1] + (a[len1 + 1] shl 8);
       ar := Copy(a, len1 + 2 + 2, len2 - 2);
-      str := Format('Зона %x%x%x > %s', [a[1], a[2], a[3], BytesToString(ar)]);
-      Synchronize(MemoLog);
+      logStr := Format('Зона %x%x%x > %s',
+        [a[1], a[2], a[3], BytesToString(ar)]);
+      // Synchronize(Log);
       result := False;
     end;
 
@@ -347,9 +409,9 @@ var
       len1 := SizeOf(TTc);
       len2 := a[len1] + (a[len1 + 1] shl 8);
       ar := Copy(a, len1 + 2 + 2, len2 - 2);
-      str := Format('TC %d:%d > %s', [a[2], a[0] + a[1] shl 8,
+      logStr := Format('TC %d:%d > %s', [a[2], a[0] + a[1] shl 8,
         BytesToString(ar)]);
-      Synchronize(MemoLog);
+      // Synchronize(Log);
       result := False;
     end;
 
@@ -360,7 +422,7 @@ var
       exit;
 
     // start
-    if (Length(a) < 9) then
+    if (length(a) < 9) then
       exit;
     if (a[0] <> $75) or (a[1] <> $01) then
       exit;
@@ -379,7 +441,7 @@ var
             curLen := SizeOf(TZone);
             txtLen := a[curLen] + (a[curLen + 1] shl 8);
             curLen := curLen + 2 + txtLen;
-            if (curLen > Length(a)) then
+            if (curLen > length(a)) then
               exit;
             CreateZone(a);
             Delete(a, 0, curLen);
@@ -389,7 +451,7 @@ var
 
         EP_SEARCH:
           begin
-            while (Length(a) > 0) and (a[0] = 0) do
+            while (length(a) > 0) and (a[0] = 0) do
               Delete(a, 0, 1);
             if (a[0] = $FF) and (a[1] = $FF) then
             begin
@@ -419,7 +481,7 @@ var
             curLen := SizeOf(TTc);
             txtLen := a[curLen] + (a[curLen + 1] shl 8);
             curLen := curLen + 2 + txtLen;
-            if (curLen > Length(a)) then
+            if (curLen > length(a)) then
               exit;
             CreateTC(a);
             Delete(a, 0, curLen);
@@ -443,7 +505,7 @@ begin
       begin
         ConfigArray := FieldByName('BCPCONF').AsBytes;
 {$IFDEF DEVMODE}
-        PrintConfig(FieldByName('IDBCP').AsInteger, ConfigArray);
+        // PrintConfig(FieldByName('IDBCP').AsInteger, ConfigArray);
 {$ENDIF}
         ParseConfig(ConfigArray);
         Next;
@@ -456,9 +518,34 @@ begin
 
 end;
 
-procedure TProcess.MemoLog;
+procedure TProcess.GetNetDevice;
+var
+  i: Integer;
 begin
-  fmain.Memo1.Lines.Add(str);
+  NetDevice := 0;
+  TryStrToInt(fmain.vle1.Values['NetDevice'], i);
+  NetDevice := word(i);
+end;
+
+procedure TProcess.Log;
+const
+  fname = '.\Log.log';
+var
+  tf: Textfile;
+begin
+  try
+    AssignFile(tf, fname);
+    if FileExists(fname) then
+      Append(tf)
+    else
+      ReWrite(tf);
+    WriteLn(tf, logStr);
+    Flush(tf);
+  finally
+    CloseFile(tf);
+  end;
+
+  fmain.Memo1.Lines.Add(logStr);
 end;
 
 end.

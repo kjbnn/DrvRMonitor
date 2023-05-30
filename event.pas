@@ -5,14 +5,14 @@ interface
 uses
   SysUtils;
 
-procedure EventHandler(idBcp: word; dt: TDateTime; objType: word; idObj: LongInt;
+procedure EventHandler(netDevice, idBcp: word; dt: TDateTime; objType: word; idObj: LongInt;
   idZone, typeSource, idSource, idIvent, tsType: Integer);
 
 implementation
 
 uses constants, connection, SharedBuffer, Main;
 
-procedure EventHandler(idBcp: word; dt: TDateTime; objType: word; idObj: LongInt;
+procedure EventHandler(netDevice, idBcp: word; dt: TDateTime; objType: word; idObj: LongInt;
   idZone, typeSource, idSource, idIvent, tsType: Integer);
 
 var
@@ -26,17 +26,13 @@ var
   int: Integer;
 
 begin
- // exit;
   st := '';
   Init(mes);
   mes.Proga := $FFFF;
   mes.SendTime := dt;
   mes.SysDevice := 0;
-  {
-  if not TryStrToInt(fmain.vle1.Values['NetDevice'], int) then
-    EXIT;
-  }
-  mes.NetDevice := abs(int);
+
+  mes.NetDevice := netDevice;
   mes.BigDevice := idBcp;
   {
     _______ _______ _______ _______ _______
@@ -95,7 +91,7 @@ begin
     0: // Само
       ;
     1: // Пользователь
-      mes.User := idSource;
+      mes.User := abs(idSource);
     2: // Система
       ;
     4: // Скрипт
@@ -823,10 +819,10 @@ begin
 
     end;
 
-  mes.Code := idIvent;
+  mes.Code := abs(idIvent); //need delete
   if mes.Code <> 0 then
   begin
-    fmain.Send(mes);
+    //fmain.Send(mes);
     // fmain.Memo1.Lines.Add(st);
   end;
 

@@ -14,14 +14,11 @@ type
   TdmSigma = class(TDataModule)
     DB_Protocol: TIBDatabase;
     TR_Protocol: TIBTransaction;
-    qTable1: TIBQuery;
-    dsTable1: TDataSource;
+    Query1: TIBQuery;
     DB_Work: TIBDatabase;
     TR_Work: TIBTransaction;
     qUsr: TIBQuery;
-    dsUsr: TDataSource;
     qPodraz: TIBQuery;
-    dsPodraz: TDataSource;
     IBQuery4: TIBQuery;
     DataSource4: TDataSource;
     qConfig: TIBQuery;
@@ -29,9 +26,7 @@ type
     IBEvents1: TIBEvents;
     IBScript1: TIBScript;
     qZone: TIBQuery;
-    dsZone: TDataSource;
     IBQuery2: TIBQuery;
-    DataSource2: TDataSource;
     IBQuery1: TIBQuery;
     procedure IBEvents1EventAlert(Sender: TObject; EventName: string;
       EventCount: Integer; var CancelAlerts: Boolean);

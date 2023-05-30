@@ -9,34 +9,25 @@ uses
   IBX.IBQuery, Vcl.Grids, Vcl.DBGrids, IBX.IBDatabase, Vcl.ComCtrls,
   Vcl.StdCtrls, Vcl.ValEdit, Vcl.ExtDlgs, Vcl.ExtCtrls, Vcl.StdActns,
   System.Actions, Vcl.ActnList, System.Types,
-  cMainKsb, Process, SharedBuffer;
+  cMainKsb, Process, SharedBuffer, Vcl.Menus;
 
 type
   Tfmain = class(TaMainKsb)
     PageControl1: TPageControl;
-    TabSheet1: TTabSheet;
-    TabSheet2: TTabSheet;
-    DBGrid1: TDBGrid;
-    DBGrid2: TDBGrid;
-    TabSheet3: TTabSheet;
-    DBGrid3: TDBGrid;
     TabSheet4: TTabSheet;
-    TabSheet0: TTabSheet;
-    DBGrid0: TDBGrid;
-    btUpdate: TButton;
     TabSheet5: TTabSheet;
     vle1: TValueListEditor;
     StatusBar1: TStatusBar;
     Memo1: TMemo;
     RefreshTimer: TTimer;
-    Button1: TButton;
-    procedure btUpdateClick(Sender: TObject);
+    PopupMenu1: TPopupMenu;
+    N1: TMenuItem;
     procedure FormCreate(Sender: TObject);
     procedure RefreshTimerTimer(Sender: TObject);
-    procedure Button1Click(Sender: TObject);
+    procedure N1Click(Sender: TObject);
   private
   public
-    procedure Consider(mes:KSBMES); override;
+    procedure Consider(mes: KSBMES); override;
   end;
 
   TZone = packed record
@@ -116,8 +107,8 @@ const
 
 var
   fmain: Tfmain;
+  saveEvent: Int64 = 0;
   curEvent: Int64 = 0;
-  BCPElements: Tlist;
   Process: TProcess;
 
 implementation
@@ -131,23 +122,11 @@ uses
 const
   ProtocolDatabaseName = 'c:\Рубеж\DB\Protocol\PROTOCOL.gdb';
   WorkDatabaseName = 'c:\Рубеж\DB\R08Work.gdb';
-  {$IF defined (DEVMODE)} // need_define
-  //WorkDatabaseName = 'c:\bank\test\R08Work.gdb';
-  {$ENDIF}
-
-procedure Tfmain.Button1Click(Sender: TObject);
-var
-  mes: KSBMES;
-begin
-  Init(mes);
-  mes.Code:=11111;
-  send(mes);
-end;
 
 procedure Tfmain.Consider(mes: KSBMES);
 begin
   inherited;
-  Memo1.Lines.Add(mes.Code.ToString);
+  //Memo1.Lines.Add(mes.Code.ToString);
 end;
 
 procedure Tfmain.FormCreate(Sender: TObject);
@@ -180,38 +159,49 @@ begin
     Values[pPARENT_DEPARTMENT] := GetKey(pPARENT_DEPARTMENT,
       Values[pPARENT_DEPARTMENT]);
     Values[pEVENT] := GetKey(pEVENT, Values[pEVENT]);
+    Try
+      curEvent:= StrToInt(Values[pEVENT]);
+    except
+    End;
+    saveEvent:= curEvent;
     //
     dmSigma.DB_Protocol.Close;
-    dmSigma.DB_Protocol.DatabaseName := vle1.Values[pRM_ADDRESS] + ':' + ProtocolDatabaseName;
+    dmSigma.DB_Protocol.DatabaseName := vle1.Values[pRM_ADDRESS] + ':' +
+      ProtocolDatabaseName;
     dmSigma.DB_Work.Close;
-    dmSigma.DB_Work.DatabaseName := vle1.Values[pRM_ADDRESS] + ':' + WorkDatabaseName;
+    dmSigma.DB_Work.DatabaseName := vle1.Values[pRM_ADDRESS] + ':' +
+      WorkDatabaseName;
     dmRostek.DB_Techbase.Close;
     dmRostek.DB_Techbase.DatabaseName := vle1.Values[pTB];
     dmRostek.DB_Passbase.Close;
     dmRostek.DB_Passbase.DatabaseName := vle1.Values[pPB];
   end;
 
+  StatusBar1.Panels[0].Text := 'Старт: ' + DateTimeToStr(now);
   Process := TProcess.Create;
 end;
-
-
 
 procedure Tfmain.RefreshTimerTimer(Sender: TObject);
 begin
   vle1.Values[pEVENT] := curEvent.ToString + ' (' + testSigmaDb.ToString + ')';
-end;
-
-procedure Tfmain.btUpdateClick(Sender: TObject);
-begin
+  if (curEvent > saveEvent) then
   try
-    dmSigma.qUsr.Open;
+     SetKey(pEVENT, curEvent);
+     saveEvent:= curEvent;
   except
   end;
 end;
 
-Initialization
+procedure Tfmain.N1Click(Sender: TObject);
+var
+  mes: KSBMES;
+begin
+  Init(mes);
+  mes.Code := 11111;
+  send(mes);
+end;
 
-BCPElements := Tlist.Create;
+Initialization
 
 Finalization
 
