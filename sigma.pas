@@ -8,32 +8,24 @@ uses
   Vcl.ExtCtrls, FireDAC.Stan.Intf, FireDAC.Stan.Option, FireDAC.Stan.Error,
   FireDAC.UI.Intf, FireDAC.Phys.Intf, FireDAC.Stan.Def, FireDAC.Stan.Pool,
   FireDAC.Stan.Async, FireDAC.Phys, FireDAC.Phys.FB, FireDAC.Phys.FBDef,
-  FireDAC.VCLUI.Wait, FireDAC.Comp.Client;
+  FireDAC.VCLUI.Wait, FireDAC.Comp.Client, IBX.IBDatabaseINI;
 
 type
   TdmSigma = class(TDataModule)
     DB_Protocol: TIBDatabase;
     TR_Protocol: TIBTransaction;
-    Query1: TIBQuery;
+    qEvent: TIBQuery;
     DB_Work: TIBDatabase;
     TR_Work: TIBTransaction;
     qUsr: TIBQuery;
     qPodraz: TIBQuery;
-    IBQuery4: TIBQuery;
-    DataSource4: TDataSource;
     qConfig: TIBQuery;
-    sConfig: TDataSource;
-    IBEvents1: TIBEvents;
-    IBScript1: TIBScript;
-    qZone: TIBQuery;
-    IBQuery2: TIBQuery;
     IBQuery1: TIBQuery;
+    IBDatabaseINI1: TIBDatabaseINI;
     procedure IBEvents1EventAlert(Sender: TObject; EventName: string;
       EventCount: Integer; var CancelAlerts: Boolean);
   private
-    { Private declarations }
   public
-    { Public declarations }
   end;
 
 var

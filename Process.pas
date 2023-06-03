@@ -6,7 +6,9 @@ uses
   System.Classes;
 
 type
-  TSigmaOperation = (OP_NONE, OP_START, OP_UPDATE_CFG, OP_CFG, OP_EVENT);
+  TSigmaOperation = (OP_NONE, OP_INIT, OP_SYNC_CONFIG, OP_START_EVENT,
+    OP_NEXT_EVENT);
+  TSrc = (SRC_NONE, SRC_GENERATOR, SRC_TABLE, SRC_TECHBASE, SRC_PASSBASE);
 
   TProcess = class(TThread)
   private
@@ -14,317 +16,275 @@ type
     NetDevice: word;
     logStr: String;
     procedure Execute; override;
+    procedure StartEvent;
+    procedure NextEvent;
     procedure GetBCPElements;
-    procedure Log;
+    procedure GetPodraz;
+    procedure GetUsr;
+    function GetId(Db: TSrc; Expression, Field: String): Longword;
+    procedure QueryExec(Db: TSrc; Expression: String);
     procedure GetNetDevice;
+    procedure Log;
   end;
+
+function ValToStr(var m: array of byte): string;
+
+const
+  CU_MAX = 1024;
+  ZN_MAX = 1024;
 
 var
   testSigmaDb: Int64 = 0;
-  sigmaOperation: TSigmaOperation = OP_START; // need check
+  sigmaOperation: TSigmaOperation = OP_NONE; // need check
+  err: word;
 
 implementation
 
 uses
-  sigma, main, Sysutils, rostek, Event;
+  sigma, main, Sysutils, rostek, Event, TypInfo;
 
 { TProcess }
-
 procedure TProcess.Execute;
 var
-  id: Int64;
-  i: Integer;
-  s: String;
+  SyncConfig: integer;
+  i: word;
 
 begin
   NameThreadForDebugging('Process');
   Synchronize(GetNetDevice);
 
   while not Terminated do
-  begin
-    case sigmaOperation of
+    try
 
-      OP_START:
-        begin
+      case sigmaOperation of
 
-          if curEvent = 0 then
+        OP_NONE:
           begin
-            with dmSigma.Query1 do
-              try
-                Close;
-                SQL.Clear;
-                SQL.Text := 'select max(COD) as MAXCOD from TABLE1';
-                Open;
-                curEvent := FieldByName('MAXCOD').AsInteger;
-                Close;
-              except
-                Close;
-                logStr := 'Exception: OP_START';
-                Synchronize(Log);
+            TryStrToInt(fmain.vle1.Values[pWORK_MODE], SyncConfig);
+            case SyncConfig of
+              0:
+                sigmaOperation := OP_NONE;
+              1:
+                sigmaOperation := OP_INIT;
+              2:
+                sigmaOperation := OP_SYNC_CONFIG;
+            else
+              sigmaOperation := OP_START_EVENT;
+            end;
+          end;
+
+        OP_INIT:
+          for i := 1 to 2 do
+          begin
+            err := 1;
+            with dmSigma do
+            begin
+              if not DB_Work.Connected then
+                DB_Work.Open;
+              err := 2;
+              if not TR_Work.Active then
+                TR_Work.StartTransaction;
+            end;
+            err := 3;
+            with dmRostek do
+            begin
+              if not DB_Techbase.Connected then
+                DB_Techbase.Open;
+              err := 4;
+              if not TR_Techbase.Active then
+                TR_Techbase.StartTransaction;
+            end;
+            err := 5;
+            sigmaOperation := OP_SYNC_CONFIG;
+          end;
+
+        OP_SYNC_CONFIG:
+          begin
+            err := 6;
+            GetBCPElements;
+            err := 7;
+            GetPodraz;
+            err := 8;
+            GetUsr;
+            err := 9;
+            {
+              s:TMemoryStream;
+              a:array [0..31] of byte;
+              begin
+              S:= TMemoryStream.Create;
+              IBTable1.Edit;
+              a[0]:=127; a[1]:=0; a[2]:=0; a[3]:=1;
+              s.Write(a, 4);
+
+
+              (IBTable1.FieldByName('FBLOB') as TBlobField).LoadFromStream(s);
+              IBTable1.Post;
+              S.Destroy;
+              IBTransaction1.CommitRetaining;
               end;
-          end;
+            }
 
-          sigmaOperation := OP_EVENT;
-        end;
-
-      OP_UPDATE_CFG:
-{$REGION 'OP_UPDATE_CFG'}
-        begin
-          GetBCPElements;
-          sigmaOperation := OP_EVENT;
-        end;
-{$ENDREGION}
-      OP_CFG:
-{$REGION 'OP_CFG'}
-        begin
-          {
-            s:TMemoryStream;
-            a:array [0..31] of byte;
-            begin
-            S:= TMemoryStream.Create;
-            IBTable1.Edit;
-            a[0]:=127; a[1]:=0; a[2]:=0; a[3]:=1;
-            s.Write(a, 4);
-
-
-            (IBTable1.FieldByName('FBLOB') as TBlobField).LoadFromStream(s);
-            IBTable1.Post;
-            S.Destroy;
-            IBTransaction1.CommitRetaining;
-            end;
-          }
-
-          id := 0;
-          with dmRostek do
-          begin
-            if not DB_Techbase.Connected then
-              DB_Techbase.Open;
-            if not TR_Techbase.Active then
-              TR_Techbase.StartTransaction;
-          end;
-
-          with dmRostek.Query1 do
-          begin
-            Close;
-            SQL.Text := 'select max(e.element_id) as MAXID from element e';
-            ExecQuery;
-            if not Eof then
-              id := FieldByName('MAXID').AsInteger;
-          end;
-
-          { ------- }
-          { qPodraz }
-          { ------- }
-          {
-            try
-            with dmSigma.qPodraz do
-            begin
-            Close;
-            Open;
-
-            while not Eof do
-            begin
-            // обработка
-            dmRostek.tElement.Close;
-            dmRostek.tElement.Open;
-            dmRostek.tElement.Append;
-            dmRostek.tElement.FieldByName('ELEMENT_ID').AsInteger :=
-            FieldByName('IDPODR').AsInteger;
-            dmRostek.tElement.FieldByName('ELEMENT_NAME').AsString :=
-            FieldByName('NAMEPODR').AsString;
-            dmRostek.tElement.FieldByName('CHILD_COUNT').AsInteger := 0;
-            dmRostek.tElement.FieldByName('ELEMENT_TYPE_ID').AsInteger := 0;
-            dmRostek.tElement.FieldByName('PASS_LIMIT').AsInteger := 0;
-            dmRostek.tElement.FieldByName('PASS_REAL').AsInteger := 0;
-            dmRostek.tElement.FieldByName('ELEMENT_TYPE_ID').AsInteger := 0;
-            dmRostek.tElement.Post;
-            dmRostek.TR_Passbase.CommitRetaining;
-            sleep(0);
-            Next;
-            end;
-
-            end;
-            except
-            dmSigma.DB_Protocol.Close;
-            dmRostek.DB_Passbase.Close;
-            end;
-          }
-          {
-            try
-            with dmSigma.qPodraz do
-            begin
-            Close;
-            Open;
-            dmRostek.DB_Passbase.Open;
-            if not dmRostek.TR_Passbase.Active then
-            dmRostek.TR_Passbase.StartTransaction;
-            while not Eof do
-            begin
-            // обработка
-            dmRostek.tElement.Close;
-            s := 'update ELEMENT e set e.PARENT_ID = ' +
-            FieldByName('IDPAR').AsString + ' where e.ELEMENT_ID = ' +
-            FieldByName('IDPODR').AsString;
-            s := 'update ELEMENT set PARENT_ID = ' + FieldByName('IDPAR')
-            .AsString + ' where ELEMENT_ID = ' +
-            FieldByName('IDPODR').AsString;
-            dmRostek.tElement.SQL.Text := s;
-            dmRostek.tElement.ExecQuery;
-            dmRostek.TR_Passbase.CommitRetaining;
-            sleep(0);
-            Next;
-            end;
-            end;
-            except
-            dmSigma.DB_Protocol.Close;
-            dmRostek.DB_Passbase.Close;
-            end;
-          }
-          {
-            try
-            with dmSigma.qUsr do
-            begin
-            Close;
-            Open;
-            while not Eof do
-            begin
-            // обработка
-            // curEvent := FieldByName('COD').AsLargeInt;
-            sleep(0);
-            Next;
-            end;
-
-            end;
-            except
-            dmSigma.DB_Protocol.Close;
-            dmRostek.DB_Passbase.Close;
-            end;
-          }
-          {
-            dmRostek.tElement.Open;
-            dmRostek.tElement.Append;
-            dmRostek.tElement.FieldByName('ELEMENT_ID').AsInteger := 100;
-            dmRostek.tElement.FieldByName('CHILD_COUNT').AsInteger := 0;
-            dmRostek.tElement.FieldByName('ELEMENT_TYPE_ID').AsInteger := 100;
-            dmRostek.tElement.FieldByName('ELEMENT_NAME').AsInteger := 100;
-            dmRostek.tElement.FieldByName('PASS_LIMIT').AsInteger := 100;
-            dmRostek.tElement.FieldByName('PASS_REAL').AsInteger := 100;
-            dmRostek.tElement.FieldByName('ELEMENT_TYPE_ID').AsInteger := 0;
-            dmRostek.tElement.Post;
-            dmRostek.TR_Passbase.CommitRetaining;
-          }
-
-          sigmaOperation := OP_EVENT;
-        end;
-{$ENDREGION}
-      OP_EVENT:
-        begin
-
-          try
-            with dmSigma.Query1 do
-            begin
+            {
+              try
+              with dmSigma.qUsr do
+              begin
               Close;
-              SQL.Clear;
-              SQL.Text := 'select COD, DT, IDBCP, IDEVT' +
-                ', IDOBJ, IDSOURCE, IDZON, NAMEEVT, NAMEOBJ, NAMESOURCE' +
-                ', NAMEZON, OBJTYPE, TSTYPE, TYPESOURCE from TABLE1' +
-                ' where COD > ' + IntToStr(curEvent) +
-                ' and IDBCP in (0, 11829) order by COD';
               Open;
               while not Eof do
               begin
-                  EventHandler(NetDevice, FieldByName('IDBCP').AsInteger, // bcp
-                    FieldByName('DT').AsDateTime, // DATE
-                    FieldByName('OBJTYPE').AsInteger, // TC, US, PC
-                    FieldByName('IDOBJ').AsInteger, // значение TC, US, PC
-                    FieldByName('IDZON').AsInteger, // номер зоны в Ростэк
-                    FieldByName('TYPESOURCE').AsInteger,
-                    // Тип (инициатора события) soure (0-никто, 1-пользователь, 2-система, 4-скрипт, 6-ПЭВМ, 9-неисправность, 11-АРМ, 61-БЦП s/n
-                    FieldByName('IDSOURCE').AsInteger, // ID source
-                    FieldByName('IDEVT').AsInteger, // Номер эвента
-                    FieldByName('TSTYPE').AsInteger // тип TC (1-9), 0-не ТС
-                    );
-                curEvent := FieldByName('COD').AsLargeInt;
-                Next;
-                sleep(0);
-
-                { vvv DEMO --------------------------------------------------- }
-                case FieldByName('TSTYPE').AsInteger of
-                  0:
-                    case FieldByName('OBJTYPE').AsInteger of
-                      1:
-                        logStr := 'Зона';
-                      3:
-                        logStr := 'Сетевое устройство';
-                      4:
-                        logStr := 'Пользователь ';
-                      63:
-                        logStr := 'Рубеж Сервер ';
-                    end;
-                  1 .. 4:
-                    logStr := 'Шлейф';
-                  5:
-                    logStr := 'Реле';
-                  6:
-                    logStr := 'Точка доступа';
-                  7:
-                    logStr := 'Терминал';
-                end;
-                logStr := Format('%s %s: %s -> %s',
-                  [DateTimeToStr(FieldByName('DT').AsDateTime), logStr,
-                  FieldByName('NAMEOBJ').AsString, FieldByName('NAMEEVT')
-                  .AsString]);
-                if length(FieldByName('NAMESOURCE').AsString) > 2 then
-                  logStr := logStr + '  (' + FieldByName('NAMESOURCE')
-                    .AsString + ')';
-                Synchronize(Log);
-                { ^^^ DEMO --------------------------------------------------- }
+              // обработка
+              // curEvent := FieldByName('COD').AsLargeInt;
+              sleep(0);
+              Next;
+              end;
 
               end;
-            end;
-          except
-            logStr := 'Exception: OP_EVENT';
-            Synchronize(Log);
-            dmSigma.DB_Protocol.Close;
+              except
+              dmSigma.DB_Protocol.Close;
+              dmRostek.DB_Passbase.Close;
+              end;
+            }
+            {
+              dmRostek.tElement.Open;
+              dmRostek.tElement.Append;
+              dmRostek.tElement.FieldByName('ELEMENT_ID').AsInteger := 100;
+              dmRostek.tElement.FieldByName('CHILD_COUNT').AsInteger := 0;
+              dmRostek.tElement.FieldByName('ELEMENT_TYPE_ID').AsInteger := 100;
+              dmRostek.tElement.FieldByName('ELEMENT_NAME').AsInteger := 100;
+              dmRostek.tElement.FieldByName('PASS_LIMIT').AsInteger := 100;
+              dmRostek.tElement.FieldByName('PASS_REAL').AsInteger := 100;
+              dmRostek.tElement.FieldByName('ELEMENT_TYPE_ID').AsInteger := 0;
+              dmRostek.tElement.Post;
+              dmRostek.TR_Passbase.CommitRetaining;
+            }
+
+            sigmaOperation := OP_START_EVENT;
           end;
 
-          inc(testSigmaDb);
-          sleep(1000);
-        end;
+        OP_START_EVENT:
+          begin
+            StartEvent;
+            sigmaOperation := OP_NEXT_EVENT;
+          end;
 
+        OP_NEXT_EVENT:
+          begin
+            NextEvent;
+            inc(testSigmaDb);
+            sleep(1000);
+          end;
+      end;
+
+      sleep(100);
+    except
+      on E: Exception do
+      begin
+        logStr := 'Exception: ' + GetEnumName(TypeInfo(TSigmaOperation),
+          ord(sigmaOperation)) + ' -(' + err.ToString + ')-> ' + E.Message;
+        Synchronize(Log);
+        dmSigma.DB_Protocol.Close;
+        dmSigma.DB_Work.Close;
+        dmRostek.DB_Passbase.Close;
+        dmRostek.DB_Techbase.Close;
+        sleep(10000);
+      end;
     end;
-    sleep(1);
+
+end;
+
+{$REGION 'hi'}
+
+procedure TProcess.StartEvent;
+var
+  i: word;
+begin
+  if curEvent = 0 then
+  begin
+    for i := 1 to 2 do
+    begin
+      with dmSigma.qEvent do
+      begin
+        Close;
+        // SQL.Text := 'select max(cod) from TABLE1';
+        SQL.Text := 'select max(COD) as MAXCOD from TABLE1';
+        Open;
+        if not eof then
+          curEvent := FieldByName('MAXCOD').AsInteger;
+        Close;
+      end;
+    end;
   end;
 end;
 
-{ GetBCPElements }
+procedure TProcess.NextEvent;
+begin
+  with dmSigma.qEvent do
+  begin
+    Close;
+    SQL.Text := 'select COD, DT, IDBCP, IDEVT' +
+      ', IDOBJ, IDSOURCE, IDZON, NAMEEVT, NAMEOBJ, NAMESOURCE' +
+      ', NAMEZON, OBJTYPE, TSTYPE, TYPESOURCE from TABLE1' + ' where COD > ' +
+      IntToStr(curEvent) + ' and IDBCP in (0, 11829) order by COD';
+    Open;
+    while not eof do
+    begin
+      EventHandler(NetDevice, FieldByName('IDBCP').AsInteger, // bcp
+        FieldByName('DT').AsDateTime, // DATE
+        FieldByName('OBJTYPE').AsInteger, // TC, US, PC
+        FieldByName('IDOBJ').AsInteger, // значение TC, US, PC
+        FieldByName('IDZON').AsInteger, // номер зоны в Ростэк
+        FieldByName('TYPESOURCE').AsInteger,
+        // Тип (инициатора события) soure (0-никто, 1-пользователь, 2-система, 4-скрипт, 6-ПЭВМ, 9-неисправность, 11-АРМ, 61-БЦП s/n
+        FieldByName('IDSOURCE').AsInteger, // ID source
+        FieldByName('IDEVT').AsInteger, // Номер эвента
+        FieldByName('TSTYPE').AsInteger // тип TC (1-9), 0-не ТС
+        );
+      curEvent := FieldByName('COD').AsLargeInt;
+      Next;
+      sleep(1);
+
+      { vvv DEMO --------------------------------------------------- }
+      case FieldByName('TSTYPE').AsInteger of
+        0:
+          case FieldByName('OBJTYPE').AsInteger of
+            1:
+              logStr := 'Зона';
+            3:
+              logStr := 'Сетевое устройство';
+            4:
+              logStr := 'Пользователь ';
+            63:
+              logStr := 'Рубеж Сервер ';
+          end;
+        1 .. 4:
+          logStr := 'Шлейф';
+        5:
+          logStr := 'Реле';
+        6:
+          logStr := 'Точка доступа';
+        7:
+          logStr := 'Терминал';
+      end;
+      logStr := Format('%s %s: %s -> %s',
+        [DateTimeToStr(FieldByName('DT').AsDateTime), logStr,
+        FieldByName('NAMEOBJ').AsString, FieldByName('NAMEEVT').AsString]);
+      if length(FieldByName('NAMESOURCE').AsString) > 2 then
+        logStr := logStr + '  (' + FieldByName('NAMESOURCE').AsString + ')';
+      Synchronize(Log);
+      { ^^^ DEMO --------------------------------------------------- }
+
+    end;
+  end;
+end;
 
 procedure TProcess.GetBCPElements;
 var
   ConfigArray: TArray<byte>; // TBytes;
 
-{$REGION 'Clear'}
-  procedure Clear;
-  var
-    pNode: TPNode;
-
-  begin
-    {
-      for pNode in BCPElements do
-      if pNode <> nil then
-      begin
-      pNode^.pcName := '';
-      Dispose(pNode);
-      BCPElements.Remove(pNode);
-      end;
-    }
-  end;
-{$ENDREGION}
-{$REGION 'PrintConfig'}
   procedure PrintConfig(bcpNumber: word; a: TArray<byte>);
   var
     tf: Textfile;
-    i: longword;
+    i: Longword;
     b: byte;
   begin
     AssignFile(tf, Format('.\blob%d.txt', [bcpNumber])); // need_del
@@ -352,18 +312,17 @@ var
       CloseFile(tf);
     end;
   end;
-{$ENDREGION}
-{$REGION 'ParseConfig'}
-  function ParseConfig(a: TArray<byte>): boolean;
 
+  function ParseConfig(a: TArray<byte>): boolean;
   type
     TelementParse = (EP_NONE, EP_ZONE, EP_TC, EP_SEARCH);
 
   VAR
-    parElement: Longint;
-    curLen, txtLen: longword;
+    DrvParentID, BCPParentID, ZoneParentID: Longint;
+    curLen, txtLen: Longword;
     zoneCount: word;
     ep: TelementParse;
+    curBCP: word;
 
     function StringToBytes(const Value: WideString): TBytes;
     begin
@@ -379,46 +338,135 @@ var
         Move(Value[0], result[1], length(Value));
     end;
 
-    function CreateBCP(a: TArray<byte>): boolean;
+    procedure CreateBCP(a: TArray<byte>);
+    var
+      id: Longint;
+      s: String;
     begin
-      logStr := 'BCP: ' + IntToStr(a[0] + a[1] shl 8);
-      // Synchronize(Log);
-      result := False;
+      curBCP := a[0] + a[1] shl 8;
+      logStr := 'БЦП ' + IntToStr(curBCP);
+      Synchronize(Log); //
+      id := GetId(SRC_TECHBASE,
+        Format('select ELEMENT_ID from ELEMENT where TYPE_DEVICE=4 and SYSTEM_DEVICE=0 and NET_DEVICE=%d and BIG_DEVICE=%d and SMALL_DEVICE=0',
+        [NetDevice, a[0] + a[1] shl 8]), 'ELEMENT_ID');
+      if id = 0 then
+        id := GetId(SRC_TECHBASE,
+          'select GEN_ID(GEN_ELEMENT_ID, 1) from RDB$DATABASE', 'GEN_ID');
+      s := Format
+        ('update or insert into ELEMENT (ELEMENT_ID, PARENT_ID, CATEGORY_ID, TYPE_DEVICE, PARTION, DESCRIPTION, SYSTEM_DEVICE, NET_DEVICE, BIG_DEVICE, SMALL_DEVICE, ELEMENT_NAME) '
+        + 'values (%d, %d, %d, %d, NULL, NULL, %d, %d, %d, %d, ''%s'') ' +
+        'matching (TYPE_DEVICE, SYSTEM_DEVICE, NET_DEVICE, BIG_DEVICE, SMALL_DEVICE)',
+        [id, DrvParentID, 110, 4, 0, NetDevice, a[0] + a[1] shl 8, 0, logStr]);
+      QueryExec(SRC_TECHBASE, s);
+      BCPParentID := id;
     end;
 
-    function CreateZone(a: TArray<byte>): boolean;
+    procedure CreateZone(a: TArray<byte>);
     var
       ar: TBytes;
       len1, len2: word;
+      id: Longint;
+      zn: integer;
+      s: String;
     begin
-      // ar := StringToBytes('ПриветWorld');
       len1 := SizeOf(TZone);
       len2 := a[len1] + (a[len1 + 1] shl 8);
       ar := Copy(a, len1 + 2 + 2, len2 - 2);
-      logStr := Format('Зона %x%x%x > %s',
-        [a[1], a[2], a[3], BytesToString(ar)]);
+      logStr := Format('Зона %s: %s', [ValToStr(a[1]), BytesToString(ar)]);
       // Synchronize(Log);
-      result := False;
+      id := 0;
+      if TryStrToInt(ValToStr(a[1]), zn) then
+        id := GetId(SRC_TECHBASE,
+          Format('select ELEMENT_ID from ELEMENT where TYPE_DEVICE=6 and SYSTEM_DEVICE=0 and NET_DEVICE=%d and BIG_DEVICE=%d and SMALL_DEVICE=%d',
+          [NetDevice, curBCP, zn]), 'ELEMENT_ID');
+      if id = 0 then
+        id := GetId(SRC_TECHBASE,
+          'select GEN_ID(GEN_ELEMENT_ID, 1) from RDB$DATABASE', 'GEN_ID');
+      s := Format
+        ('update or insert into ELEMENT (ELEMENT_ID, PARENT_ID, CATEGORY_ID, TYPE_DEVICE, PARTION, DESCRIPTION, SYSTEM_DEVICE, NET_DEVICE, BIG_DEVICE, SMALL_DEVICE, ELEMENT_NAME) '
+        + 'values (%d, %d, %d, %d, NULL, NULL, %d, %d, %d, %d, ''%s'') ' +
+        'matching (TYPE_DEVICE, SYSTEM_DEVICE, NET_DEVICE, BIG_DEVICE, SMALL_DEVICE)',
+        [id, BCPParentID, 112, 6, 0, NetDevice, curBCP, zn, logStr]);
+      QueryExec(SRC_TECHBASE, s);
+      ZoneParentID := id;
     end;
 
-    function CreateTC(a: TArray<byte>): boolean;
+    procedure CreateTC(a: TArray<byte>);
     var
       ar: TBytes;
       len1, len2: word;
+      id, categoryId, TypeDevice, SysDevice, tc: word;
+      s: String;
     begin
       len1 := SizeOf(TTc);
       len2 := a[len1] + (a[len1 + 1] shl 8);
       ar := Copy(a, len1 + 2 + 2, len2 - 2);
-      logStr := Format('TC %d:%d > %s', [a[2], a[0] + a[1] shl 8,
-        BytesToString(ar)]);
+      tc := a[0] + a[1] shl 8;
+
+      case a[2] of
+        1 .. 4:
+          begin
+            SysDevice := 0;
+            categoryId := 111;
+            TypeDevice := 5;
+            logStr := Format('Шлейф %d: %s %s',
+              [tc, ValToStr(a[3]), BytesToString(ar)]);
+          end;
+        5:
+          begin
+            SysDevice := 0;
+            categoryId := 115;
+            TypeDevice := 7;
+            logStr := Format('Реле %d: %s %s',
+              [tc, ValToStr(a[3]), BytesToString(ar)]);
+          end;
+        6:
+          begin
+            SysDevice := 1;
+            categoryId := 13;
+            TypeDevice := 2;
+            logStr := Format('Сч %d: %s %s',
+              [tc, ValToStr(a[3]), BytesToString(ar)]);
+          end;
+        7:
+          begin
+            SysDevice := 0;
+            categoryId := 117;
+            TypeDevice := 8;
+            logStr := Format('Терминал %d: %s %s',
+              [tc, ValToStr(a[3]), BytesToString(ar)]);
+          end;
+      else
+        begin
+          SysDevice := 0;
+          categoryId := 0;
+          TypeDevice := 0;
+          logStr := 'Неизвестныйй ТС'
+        end;
+
+      end;
       // Synchronize(Log);
-      result := False;
+
+      id := GetId(SRC_TECHBASE,
+        Format('select ELEMENT_ID from ELEMENT where TYPE_DEVICE=%d and SYSTEM_DEVICE=%d and NET_DEVICE=%d and BIG_DEVICE=%d and SMALL_DEVICE=%d',
+        [TypeDevice, SysDevice, NetDevice, curBCP, tc]), 'ELEMENT_ID');
+      if id = 0 then
+        id := GetId(SRC_TECHBASE,
+          'select GEN_ID(GEN_ELEMENT_ID, 1) from RDB$DATABASE', 'GEN_ID');
+      s := Format
+        ('update or insert into ELEMENT (ELEMENT_ID, PARENT_ID, CATEGORY_ID, TYPE_DEVICE, PARTION, DESCRIPTION, SYSTEM_DEVICE, NET_DEVICE, BIG_DEVICE, SMALL_DEVICE, ELEMENT_NAME) '
+        + 'values (%d, %d, %d, %d, NULL, NULL, %d, %d, %d, %d, ''%s'') ' +
+        'matching (TYPE_DEVICE, SYSTEM_DEVICE, NET_DEVICE, BIG_DEVICE, SMALL_DEVICE)',
+        [id, ZoneParentID, categoryId, TypeDevice, SysDevice, NetDevice, curBCP,
+        tc, logStr]);
+
+      QueryExec(SRC_TECHBASE, s);
     end;
 
   // -------------------------
   begin
     result := False;
-    if not TryStrToInt(fmain.vle1.Values[pPARENT_ELEMENT], parElement) then
+    if not TryStrToInt(fmain.vle1.Values[pPARENT_ELEMENT], DrvParentID) then
       exit;
 
     // start
@@ -489,38 +537,270 @@ var
           end;
 
       end;
-
   end;
-{$ENDREGION}
 
 begin
-  Clear;
   with dmSigma.qConfig do
   begin
     DisableControls;
     Close;
+    SQL.Text := 'select * from CONFIG';
+    err := 11;
     Open;
+    err := 12;
     try
-      while not Eof do
+      while not eof do
       begin
         ConfigArray := FieldByName('BCPCONF').AsBytes;
-{$IFDEF DEVMODE}
         // PrintConfig(FieldByName('IDBCP').AsInteger, ConfigArray);
-{$ENDIF}
         ParseConfig(ConfigArray);
         Next;
       end;
-
     finally
       EnableControls;
     end;
+    err := 13;
   end;
 
 end;
 
+procedure TProcess.GetPodraz;
+const
+  PodrazTable = 'RM$PODRAZ';
+var
+  exist: boolean;
+
+begin
+  exist := False;
+  try
+    with dmRostek.qPBAny do
+    begin
+      Close;
+      SQL.Clear;
+      SQL.Add('select count(*) from ' + PodrazTable + ';');
+      Open;
+      exist := True;
+      logStr := 'Table ' + PodrazTable + ' exist';
+    end;
+    dmRostek.TR_Passbase.Commit;
+  except
+    logStr := 'Table ' + PodrazTable + ' not exist';
+  end;
+  Log;
+
+  if not(exist) then
+    try
+      with dmRostek.qPBAny do
+      begin
+        Close;
+        SQL.Clear;
+        SQL.Add('create table ' + PodrazTable + ' (');
+        SQL.Add('FNETDEVICE INTEGER NOT NULL, ');
+        SQL.Add('FBIGDEVICE INTEGER NOT NULL, ');
+        SQL.Add('FPODRAZ INTEGER NOT NULL, ');
+        SQL.Add('FROSTEK_ELEMENT INTEGER NOT NULL);');
+        ExecSQL;
+        dmRostek.TR_Passbase.Commit;
+        logStr := 'Table ' + PodrazTable + ' was created';
+        Log;
+      end;
+    except
+    end;
+
+  {
+    with dmSigma.qPodraz do
+    begin
+    Close;
+    SQL.Text := 'select IDPODR, IDPAR, NAMEPODR from PODRAZ order by IDPAR';
+    Open;
+    while not eof do
+    with dmRostek do
+    begin
+    qTBElement.Close;
+    qTBElement.Open;
+    qTBElement.Append;
+    qTBElement.FieldByName('ELEMENT_ID').AsInteger := FieldByName('IDPODR')
+    .AsInteger;
+    qTBElement.FieldByName('CHILD_COUNT').AsInteger := 0;
+    qTBElement.FieldByName('ELEMENT_TYPE_ID').AsInteger := 0;
+    qTBElement.FieldByName('ELEMENT_NAME').AsString :=
+    FieldByName('NAMEPODR').AsString;
+    qTBElement.FieldByName('PASS_LIMIT').AsInteger := 0;
+    qTBElement.FieldByName('PASS_REAL').AsInteger := 0;
+    qTBElement.Post;
+    dmRostek.TR_Passbase.CommitRetaining;
+    sleep(0);
+    Next;
+    end;
+
+    end;
+
+    with dmSigma.qPodraz do
+    begin
+    Close;
+    Open;
+    dmRostek.DB_Passbase.Open;
+    if not dmRostek.TR_Passbase.Active then
+    dmRostek.TR_Passbase.StartTransaction;
+    while not eof do
+    begin
+    // обработка
+    dmRostek.tElement.Close;
+    s := 'update ELEMENT e set e.PARENT_ID = ' + FieldByName('IDPAR').AsString
+    + ' where e.ELEMENT_ID = ' + FieldByName('IDPODR').AsString;
+    s := 'update ELEMENT set PARENT_ID = ' + FieldByName('IDPAR').AsString +
+    ' where ELEMENT_ID = ' + FieldByName('IDPODR').AsString;
+    dmRostek.qElement.SQL.Text := s;
+    dmRostek.qElement.ExecSQL;
+    dmRostek.TR_Passbase.CommitRetaining;
+    sleep(0);
+    Next;
+    end;
+    end;
+  }
+end;
+
+procedure TProcess.GetUsr;
+const
+  UsrTable = 'RM$USR';
+var
+  exist: boolean;
+
+begin
+  exist := False;
+  try
+    with dmRostek.qPBAny do
+    begin
+      Close;
+      SQL.Clear;
+      SQL.Add('select count(*) from ' + UsrTable + ';');
+      Open;
+      exist := True;
+      logStr := 'Table ' + UsrTable + ' exist';
+    end;
+    dmRostek.TR_Passbase.Commit;
+  except
+    logStr := 'Table ' + UsrTable + ' not exist';
+  end;
+  Log;
+
+  if not(exist) then
+    try
+      with dmRostek.qPBAny do
+      begin
+        Close;
+        SQL.Clear;
+        SQL.Add('create table ' + UsrTable + ' (');
+        SQL.Add('FNETDEVICE INTEGER NOT NULL, ');
+        SQL.Add('FBIGDEVICE INTEGER NOT NULL, ');
+        SQL.Add('FBCP INTEGER NOT NULL, ');
+        SQL.Add('FUSR INTEGER NOT NULL, ');
+        SQL.Add('FCARD INTEGER NOT NULL, ');
+        SQL.Add('FFACILITY SMALLINT NOT NULL, ');
+        SQL.Add('FROSTEK_OBJECT INTEGER NOT NULL, ');
+        SQL.Add('FROSTEK_PASS INTEGER NOT NULL);');
+        ExecSQL;
+        dmRostek.TR_Passbase.Commit;
+        logStr := 'Table ' + UsrTable + ' was created';
+        Log;
+      end;
+    except
+    end;
+
+  exist := False;
+  try
+    with dmRostek.qTBAny do
+    begin
+      Close;
+      SQL.Clear;
+      SQL.Add('select count(*) from ' + UsrTable + ';');
+      Open;
+      exist := True;
+      logStr := 'Table ' + UsrTable + ' exist';
+    end;
+    dmRostek.TR_Techbase.Commit;
+  except
+    logStr := 'Table ' + UsrTable + ' not exist';
+  end;
+  Log;
+
+  if not(exist) then
+    try
+      with dmRostek.qTBAny do
+      begin
+        Close;
+        SQL.Clear;
+        SQL.Add('create table ' + UsrTable + ' (');
+        SQL.Add('FNETDEVICE INTEGER NOT NULL, ');
+        SQL.Add('FBIGDEVICE INTEGER NOT NULL, ');
+        SQL.Add('FBCP INTEGER NOT NULL, ');
+        SQL.Add('FUSR INTEGER NOT NULL, ');
+        SQL.Add('FROSTEK_EMPLOYEE INTEGER NOT NULL);');
+        ExecSQL;
+        dmRostek.TR_Techbase.Commit;
+        logStr := 'Table ' + UsrTable + ' was created';
+        Log;
+      end;
+    except
+    end;
+end;
+
+function TProcess.GetId(Db: TSrc; Expression, Field: String): Longword;
+begin
+  result := 0;
+  case Db of
+
+    SRC_TECHBASE:
+      with dmRostek.qTBAny do
+      begin
+        Close;
+        SQL.Text := Expression;
+        Open;
+        if not eof then
+          result := FieldByName(Field).AsInteger;
+      end;
+
+    SRC_PASSBASE:
+      with dmRostek.qPBAny do
+      begin
+        Close;
+        SQL.Text := Expression;
+        Open;
+        if not eof then
+          result := FieldByName(Field).AsInteger;
+      end;
+
+  end;
+end;
+
+procedure TProcess.QueryExec(Db: TSrc; Expression: String);
+begin
+  case Db of
+
+    SRC_TECHBASE:
+      with dmRostek.qTBAny do
+      begin
+        Close;
+        SQL.Text := Expression;
+        ExecSQL;
+        dmRostek.TR_Techbase.CommitRetaining;
+      end;
+
+    SRC_PASSBASE:
+      with dmRostek.qPBAny do
+      begin
+        Close;
+        SQL.Text := Expression;
+        ExecSQL;
+        dmRostek.TR_Techbase.CommitRetaining;
+      end;
+
+  end;
+end;
+
 procedure TProcess.GetNetDevice;
 var
-  i: Integer;
+  i: integer;
 begin
   NetDevice := 0;
   TryStrToInt(fmain.vle1.Values['NetDevice'], i);
@@ -545,7 +825,33 @@ begin
     CloseFile(tf);
   end;
 
+  if fmain.Memo1.Lines.Count > 10000 then
+    fmain.Memo1.Clear;
   fmain.Memo1.Lines.Add(logStr);
 end;
+
+function ValToStr(var m: array of byte): string;
+var
+  st: string;
+  i: byte;
+
+begin
+  st := '';
+  for i := 0 to 2 do
+  begin
+    st := st + IntToHex(m[i], 2);
+    if st[length(st)] = 'A' then
+      SetLength(st, length(st) - 1);
+    if st[length(st)] = 'A' then
+      SetLength(st, length(st) - 1);
+  end;
+
+  for i := 5 downto 0 do
+    if ((m[3] shr i) and 1) > 0 then
+      Insert('.', st, i + 2);
+
+  result := st;
+end;
+{$ENDREGION}
 
 end.

@@ -14,10 +14,10 @@ type
     TR_Techbase: TIBTransaction;
     DB_Passbase: TIBDatabase;
     TR_Passbase: TIBTransaction;
-    tElement: TIBTable;
-    Query1: TIBSQL;
-    IBQuery1: TIBQuery;
-    IBQuery2: TIBQuery;
+    qTBAny: TIBQuery;
+    qPBAny: TIBQuery;
+    qTBElement: TIBQuery;
+    qPBElement: TIBQuery;
     procedure IBEvents1EventAlert(Sender: TObject; EventName: string;
       EventCount: Integer; var CancelAlerts: Boolean);
   private

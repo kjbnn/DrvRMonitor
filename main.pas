@@ -103,6 +103,7 @@ const
   pPARENT_ELEMENT = 'Родительский элемент';
   pPARENT_USER = 'Родительский пользователь';
   pPARENT_DEPARTMENT = 'Родительское подразделение';
+  pWORK_MODE = 'Режим работы';
   pEVENT = 'Событие';
 
 var
@@ -144,6 +145,7 @@ begin
     Add(pPARENT_ELEMENT + '=' + '0');
     Add(pPARENT_USER + '=' + '0');
     Add(pPARENT_DEPARTMENT + '=' + '0');
+    Add(pWORK_MODE + '=' + '0');
     Add(pEVENT + '=' + '0');
   end;
 
@@ -158,6 +160,7 @@ begin
     Values[pPARENT_USER] := GetKey(pPARENT_USER, Values[pPARENT_USER]);
     Values[pPARENT_DEPARTMENT] := GetKey(pPARENT_DEPARTMENT,
       Values[pPARENT_DEPARTMENT]);
+    Values[pWORK_MODE] := GetKey(pWORK_MODE, Values[pWORK_MODE]);
     Values[pEVENT] := GetKey(pEVENT, Values[pEVENT]);
     Try
       curEvent:= StrToInt(Values[pEVENT]);
@@ -190,6 +193,7 @@ begin
      saveEvent:= curEvent;
   except
   end;
+
 end;
 
 procedure Tfmain.N1Click(Sender: TObject);
