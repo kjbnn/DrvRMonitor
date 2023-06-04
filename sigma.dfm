@@ -65,9 +65,9 @@ object dmSigma: TdmSigma
     CachedUpdates = False
     ParamCheck = True
     SQL.Strings = (
-      'select  IDBCP, IDZONE AS USR, FAMIL, IME, OTC, PODR from USR')
-    Left = 100
-    Top = 210
+      '')
+    Left = 30
+    Top = 220
   end
   object qPodraz: TIBQuery
     Database = DB_Work

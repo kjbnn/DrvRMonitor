@@ -40,7 +40,6 @@ uses Vcl.Dialogs, main;
 procedure TdmRostek.IBEvents1EventAlert(Sender: TObject; EventName: string;
   EventCount: Integer; var CancelAlerts: Boolean);
 begin
-  //ShowMessage('Есть событие.');
   fmain.Memo1.Lines.Add( Format('%s %d %s',[EventName, EventCount, CancelAlerts.ToString] ) );
 end;
 

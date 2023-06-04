@@ -134,28 +134,15 @@ procedure Tfmain.FormCreate(Sender: TObject);
 begin
   inherited;
   NumberApplication := GetKey('NUMBER', 40);
-  with vle1.Strings do
-  begin
-    Clear;
-    Add(pRM_ADDRESS + '=' + 'localhost');
-    Add(pTB + '=' + 'localhost/3051:d:\Database\Techbase.gdb');
-    Add(pPB + '=' + 'localhost/3051:d:\Database\Passbase.gdb');
-    Add('NetDevice' + '=' + '1');
-    Add('BigDevice' + '=' + '1');
-    Add(pPARENT_ELEMENT + '=' + '0');
-    Add(pPARENT_USER + '=' + '0');
-    Add(pPARENT_DEPARTMENT + '=' + '0');
-    Add(pWORK_MODE + '=' + '0');
-    Add(pEVENT + '=' + '0');
-  end;
 
   with vle1 do
   begin
+    Strings.Clear;
     Values[pRM_ADDRESS] := GetKey(pRM_ADDRESS, Values[pRM_ADDRESS]);
     Values[pTB] := GetKey(pTB, Values[pTB]);
     Values[pPB] := GetKey(pPB, Values[pPB]);
-    Values['NetDevice'] := GetKey('NetDevice', Values['NetDevice']);
-    Values['BigDevice'] := GetKey('BigDevice', Values['BigDevice']);
+    Values['ModuleNetDevice'] := ModuleNetDevice.ToString;
+    Values['ModuleBigDevice'] := ModuleBigDevice.ToString;
     Values[pPARENT_ELEMENT] := GetKey(pPARENT_ELEMENT, Values[pPARENT_USER]);
     Values[pPARENT_USER] := GetKey(pPARENT_USER, Values[pPARENT_USER]);
     Values[pPARENT_DEPARTMENT] := GetKey(pPARENT_DEPARTMENT,

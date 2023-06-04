@@ -5,6 +5,11 @@ interface
 uses
   System.Classes;
 
+{
+  const
+  PodrazTable = 'RM$PODRAZ';
+  UsrTable = 'RM$USR';
+}
 type
   TSigmaOperation = (OP_NONE, OP_INIT, OP_SYNC_CONFIG, OP_START_EVENT,
     OP_NEXT_EVENT);
@@ -13,7 +18,6 @@ type
   TProcess = class(TThread)
   private
   protected
-    NetDevice: word;
     logStr: String;
     procedure Execute; override;
     procedure StartEvent;
@@ -23,20 +27,21 @@ type
     procedure GetUsr;
     function GetId(Db: TSrc; Expression, Field: String): Longword;
     procedure QueryExec(Db: TSrc; Expression: String);
-    procedure GetNetDevice;
     procedure Log;
   end;
 
-function ValToStr(var m: array of byte): string;
+function ValToStr(var m: array of Byte): String;
 
 const
   CU_MAX = 1024;
   ZN_MAX = 1024;
+  PodrazTable = 'RM$PODRAZ';
+  UsrTable = 'RM$USR';
 
 var
   testSigmaDb: Int64 = 0;
   sigmaOperation: TSigmaOperation = OP_NONE; // need check
-  err: word;
+  err: Word;
 
 implementation
 
@@ -46,12 +51,11 @@ uses
 { TProcess }
 procedure TProcess.Execute;
 var
-  SyncConfig: integer;
-  i: word;
+  SyncConfig: Integer;
+  i: Word;
 
 begin
   NameThreadForDebugging('Process');
-  Synchronize(GetNetDevice);
 
   while not Terminated do
     try
@@ -109,7 +113,7 @@ begin
             err := 9;
             {
               s:TMemoryStream;
-              a:array [0..31] of byte;
+              a:array [0..31] of Byte;
               begin
               S:= TMemoryStream.Create;
               IBTable1.Edit;
@@ -196,7 +200,7 @@ end;
 
 procedure TProcess.StartEvent;
 var
-  i: word;
+  i: Word;
 begin
   if curEvent = 0 then
   begin
@@ -228,7 +232,7 @@ begin
     Open;
     while not eof do
     begin
-      EventHandler(NetDevice, FieldByName('IDBCP').AsInteger, // bcp
+      EventHandler(fmain.ModuleNetDevice, FieldByName('IDBCP').AsInteger, // bcp
         FieldByName('DT').AsDateTime, // DATE
         FieldByName('OBJTYPE').AsInteger, // TC, US, PC
         FieldByName('IDOBJ').AsInteger, // значение TC, US, PC
@@ -243,7 +247,7 @@ begin
       Next;
       sleep(1);
 
-      { vvv DEMO --------------------------------------------------- }
+      { vvv DEMO vvv }
       case FieldByName('TSTYPE').AsInteger of
         0:
           case FieldByName('OBJTYPE').AsInteger of
@@ -271,7 +275,7 @@ begin
       if length(FieldByName('NAMESOURCE').AsString) > 2 then
         logStr := logStr + '  (' + FieldByName('NAMESOURCE').AsString + ')';
       Synchronize(Log);
-      { ^^^ DEMO --------------------------------------------------- }
+      { ^^^ DEMO ^^^ }
 
     end;
   end;
@@ -279,13 +283,13 @@ end;
 
 procedure TProcess.GetBCPElements;
 var
-  ConfigArray: TArray<byte>; // TBytes;
+  ConfigArray: TArray<Byte>; // TBytes;
 
-  procedure PrintConfig(bcpNumber: word; a: TArray<byte>);
+  procedure PrintConfig(bcpNumber: Word; a: TArray<Byte>);
   var
     tf: Textfile;
     i: Longword;
-    b: byte;
+    b: Byte;
   begin
     AssignFile(tf, Format('.\blob%d.txt', [bcpNumber])); // need_del
     try
@@ -313,16 +317,16 @@ var
     end;
   end;
 
-  function ParseConfig(a: TArray<byte>): boolean;
+  function ParseConfig(a: TArray<Byte>): Boolean;
   type
     TelementParse = (EP_NONE, EP_ZONE, EP_TC, EP_SEARCH);
 
   VAR
     DrvParentID, BCPParentID, ZoneParentID: Longint;
     curLen, txtLen: Longword;
-    zoneCount: word;
+    zoneCount: Word;
     ep: TelementParse;
-    curBCP: word;
+    curBCP: Word;
 
     function StringToBytes(const Value: WideString): TBytes;
     begin
@@ -338,17 +342,17 @@ var
         Move(Value[0], result[1], length(Value));
     end;
 
-    procedure CreateBCP(a: TArray<byte>);
+    procedure CreateBCP(a: TArray<Byte>);
     var
       id: Longint;
       s: String;
     begin
       curBCP := a[0] + a[1] shl 8;
-      logStr := 'БЦП ' + IntToStr(curBCP);
+      logStr := 'Найден БЦП ' + IntToStr(curBCP);
       Synchronize(Log); //
       id := GetId(SRC_TECHBASE,
         Format('select ELEMENT_ID from ELEMENT where TYPE_DEVICE=4 and SYSTEM_DEVICE=0 and NET_DEVICE=%d and BIG_DEVICE=%d and SMALL_DEVICE=0',
-        [NetDevice, a[0] + a[1] shl 8]), 'ELEMENT_ID');
+        [fmain.ModuleNetDevice, a[0] + a[1] shl 8]), 'ELEMENT_ID');
       if id = 0 then
         id := GetId(SRC_TECHBASE,
           'select GEN_ID(GEN_ELEMENT_ID, 1) from RDB$DATABASE', 'GEN_ID');
@@ -356,17 +360,18 @@ var
         ('update or insert into ELEMENT (ELEMENT_ID, PARENT_ID, CATEGORY_ID, TYPE_DEVICE, PARTION, DESCRIPTION, SYSTEM_DEVICE, NET_DEVICE, BIG_DEVICE, SMALL_DEVICE, ELEMENT_NAME) '
         + 'values (%d, %d, %d, %d, NULL, NULL, %d, %d, %d, %d, ''%s'') ' +
         'matching (TYPE_DEVICE, SYSTEM_DEVICE, NET_DEVICE, BIG_DEVICE, SMALL_DEVICE)',
-        [id, DrvParentID, 110, 4, 0, NetDevice, a[0] + a[1] shl 8, 0, logStr]);
+        [id, DrvParentID, 110, 4, 0, fmain.ModuleNetDevice, a[0] + a[1] shl 8,
+        0, logStr]);
       QueryExec(SRC_TECHBASE, s);
       BCPParentID := id;
     end;
 
-    procedure CreateZone(a: TArray<byte>);
+    procedure CreateZone(a: TArray<Byte>);
     var
       ar: TBytes;
-      len1, len2: word;
+      len1, len2: Word;
       id: Longint;
-      zn: integer;
+      zn: Integer;
       s: String;
     begin
       len1 := SizeOf(TZone);
@@ -378,7 +383,7 @@ var
       if TryStrToInt(ValToStr(a[1]), zn) then
         id := GetId(SRC_TECHBASE,
           Format('select ELEMENT_ID from ELEMENT where TYPE_DEVICE=6 and SYSTEM_DEVICE=0 and NET_DEVICE=%d and BIG_DEVICE=%d and SMALL_DEVICE=%d',
-          [NetDevice, curBCP, zn]), 'ELEMENT_ID');
+          [fmain.ModuleNetDevice, curBCP, zn]), 'ELEMENT_ID');
       if id = 0 then
         id := GetId(SRC_TECHBASE,
           'select GEN_ID(GEN_ELEMENT_ID, 1) from RDB$DATABASE', 'GEN_ID');
@@ -386,16 +391,17 @@ var
         ('update or insert into ELEMENT (ELEMENT_ID, PARENT_ID, CATEGORY_ID, TYPE_DEVICE, PARTION, DESCRIPTION, SYSTEM_DEVICE, NET_DEVICE, BIG_DEVICE, SMALL_DEVICE, ELEMENT_NAME) '
         + 'values (%d, %d, %d, %d, NULL, NULL, %d, %d, %d, %d, ''%s'') ' +
         'matching (TYPE_DEVICE, SYSTEM_DEVICE, NET_DEVICE, BIG_DEVICE, SMALL_DEVICE)',
-        [id, BCPParentID, 112, 6, 0, NetDevice, curBCP, zn, logStr]);
+        [id, BCPParentID, 112, 6, 0, fmain.ModuleNetDevice, curBCP, zn,
+        logStr]);
       QueryExec(SRC_TECHBASE, s);
       ZoneParentID := id;
     end;
 
-    procedure CreateTC(a: TArray<byte>);
+    procedure CreateTC(a: TArray<Byte>);
     var
       ar: TBytes;
-      len1, len2: word;
-      id, categoryId, TypeDevice, SysDevice, tc: word;
+      len1, len2: Word;
+      id, categoryId, TypeDevice, SysDevice, tc: Word;
       s: String;
     begin
       len1 := SizeOf(TTc);
@@ -449,17 +455,18 @@ var
 
       id := GetId(SRC_TECHBASE,
         Format('select ELEMENT_ID from ELEMENT where TYPE_DEVICE=%d and SYSTEM_DEVICE=%d and NET_DEVICE=%d and BIG_DEVICE=%d and SMALL_DEVICE=%d',
-        [TypeDevice, SysDevice, NetDevice, curBCP, tc]), 'ELEMENT_ID');
+        [TypeDevice, SysDevice, fmain.ModuleNetDevice, curBCP, tc]),
+        'ELEMENT_ID');
       if id = 0 then
         id := GetId(SRC_TECHBASE,
           'select GEN_ID(GEN_ELEMENT_ID, 1) from RDB$DATABASE', 'GEN_ID');
+
       s := Format
         ('update or insert into ELEMENT (ELEMENT_ID, PARENT_ID, CATEGORY_ID, TYPE_DEVICE, PARTION, DESCRIPTION, SYSTEM_DEVICE, NET_DEVICE, BIG_DEVICE, SMALL_DEVICE, ELEMENT_NAME) '
         + 'values (%d, %d, %d, %d, NULL, NULL, %d, %d, %d, %d, ''%s'') ' +
         'matching (TYPE_DEVICE, SYSTEM_DEVICE, NET_DEVICE, BIG_DEVICE, SMALL_DEVICE)',
-        [id, ZoneParentID, categoryId, TypeDevice, SysDevice, NetDevice, curBCP,
-        tc, logStr]);
-
+        [id, ZoneParentID, categoryId, TypeDevice, SysDevice,
+        fmain.ModuleNetDevice, curBCP, tc, logStr]);
       QueryExec(SRC_TECHBASE, s);
     end;
 
@@ -565,11 +572,10 @@ begin
 end;
 
 procedure TProcess.GetPodraz;
-const
-  PodrazTable = 'RM$PODRAZ';
 var
-  exist: boolean;
-
+  exist: Boolean;
+  s: String;
+  id: Word;
 begin
   exist := False;
   try
@@ -586,7 +592,7 @@ begin
   except
     logStr := 'Table ' + PodrazTable + ' not exist';
   end;
-  Log;
+  //Synchronize(Log);
 
   if not(exist) then
     try
@@ -595,76 +601,58 @@ begin
         Close;
         SQL.Clear;
         SQL.Add('create table ' + PodrazTable + ' (');
-        SQL.Add('FNETDEVICE INTEGER NOT NULL, ');
-        SQL.Add('FBIGDEVICE INTEGER NOT NULL, ');
-        SQL.Add('FPODRAZ INTEGER NOT NULL, ');
-        SQL.Add('FROSTEK_ELEMENT INTEGER NOT NULL);');
+        SQL.Add('FNETDEVICE Integer NOT NULL, ');
+        SQL.Add('FBIGDEVICE Integer NOT NULL, ');
+        SQL.Add('FPODRAZ Integer NOT NULL, ');
+        SQL.Add('FROSTEK_ELEMENT Integer NOT NULL);');
         ExecSQL;
         dmRostek.TR_Passbase.Commit;
         logStr := 'Table ' + PodrazTable + ' was created';
-        Log;
+        Synchronize(Log);
       end;
     except
     end;
 
-  {
-    with dmSigma.qPodraz do
-    begin
+  with dmSigma.qPodraz do
+  begin
     Close;
     SQL.Text := 'select IDPODR, IDPAR, NAMEPODR from PODRAZ order by IDPAR';
     Open;
     while not eof do
-    with dmRostek do
     begin
-    qTBElement.Close;
-    qTBElement.Open;
-    qTBElement.Append;
-    qTBElement.FieldByName('ELEMENT_ID').AsInteger := FieldByName('IDPODR')
-    .AsInteger;
-    qTBElement.FieldByName('CHILD_COUNT').AsInteger := 0;
-    qTBElement.FieldByName('ELEMENT_TYPE_ID').AsInteger := 0;
-    qTBElement.FieldByName('ELEMENT_NAME').AsString :=
-    FieldByName('NAMEPODR').AsString;
-    qTBElement.FieldByName('PASS_LIMIT').AsInteger := 0;
-    qTBElement.FieldByName('PASS_REAL').AsInteger := 0;
-    qTBElement.Post;
-    dmRostek.TR_Passbase.CommitRetaining;
-    sleep(0);
-    Next;
-    end;
 
-    end;
+      id := GetId(SRC_PASSBASE,
+        Format('select FROSTEK_ELEMENT from %s where FNETDEVICE=%d and FBIGDEVICE=%d and FPODRAZ=%d',
+        [PodrazTable, fmain.ModuleNetDevice, fmain.ModuleBigDevice,
+        FieldByName('IDPODR').AsInteger]), 'FROSTEK_ELEMENT');
+      if id = 0 then
+        id := GetId(SRC_PASSBASE,
+          'select GEN_ID(GEN_ELEMENT_ID, 1) from RDB$DATABASE', 'GEN_ID');
 
-    with dmSigma.qPodraz do
-    begin
-    Close;
-    Open;
-    dmRostek.DB_Passbase.Open;
-    if not dmRostek.TR_Passbase.Active then
-    dmRostek.TR_Passbase.StartTransaction;
-    while not eof do
-    begin
-    // обработка
-    dmRostek.tElement.Close;
-    s := 'update ELEMENT e set e.PARENT_ID = ' + FieldByName('IDPAR').AsString
-    + ' where e.ELEMENT_ID = ' + FieldByName('IDPODR').AsString;
-    s := 'update ELEMENT set PARENT_ID = ' + FieldByName('IDPAR').AsString +
-    ' where ELEMENT_ID = ' + FieldByName('IDPODR').AsString;
-    dmRostek.qElement.SQL.Text := s;
-    dmRostek.qElement.ExecSQL;
-    dmRostek.TR_Passbase.CommitRetaining;
-    sleep(0);
-    Next;
+      logStr := Trim(FieldByName('NAMEPODR').AsString);
+      s := Format
+        ('update or insert into ELEMENT (ELEMENT_ID, CHILD_COUNT, ELEMENT_TYPE_ID, ELEMENT_NAME, PASS_LIMIT, PASS_REAL) '
+        + 'values (%d, %d, %d, ''%s'', %d, %d) matching (ELEMENT_ID)',
+        [id, 0, 0, logStr, 0, 0]);
+      QueryExec(SRC_PASSBASE, s);
+
+      s := Format
+        ('update or insert into %s (FNETDEVICE, FBIGDEVICE, FPODRAZ, FROSTEK_ELEMENT) '
+        + 'values (%d, %d, %d, %d) matching (FROSTEK_ELEMENT)',
+        [PodrazTable, fmain.ModuleNetDevice, fmain.ModuleBigDevice,
+        FieldByName('IDPODR').AsInteger, id]);
+      QueryExec(SRC_PASSBASE, s);
+      Next;
     end;
-    end;
-  }
+  end;
+
 end;
 
 procedure TProcess.GetUsr;
-const
-  UsrTable = 'RM$USR';
 var
-  exist: boolean;
+  exist: Boolean;
+  s: String;
+  ido, ide, idp: Word;
 
 begin
   exist := False;
@@ -682,7 +670,7 @@ begin
   except
     logStr := 'Table ' + UsrTable + ' not exist';
   end;
-  Log;
+  //Synchronize(Log);
 
   if not(exist) then
     try
@@ -691,18 +679,18 @@ begin
         Close;
         SQL.Clear;
         SQL.Add('create table ' + UsrTable + ' (');
-        SQL.Add('FNETDEVICE INTEGER NOT NULL, ');
-        SQL.Add('FBIGDEVICE INTEGER NOT NULL, ');
-        SQL.Add('FBCP INTEGER NOT NULL, ');
-        SQL.Add('FUSR INTEGER NOT NULL, ');
-        SQL.Add('FCARD INTEGER NOT NULL, ');
+        SQL.Add('FNETDEVICE Integer NOT NULL, ');
+        SQL.Add('FBIGDEVICE Integer NOT NULL, ');
+        SQL.Add('FBCP Integer NOT NULL, ');
+        SQL.Add('FUSR Integer NOT NULL, ');
+        SQL.Add('FCARD Integer NOT NULL, ');
         SQL.Add('FFACILITY SMALLINT NOT NULL, ');
-        SQL.Add('FROSTEK_OBJECT INTEGER NOT NULL, ');
-        SQL.Add('FROSTEK_PASS INTEGER NOT NULL);');
+        SQL.Add('FROSTEK_OBJECT Integer NOT NULL, ');
+        SQL.Add('FROSTEK_PASS Integer NOT NULL);');
         ExecSQL;
         dmRostek.TR_Passbase.Commit;
         logStr := 'Table ' + UsrTable + ' was created';
-        Log;
+        Synchronize(Log);
       end;
     except
     end;
@@ -722,7 +710,7 @@ begin
   except
     logStr := 'Table ' + UsrTable + ' not exist';
   end;
-  Log;
+  //Synchronize(Log);
 
   if not(exist) then
     try
@@ -731,18 +719,123 @@ begin
         Close;
         SQL.Clear;
         SQL.Add('create table ' + UsrTable + ' (');
-        SQL.Add('FNETDEVICE INTEGER NOT NULL, ');
-        SQL.Add('FBIGDEVICE INTEGER NOT NULL, ');
-        SQL.Add('FBCP INTEGER NOT NULL, ');
-        SQL.Add('FUSR INTEGER NOT NULL, ');
-        SQL.Add('FROSTEK_EMPLOYEE INTEGER NOT NULL);');
+        SQL.Add('FNETDEVICE Integer NOT NULL, ');
+        SQL.Add('FBIGDEVICE Integer NOT NULL, ');
+        SQL.Add('FBCP Integer NOT NULL, ');
+        SQL.Add('FUSR Integer NOT NULL, ');
+        SQL.Add('FROSTEK_EMPLOYEE Integer NOT NULL);');
         ExecSQL;
         dmRostek.TR_Techbase.Commit;
         logStr := 'Table ' + UsrTable + ' was created';
-        Log;
+        Synchronize(Log);
       end;
     except
     end;
+
+  with dmSigma.qUsr do
+  begin
+    Close;
+    SQL.Text :=
+    // 'select  IDBCP, IDZONE AS IDUSR, FAMIL, IME, OTC, PODR from USR';
+      'select sernum as IDBCP, u.IDZONE as IDUSR, FAMIL, IME, OTC, PODR, ' +
+      'fcard as FACILITY, codcard as CARD from USR as u ' + 'join BCP as b ' +
+      'on  u.idbcp = b.idbcp left join usercart as uc ' +
+      'on (b.sernum = uc.snbcp) and (u.idzone = uc.iduser) ' +
+      'order by sernum, u.IDZONE';
+
+    Open;
+    while not eof do
+    begin
+      // id object in rostek
+      ido := GetId(SRC_PASSBASE,
+        Format('select FROSTEK_OBJECT from %s where FNETDEVICE=%d and FBIGDEVICE=%d and FBCP=%d and FUSR=%d',
+        [UsrTable, fmain.ModuleNetDevice, fmain.ModuleBigDevice,
+        FieldByName('IDBCP').AsInteger, FieldByName('IDUSR').AsInteger]),
+        'FROSTEK_OBJECT');
+      if ido = 0 then
+        ido := GetId(SRC_PASSBASE,
+          'select GEN_ID(GEN_OBJECT_ID, 1) from RDB$DATABASE', 'GEN_ID');
+
+      logStr := FieldByName('IDBCP').AsInteger.ToString + ' ' +
+        FieldByName('IDUSR').AsInteger.ToString + ' ' +
+        Trim(FieldByName('FAMIL').AsString) + ' ' +
+        Trim(FieldByName('IME').AsString) + ' ' +
+        Trim(FieldByName('OTC').AsString) + ' ' + FieldByName('PODR')
+        .AsInteger.ToString;
+      // Synchronize(Log);
+
+      // id podraz in rostek
+      ide := GetId(SRC_PASSBASE,
+        Format('select FROSTEK_ELEMENT from %s where FNETDEVICE=%d and FBIGDEVICE=%d and FPODRAZ=%d',
+        [PodrazTable, fmain.ModuleNetDevice, fmain.ModuleBigDevice,
+        FieldByName('PODR').AsInteger]), 'FROSTEK_ELEMENT');
+
+      // add object
+      s := Format
+        ('update or insert into OBJECT (OBJECT_ID, CLASS_ID, ELEMENT_ID) ' +
+        'values (%d, %d, %d) matching (OBJECT_ID)', [ido, 0, ide]);
+      QueryExec(SRC_PASSBASE, s);
+
+      // add object property
+      s := Format
+        ('update or insert into OBJECT_PROPERTY (CLASS_PROPERTY_ID, OBJECT_ID, PROPERTY_VALUE) '
+        + 'values (%d, %d, ''%s'') matching (CLASS_PROPERTY_ID, OBJECT_ID)',
+        [1, ido, Trim(FieldByName('FAMIL').AsString)]);
+      QueryExec(SRC_PASSBASE, s);
+      s := Format
+        ('update or insert into OBJECT_PROPERTY (CLASS_PROPERTY_ID, OBJECT_ID, PROPERTY_VALUE) '
+        + 'values (%d, %d, ''%s'') matching (CLASS_PROPERTY_ID, OBJECT_ID)',
+        [2, ido, Trim(FieldByName('IME').AsString)]);
+      QueryExec(SRC_PASSBASE, s);
+      s := Format
+        ('update or insert into OBJECT_PROPERTY (CLASS_PROPERTY_ID, OBJECT_ID, PROPERTY_VALUE) '
+        + 'values (%d, %d, ''%s'') matching (CLASS_PROPERTY_ID, OBJECT_ID)',
+        [3, ido, Trim(FieldByName('OTC').AsString)]);
+      QueryExec(SRC_PASSBASE, s);
+
+      // add card
+      if not(FieldByName('FACILITY').IsNull) and not(FieldByName('CARD').IsNull)
+        and (FieldByName('FACILITY').AsInteger > 0) and
+        (FieldByName('CARD').AsInteger > 0) then
+      begin
+        s := Format
+          ('update or insert into card (CARD_ID, CARD_STATE_ID, FACILITY) ' +
+          'values (%d, %d, %d) matching (CARD_ID, FACILITY)',
+          [FieldByName('CARD').AsInteger, 1, FieldByName('FACILITY')
+          .AsInteger]);
+        QueryExec(SRC_PASSBASE, s);
+      end;
+
+      // add Pass
+      // ??? need code
+      {
+      if not(FieldByName('FACILITY').IsNull) and not(FieldByName('CARD').IsNull)
+        and (FieldByName('FACILITY').AsInteger > 0) and
+        (FieldByName('CARD').AsInteger > 0) then
+      begin
+        s := Format
+          ('update or insert into pass (CARD_ID, CARD_STATE_ID, FACILITY) ' +
+          'values (%d, %d, %d) matching (CARD_ID, FACILITY)',
+          [FieldByName('CARD').AsInteger, 1, FieldByName('FACILITY')
+          .AsInteger]);
+        QueryExec(SRC_PASSBASE, s);
+      end; }
+
+      // add usrTable
+      s := Format
+        ('update or insert into %s (FNETDEVICE, FBIGDEVICE, FBCP, FUSR, FCARD, FFACILITY, FROSTEK_OBJECT, FROSTEK_PASS) '
+        + 'values (%d, %d, %d, %d, %d, %d, %d, %d) matching (FNETDEVICE, FBIGDEVICE, FBCP, FUSR, FCARD, FFACILITY)',
+        [UsrTable, fmain.ModuleNetDevice, fmain.ModuleBigDevice,
+        FieldByName('IDBCP').AsInteger, FieldByName('IDUSR').AsInteger,
+        FieldByName('CARD').AsInteger, FieldByName('FACILITY')
+        .AsInteger, ido, 0]);
+      QueryExec(SRC_PASSBASE, s);
+
+      Next;
+
+    end;
+  end;
+
 end;
 
 function TProcess.GetId(Db: TSrc; Expression, Field: String): Longword;
@@ -792,19 +885,10 @@ begin
         Close;
         SQL.Text := Expression;
         ExecSQL;
-        dmRostek.TR_Techbase.CommitRetaining;
+        dmRostek.TR_Passbase.CommitRetaining;
       end;
 
   end;
-end;
-
-procedure TProcess.GetNetDevice;
-var
-  i: integer;
-begin
-  NetDevice := 0;
-  TryStrToInt(fmain.vle1.Values['NetDevice'], i);
-  NetDevice := word(i);
 end;
 
 procedure TProcess.Log;
@@ -830,10 +914,10 @@ begin
   fmain.Memo1.Lines.Add(logStr);
 end;
 
-function ValToStr(var m: array of byte): string;
+function ValToStr(var m: array of Byte): String;
 var
-  st: string;
-  i: byte;
+  st: String;
+  i: Byte;
 
 begin
   st := '';
