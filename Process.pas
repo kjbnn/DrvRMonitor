@@ -3,13 +3,8 @@ unit Process;
 interface
 
 uses
-  System.Classes;
+  System.Classes, SharedBuffer;
 
-{
-  const
-  PodrazTable = 'RM$PODRAZ';
-  UsrTable = 'RM$USR';
-}
 type
   TSigmaOperation = (OP_NONE, OP_INIT, OP_SYNC_CONFIG, OP_START_EVENT,
     OP_NEXT_EVENT);
@@ -19,15 +14,20 @@ type
   private
   protected
     logStr: String;
+    mes: KSBMES;
     procedure Execute; override;
     procedure StartEvent;
     procedure NextEvent;
+    procedure EventHandler(netDevice, idBcp: word; dt: TDateTime; objType: word;
+      idObj: LongInt; idZone, typeSource, idSource, idIvent, tsType: Integer;
+      var mes: KSBMES);
     procedure GetBCPElements;
     procedure GetPodraz;
     procedure GetUsr;
     function GetId(Db: TSrc; Expression, Field: String): Longword;
     procedure QueryExec(Db: TSrc; Expression: String);
     procedure Log;
+    procedure Send;
   end;
 
 function ValToStr(var m: array of Byte): String;
@@ -41,18 +41,19 @@ const
 var
   testSigmaDb: Int64 = 0;
   sigmaOperation: TSigmaOperation = OP_NONE; // need check
-  err: Word;
+  err: word;
 
 implementation
 
 uses
-  sigma, main, Sysutils, rostek, Event, TypInfo;
+  sigma, main, Sysutils, rostek, Event, TypInfo,
+  constants, connection;
 
 { TProcess }
 procedure TProcess.Execute;
 var
   SyncConfig: Integer;
-  i: Word;
+  i: word;
 
 begin
   NameThreadForDebugging('Process');
@@ -119,49 +120,12 @@ begin
               IBTable1.Edit;
               a[0]:=127; a[1]:=0; a[2]:=0; a[3]:=1;
               s.Write(a, 4);
-
-
               (IBTable1.FieldByName('FBLOB') as TBlobField).LoadFromStream(s);
               IBTable1.Post;
               S.Destroy;
               IBTransaction1.CommitRetaining;
               end;
             }
-
-            {
-              try
-              with dmSigma.qUsr do
-              begin
-              Close;
-              Open;
-              while not Eof do
-              begin
-              // обработка
-              // curEvent := FieldByName('COD').AsLargeInt;
-              sleep(0);
-              Next;
-              end;
-
-              end;
-              except
-              dmSigma.DB_Protocol.Close;
-              dmRostek.DB_Passbase.Close;
-              end;
-            }
-            {
-              dmRostek.tElement.Open;
-              dmRostek.tElement.Append;
-              dmRostek.tElement.FieldByName('ELEMENT_ID').AsInteger := 100;
-              dmRostek.tElement.FieldByName('CHILD_COUNT').AsInteger := 0;
-              dmRostek.tElement.FieldByName('ELEMENT_TYPE_ID').AsInteger := 100;
-              dmRostek.tElement.FieldByName('ELEMENT_NAME').AsInteger := 100;
-              dmRostek.tElement.FieldByName('PASS_LIMIT').AsInteger := 100;
-              dmRostek.tElement.FieldByName('PASS_REAL').AsInteger := 100;
-              dmRostek.tElement.FieldByName('ELEMENT_TYPE_ID').AsInteger := 0;
-              dmRostek.tElement.Post;
-              dmRostek.TR_Passbase.CommitRetaining;
-            }
-
             sigmaOperation := OP_START_EVENT;
           end;
 
@@ -200,7 +164,7 @@ end;
 
 procedure TProcess.StartEvent;
 var
-  i: Word;
+  i: word;
 begin
   if curEvent = 0 then
   begin
@@ -230,6 +194,7 @@ begin
       ', NAMEZON, OBJTYPE, TSTYPE, TYPESOURCE from TABLE1' + ' where COD > ' +
       IntToStr(curEvent) + ' and IDBCP in (0, 11829) order by COD';
     Open;
+
     while not eof do
     begin
       EventHandler(fmain.ModuleNetDevice, FieldByName('IDBCP').AsInteger, // bcp
@@ -241,13 +206,14 @@ begin
         // Тип (инициатора события) soure (0-никто, 1-пользователь, 2-система, 4-скрипт, 6-ПЭВМ, 9-неисправность, 11-АРМ, 61-БЦП s/n
         FieldByName('IDSOURCE').AsInteger, // ID source
         FieldByName('IDEVT').AsInteger, // Номер эвента
-        FieldByName('TSTYPE').AsInteger // тип TC (1-9), 0-не ТС
-        );
-      curEvent := FieldByName('COD').AsLargeInt;
-      Next;
-      sleep(1);
+        FieldByName('TSTYPE').AsInteger, // тип TC (1-9), 0-не ТС
+        mes);
 
-      { vvv DEMO vvv }
+      if mes.Code > 0 then
+        Synchronize(Send);
+
+      curEvent := FieldByName('COD').AsLargeInt;
+
       case FieldByName('TSTYPE').AsInteger of
         0:
           case FieldByName('OBJTYPE').AsInteger of
@@ -275,23 +241,376 @@ begin
       if length(FieldByName('NAMESOURCE').AsString) > 2 then
         logStr := logStr + '  (' + FieldByName('NAMESOURCE').AsString + ')';
       Synchronize(Log);
-      { ^^^ DEMO ^^^ }
+
+      Next;
+      sleep(1);
 
     end;
   end;
+end;
+
+procedure TProcess.EventHandler(netDevice, idBcp: word; dt: TDateTime;
+  objType: word; idObj: LongInt; idZone, typeSource, idSource, idIvent,
+  tsType: Integer; var mes: KSBMES);
+
+begin
+  Init(mes);
+  mes.Proga := $FFFF;
+  mes.SendTime := dt;
+  mes.SysDevice := 0;
+
+  mes.netDevice := netDevice;
+  mes.BigDevice := idBcp;
+  {
+    _______ _______ _______ _______ _______
+    |       |       |       |       |       |
+    | Type	|  Net	|  Big  | Small | Part  |
+    |_______|_______|_______|_______|_______|
+    |       |       |       |       |       |
+    |   +   |   +   |   +   |       |       |   Драйвер
+    |   +   |   +   |       |       |       |   Рубеж-монитор
+    |   +   |   +   |   +   |       |   +   |   БЦП
+    |   +   |   +   |   +   |   +   |       |   Zn/СУ/ТС/Gr/UD/TZ/User/Script
+    |_______|_______|_______|_______|_______|
+  }
+
+  case tsType of
+    0:
+      begin
+        case objType of
+          1:
+            mes.typeDevice := 6; // Зона
+          3:
+            mes.typeDevice := 9; // СУ
+          4:
+            mes.typeDevice := 4; // Пользователь БЦП
+          63:
+            mes.typeDevice := 4; // Рубеж Сервер
+        end;
+
+      end;
+    1 .. 4:
+      begin
+        mes.typeDevice := 5; // ШС
+        mes.SmallDevice := idObj and $FFFF;
+      end;
+    5:
+      begin
+        mes.typeDevice := 7; // Реле
+        mes.SmallDevice := idObj and $FFFF;
+      end;
+    6:
+      begin
+        mes.SysDevice := 1;
+        mes.typeDevice := {10}2; // ТД
+        mes.SmallDevice := idObj and $FFFF;
+      end;
+    7:
+      begin
+        mes.typeDevice := 8; // Терминал
+        mes.SmallDevice := idObj and $FFFF;
+      end;
+  end; // case
+
+  case typeSource of
+    0: // Само
+      ;
+    1: // Пользователь
+      mes.User := abs(idSource);
+    2: // Система
+      ;
+    4: // Скрипт
+      mes.User := idSource;
+    6: // ПЭВМ
+      ;
+    9: // Код неисправности (Потеря связи с оборудованием)
+      ;
+    11: // АРМ
+      mes.User := idSource;
+    61: // БЦП
+      mes.User := idSource;
+  end;
+
+  case idIvent of
+    $101:
+      mes.Code := R8_SH_ARMED;
+    $102:
+      mes.Code := R8_SH_DISARMED;
+    $103:
+      mes.Code := R8_SH_ALARM;
+    $104:
+      mes.Code := R8_SH_CHECK;
+    $105:
+      mes.Code := R8_SH_READY;
+    $106:
+      mes.Code := R8_SH_NOTREADY;
+    $107:
+      mes.Code := R8_SH_RESET;
+    $108:
+      mes.Code := R8_SH_BYPASS;
+    $109:
+      mes.Code := R8_SH_INDELAY;
+    $10A:
+      mes.Code := R8_SH_OUTDELAY;
+    $10B:
+      mes.Code := R8_SH_WAITFORREADY;
+    $10C:
+      mes.Code := R8_SH_WAITFORREADYCANCEL;
+    $10D:
+      ;
+    $10E:
+      ;
+    $10F:
+      ;
+    $201:
+      mes.Code := R8_SH_ALARM;
+    $202:
+      mes.Code := R8_SH_CHECK;
+    $203:
+      mes.Code := R8_SH_RESET;
+    $204:
+      mes.Code := R8_SH_READY;
+    $205:
+      mes.Code := R8_SH_NOTREADY;
+    $206:
+      mes.Code := R8_SH_TEST;
+    $207:
+      mes.Code := R8_SH_TESTPASSEDOK;
+    $208:
+      mes.Code := R8_SH_TESTTIMEOUT;
+    $301:
+      mes.Code := R8_SH_FIRE_ALARM;
+    $302:
+      mes.Code := R8_SH_CHECK;
+    $303:
+      mes.Code := R8_SH_FIRE_ATTENTION;
+    $304:
+      mes.Code := R8_SH_RESET;
+    $305:
+      mes.Code := R8_SH_READY;
+    $306:
+      mes.Code := R8_SH_NOTREADY;
+    $401:
+      mes.Code := R8_TECHNO_AREA0;
+    $402:
+      mes.Code := R8_TECHNO_AREA1;
+    $403:
+      mes.Code := R8_SH_CHECK;
+    $404:
+      begin
+        mes.Code := R8_TECHNO_AREA0;
+        Synchronize(Send);
+        mes.Code := R8_TECHNO_ALARM;
+      end;
+    $405:
+      begin
+        mes.Code := R8_TECHNO_AREA1;
+        Synchronize(Send);
+        mes.Code := R8_TECHNO_ALARM;
+      end;
+    $406:
+      mes.Code := R8_TECHNO_AREA2;
+    $407:
+      mes.Code := R8_TECHNO_AREA3;
+    $408:
+      begin
+        mes.Code := R8_TECHNO_AREA2;
+        Synchronize(Send);
+        mes.Code := R8_TECHNO_ALARM;
+      end;
+    $409:
+      begin
+        mes.Code := R8_TECHNO_AREA3;
+        Synchronize(Send);
+        mes.Code := R8_TECHNO_ALARM;
+      end;
+    $501:
+      mes.Code := R8_RELAY_1;
+    $502:
+      mes.Code := R8_RELAY_0;
+    $503:
+      mes.Code := R8_RELAY_WAITON;
+    $504:
+      mes.Code := R8_RELAY_CHECK;
+    $601:
+      mes.Code := { R8_AP_IN } SUD_ACCESS_GRANTED;
+    $602:
+      mes.Code := { R8_AP_OUT } SUD_ACCESS_GRANTED;
+    $603:
+      mes.Code := { R8_AP_PASSENABLE } SUD_ACCESS_GRANTED;
+    $604:
+      mes.Code := { R8_AP_DOOROPEN } SUD_DOOR_OPEN;
+    $605:
+      mes.Code := { R8_AP_DOORNOCLOSED } SUD_HELD;
+    $606:
+      mes.Code := { R8_AP_DOORALARM } SUD_FORCED;
+    $607:
+      mes.Code := R8_AP_DOORCLOSE;
+    $608:
+      begin
+        mes.Code := { R8_AP_BLOCKING } RIC_MODE;
+        mes.Level := 0;
+        mes.Partion := 6;
+      end;
+    $609:
+      begin
+        mes.Code := { R8_AP_DEBLOCKING } RIC_MODE;
+        mes.Level := 4;
+        mes.Partion := 5;
+      end;
+    $60A:
+      mes.Code := { R8_AP_EXITBUTTON } SUD_GRANTED_BUTTON;
+    $60B:
+      ;
+    $60C:
+      begin
+        mes.Code := R8_AP_AUTHORIZATIONERROR;
+        if True then // need resolve
+          mes.Code := SUD_NO_CARD
+        else
+          mes.Code := SUD_BAD_PIN;
+      end;
+    $60D:
+      mes.Code := { R8_AP_CODEFORGERY } SUD_ACCESS_CHOOSE;
+    $60E:
+      mes.Code := R8_AP_REQUESTPASS;
+    $60F:
+      mes.Code := R8_AP_FORCING;
+    $610:
+      mes.Code := { R8_AP_APBERROR } SUD_BAD_APB;
+    $611:
+      mes.Code := { R8_AP_ACCESSGRANTED } SUD_ACCESS_GRANTED;
+    $612:
+      mes.Code := R8_AP_ACCESSTIMEOUT;
+    $701:
+      mes.Code := R8_TERM_REQUEST;
+    $702:
+      mes.Code := R8_TERM_BLOCKING;
+    $703:
+      mes.Code := R8_TERM_AUTHORIZATIONERROR;
+    $704:
+      mes.Code := R8_TERM_CODEFORGERY;
+    $705:
+      mes.Code := R8_TERM_RESET;
+    $706:
+      mes.Code := R8_TERM_USERCOMMAND;
+    $801:
+      ;
+    $802:
+      ;
+    $803:
+      ;
+    $805:
+      ;
+    $806:
+      ;
+    $807:
+      ;
+    $808:
+      ;
+    $809:
+      ;
+    $80A:
+      ;
+    $80B:
+      ;
+    $80C:
+      ;
+    $80D:
+      ;
+    $80E:
+      ;
+    $80F:
+      ;
+    $810:
+      ;
+    $811:
+      ;
+    $812:
+      ;
+    $813:
+      ;
+    $814:
+      ;
+    $901:
+      mes.Code := R8_ASPT_AUTOMATICON;
+    $902:
+      mes.Code := R8_ASPT_AUTOMATICOFF;
+    $903:
+      mes.Code := R8_ASPT_DOOROPEN;
+    $904:
+      mes.Code := R8_ASPT_DOORCLOSE;
+    $905:
+      mes.Code := R8_ASPT_AUTOMATICSTART;
+    $906:
+      mes.Code := R8_ASPT_REMOTESTART;
+    $907:
+      mes.Code := R8_ASPT_MANUALSTART;
+    $908:
+      mes.Code := R8_ASPT_CANCELSTART;
+    $909:
+      mes.Code := R8_ASPT_EVACUATIONDELAY;
+    $90A:
+      mes.Code := R8_ASPT_FIREEXTINGUISHING;
+    $90B:
+      mes.Code := R8_ASPT_FIREEXTINGUISHINGCOMPLETE;
+    $90C:
+      mes.Code := R8_ASPT_AUTHORIZATIONERROR;
+    $90D:
+      mes.Code := R8_ASPT_TIMEOUT;
+    $90E:
+      mes.Code := R8_ASPT_OUTLAUNCHSUCCESS;
+    $90F:
+      mes.Code := R8_ASPT_OUTLAUNCHERROR;
+    $910:
+      mes.Code := R8_ASPT_TROUBLE;
+    $911:
+      mes.Code := R8_ASPT_SDU;
+    $912:
+      mes.Code := R8_ASPT_WEIGHTSENSOR;
+    $913:
+      mes.Code := R8_ASPT_RESET;
+    $914:
+      mes.Code := R8_ASPT_FIRE;
+    $A01:
+      mes.Code := R8_VIDEO_ARM;
+    $A02:
+      mes.Code := R8_VIDEO_DISARM;
+    $A03:
+      mes.Code := R8_VIDEO_ALARM;
+    $A04:
+      mes.Code := R8_VIDEO_TROUBLE;
+    $A05:
+      mes.Code := R8_VIDEO_STARTRECORD;
+    $A06:
+      mes.Code := R8_VIDEO_STOPRECORD;
+    $2001:
+      mes.Code := R8_CU_CONNECT_OFF;
+    $2002:
+      mes.Code := R8_CU_CONNECT_ON;
+    $3F01:
+      mes.Code := R8_CONNECT_FALSE;
+    $3F02:
+      mes.Code := R8_CONNECT_TRUE;
+  end;
+end;
+
+procedure TProcess.Send;
+begin
+  fmain.Send(mes);
 end;
 
 procedure TProcess.GetBCPElements;
 var
   ConfigArray: TArray<Byte>; // TBytes;
 
-  procedure PrintConfig(bcpNumber: Word; a: TArray<Byte>);
+  procedure PrintConfig(bcpNumber: word; a: TArray<Byte>);
   var
     tf: Textfile;
     i: Longword;
     b: Byte;
   begin
-    AssignFile(tf, Format('.\blob%d.txt', [bcpNumber])); // need_del
+    AssignFile(tf, Format('.\blob%d.txt', [bcpNumber])); // need resolve
     try
       ReWrite(tf);
       WriteLn(tf,
@@ -322,11 +641,11 @@ var
     TelementParse = (EP_NONE, EP_ZONE, EP_TC, EP_SEARCH);
 
   VAR
-    DrvParentID, BCPParentID, ZoneParentID: Longint;
-    curLen, txtLen: Longword;
-    zoneCount: Word;
+    DrvParentID, BCPParentID, ZoneParentID: LongInt;
+    curLen, txtLen: LongInt; // word;
+    zoneCount: word;
     ep: TelementParse;
-    curBCP: Word;
+    curBCP: word;
 
     function StringToBytes(const Value: WideString): TBytes;
     begin
@@ -344,11 +663,11 @@ var
 
     procedure CreateBCP(a: TArray<Byte>);
     var
-      id: Longint;
+      id: LongInt;
       s: String;
     begin
       curBCP := a[0] + a[1] shl 8;
-      logStr := 'Найден БЦП ' + IntToStr(curBCP);
+      logStr := 'БЦП ' + IntToStr(curBCP);
       Synchronize(Log); //
       id := GetId(SRC_TECHBASE,
         Format('select ELEMENT_ID from ELEMENT where TYPE_DEVICE=4 and SYSTEM_DEVICE=0 and NET_DEVICE=%d and BIG_DEVICE=%d and SMALL_DEVICE=0',
@@ -369,8 +688,8 @@ var
     procedure CreateZone(a: TArray<Byte>);
     var
       ar: TBytes;
-      len1, len2: Word;
-      id: Longint;
+      len1, len2: word;
+      id: LongInt;
       zn: Integer;
       s: String;
     begin
@@ -400,8 +719,8 @@ var
     procedure CreateTC(a: TArray<Byte>);
     var
       ar: TBytes;
-      len1, len2: Word;
-      id, categoryId, TypeDevice, SysDevice, tc: Word;
+      len1, len2: word;
+      id, categoryId, typeDevice, SysDevice, tc: word;
       s: String;
     begin
       len1 := SizeOf(TTc);
@@ -414,7 +733,7 @@ var
           begin
             SysDevice := 0;
             categoryId := 111;
-            TypeDevice := 5;
+            typeDevice := 5;
             logStr := Format('Шлейф %d: %s %s',
               [tc, ValToStr(a[3]), BytesToString(ar)]);
           end;
@@ -422,7 +741,7 @@ var
           begin
             SysDevice := 0;
             categoryId := 115;
-            TypeDevice := 7;
+            typeDevice := 7;
             logStr := Format('Реле %d: %s %s',
               [tc, ValToStr(a[3]), BytesToString(ar)]);
           end;
@@ -430,7 +749,7 @@ var
           begin
             SysDevice := 1;
             categoryId := 13;
-            TypeDevice := 2;
+            typeDevice := 2;
             logStr := Format('Сч %d: %s %s',
               [tc, ValToStr(a[3]), BytesToString(ar)]);
           end;
@@ -438,7 +757,7 @@ var
           begin
             SysDevice := 0;
             categoryId := 117;
-            TypeDevice := 8;
+            typeDevice := 8;
             logStr := Format('Терминал %d: %s %s',
               [tc, ValToStr(a[3]), BytesToString(ar)]);
           end;
@@ -446,7 +765,7 @@ var
         begin
           SysDevice := 0;
           categoryId := 0;
-          TypeDevice := 0;
+          typeDevice := 0;
           logStr := 'Неизвестныйй ТС'
         end;
 
@@ -455,7 +774,7 @@ var
 
       id := GetId(SRC_TECHBASE,
         Format('select ELEMENT_ID from ELEMENT where TYPE_DEVICE=%d and SYSTEM_DEVICE=%d and NET_DEVICE=%d and BIG_DEVICE=%d and SMALL_DEVICE=%d',
-        [TypeDevice, SysDevice, fmain.ModuleNetDevice, curBCP, tc]),
+        [typeDevice, SysDevice, fmain.ModuleNetDevice, curBCP, tc]),
         'ELEMENT_ID');
       if id = 0 then
         id := GetId(SRC_TECHBASE,
@@ -465,7 +784,7 @@ var
         ('update or insert into ELEMENT (ELEMENT_ID, PARENT_ID, CATEGORY_ID, TYPE_DEVICE, PARTION, DESCRIPTION, SYSTEM_DEVICE, NET_DEVICE, BIG_DEVICE, SMALL_DEVICE, ELEMENT_NAME) '
         + 'values (%d, %d, %d, %d, NULL, NULL, %d, %d, %d, %d, ''%s'') ' +
         'matching (TYPE_DEVICE, SYSTEM_DEVICE, NET_DEVICE, BIG_DEVICE, SMALL_DEVICE)',
-        [id, ZoneParentID, categoryId, TypeDevice, SysDevice,
+        [id, ZoneParentID, categoryId, typeDevice, SysDevice,
         fmain.ModuleNetDevice, curBCP, tc, logStr]);
       QueryExec(SRC_TECHBASE, s);
     end;
@@ -575,7 +894,7 @@ procedure TProcess.GetPodraz;
 var
   exist: Boolean;
   s: String;
-  id: Word;
+  id: word;
 begin
   exist := False;
   try
@@ -592,7 +911,7 @@ begin
   except
     logStr := 'Table ' + PodrazTable + ' not exist';
   end;
-  //Synchronize(Log);
+  // Synchronize(Log);
 
   if not(exist) then
     try
@@ -652,7 +971,7 @@ procedure TProcess.GetUsr;
 var
   exist: Boolean;
   s: String;
-  ido, ide, idp: Word;
+  ido, ide { , idp } : word;
 
 begin
   exist := False;
@@ -670,7 +989,7 @@ begin
   except
     logStr := 'Table ' + UsrTable + ' not exist';
   end;
-  //Synchronize(Log);
+  // Synchronize(Log);
 
   if not(exist) then
     try
@@ -710,7 +1029,7 @@ begin
   except
     logStr := 'Table ' + UsrTable + ' not exist';
   end;
-  //Synchronize(Log);
+  // Synchronize(Log);
 
   if not(exist) then
     try
@@ -809,17 +1128,17 @@ begin
       // add Pass
       // ??? need code
       {
-      if not(FieldByName('FACILITY').IsNull) and not(FieldByName('CARD').IsNull)
+        if not(FieldByName('FACILITY').IsNull) and not(FieldByName('CARD').IsNull)
         and (FieldByName('FACILITY').AsInteger > 0) and
         (FieldByName('CARD').AsInteger > 0) then
-      begin
+        begin
         s := Format
-          ('update or insert into pass (CARD_ID, CARD_STATE_ID, FACILITY) ' +
-          'values (%d, %d, %d) matching (CARD_ID, FACILITY)',
-          [FieldByName('CARD').AsInteger, 1, FieldByName('FACILITY')
-          .AsInteger]);
+        ('update or insert into pass (CARD_ID, CARD_STATE_ID, FACILITY) ' +
+        'values (%d, %d, %d) matching (CARD_ID, FACILITY)',
+        [FieldByName('CARD').AsInteger, 1, FieldByName('FACILITY')
+        .AsInteger]);
         QueryExec(SRC_PASSBASE, s);
-      end; }
+        end; }
 
       // add usrTable
       s := Format

@@ -17,7 +17,6 @@ uses
   NetService in 'KSBLib\NetService.pas',
   SharedBuffer in 'KSBLib\SharedBuffer.pas',
   Sigma in 'Sigma.pas' {dmSigma: TDataModule},
-  Event in 'Event.pas',
   Process in 'Process.pas';
 
 {$R *.res}

@@ -55,46 +55,7 @@ type
     kc: word;
   end;
 
-  TCu = packed record
-  end;
-
-  TGr = packed record
-  end;
-
-  TTz = packed record
-  end;
-
-  TAl = packed record
-  end;
-
-  TUs = packed record
-  end;
-
-  TTypeNode = (N_ZONE, N_TC, N_CU, N_GR, N_TZ, N_AL, N_US);
-
-  TNode = record
-    kindNode: TTypeNode;
-    pcNameLen: byte;
-    pcName: UnicodeString;
-    parentNode: pointer;
-    case integer of
-      0:
-        (zn: TZone);
-      1:
-        (tc: TTc);
-      2:
-        (cu: TCu);
-      3:
-        (gr: TGr);
-      4:
-        (tz: TTz);
-      5:
-        (al: TAl);
-      6:
-        (us: TUs);
-  end;
-
-  TPNode = ^TNode;
+ 
 
 const
   pRM_ADDRESS = 'Адрес Рубеж-Монитор';
@@ -127,13 +88,13 @@ const
 procedure Tfmain.Consider(mes: KSBMES);
 begin
   inherited;
-  //Memo1.Lines.Add(mes.Code.ToString);
+  Memo1.Lines.Add(mes.Code.ToString);
 end;
 
 procedure Tfmain.FormCreate(Sender: TObject);
 begin
-  inherited;
   NumberApplication := GetKey('NUMBER', 40);
+  inherited;
 
   with vle1 do
   begin

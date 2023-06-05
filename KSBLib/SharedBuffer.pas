@@ -194,7 +194,7 @@ begin
             if(r.StrData[r.EndPointer+i]<>#0) then
               begin
                 str:=str+r.StrData[r.EndPointer+i];
-                Dec(s.CountByte);
+                if s.CountByte>0 then Dec(s.CountByte); //kjb
                 Inc(i);
               end
             else
