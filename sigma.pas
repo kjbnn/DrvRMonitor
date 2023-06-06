@@ -14,14 +14,12 @@ type
   TdmSigma = class(TDataModule)
     DB_Protocol: TIBDatabase;
     TR_Protocol: TIBTransaction;
-    qEvent: TIBQuery;
     DB_Work: TIBDatabase;
     TR_Work: TIBTransaction;
+    qEvent: TIBQuery;
     qUsr: TIBQuery;
     qPodraz: TIBQuery;
     qConfig: TIBQuery;
-    IBQuery1: TIBQuery;
-    IBDatabaseINI1: TIBDatabaseINI;
     procedure IBEvents1EventAlert(Sender: TObject; EventName: string;
       EventCount: Integer; var CancelAlerts: Boolean);
   private

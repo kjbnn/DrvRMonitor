@@ -10,16 +10,14 @@ uses
 
 type
   TdmRostek = class(TDataModule)
-    DB_Techbase: TIBDatabase;
-    TR_Techbase: TIBTransaction;
-    DB_Passbase: TIBDatabase;
-    TR_Passbase: TIBTransaction;
+    dTB: TIBDatabase;
+    dPB: TIBDatabase;
+    trPB: TIBTransaction;
+    trTB: TIBTransaction;
     qTBAny: TIBQuery;
     qPBAny: TIBQuery;
     qTBElement: TIBQuery;
     qPBElement: TIBQuery;
-    procedure IBEvents1EventAlert(Sender: TObject; EventName: string;
-      EventCount: Integer; var CancelAlerts: Boolean);
   private
     { Private declarations }
   public
@@ -36,11 +34,5 @@ implementation
 uses Vcl.Dialogs, main;
 
 {$R *.dfm}
-
-procedure TdmRostek.IBEvents1EventAlert(Sender: TObject; EventName: string;
-  EventCount: Integer; var CancelAlerts: Boolean);
-begin
-  fmain.Memo1.Lines.Add( Format('%s %d %s',[EventName, EventCount, CancelAlerts.ToString] ) );
-end;
 
 end.

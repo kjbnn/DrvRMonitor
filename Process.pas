@@ -46,7 +46,7 @@ var
 implementation
 
 uses
-  sigma, main, Sysutils, rostek, Event, TypInfo,
+  sigma, main, Sysutils, rostek, TypInfo,
   constants, connection;
 
 { TProcess }
@@ -93,11 +93,11 @@ begin
             err := 3;
             with dmRostek do
             begin
-              if not DB_Techbase.Connected then
-                DB_Techbase.Open;
+              if not dTB.Connected then
+                dTB.Open;
               err := 4;
-              if not TR_Techbase.Active then
-                TR_Techbase.StartTransaction;
+              if not trTB.Active then
+                trTB.StartTransaction;
             end;
             err := 5;
             sigmaOperation := OP_SYNC_CONFIG;
@@ -152,8 +152,8 @@ begin
         Synchronize(Log);
         dmSigma.DB_Protocol.Close;
         dmSigma.DB_Work.Close;
-        dmRostek.DB_Passbase.Close;
-        dmRostek.DB_Techbase.Close;
+        dmRostek.dPB.Close;
+        dmRostek.dTB.Close;
         sleep(10000);
       end;
     end;
@@ -907,7 +907,7 @@ begin
       exist := True;
       logStr := 'Table ' + PodrazTable + ' exist';
     end;
-    dmRostek.TR_Passbase.Commit;
+    dmRostek.trPB.Commit;
   except
     logStr := 'Table ' + PodrazTable + ' not exist';
   end;
@@ -925,7 +925,7 @@ begin
         SQL.Add('FPODRAZ Integer NOT NULL, ');
         SQL.Add('FROSTEK_ELEMENT Integer NOT NULL);');
         ExecSQL;
-        dmRostek.TR_Passbase.Commit;
+        dmRostek.trPB.Commit;
         logStr := 'Table ' + PodrazTable + ' was created';
         Synchronize(Log);
       end;
@@ -985,7 +985,7 @@ begin
       exist := True;
       logStr := 'Table ' + UsrTable + ' exist';
     end;
-    dmRostek.TR_Passbase.Commit;
+    dmRostek.trPB.Commit;
   except
     logStr := 'Table ' + UsrTable + ' not exist';
   end;
@@ -1007,7 +1007,7 @@ begin
         SQL.Add('FROSTEK_OBJECT Integer NOT NULL, ');
         SQL.Add('FROSTEK_PASS Integer NOT NULL);');
         ExecSQL;
-        dmRostek.TR_Passbase.Commit;
+        dmRostek.trPB.Commit;
         logStr := 'Table ' + UsrTable + ' was created';
         Synchronize(Log);
       end;
@@ -1025,7 +1025,7 @@ begin
       exist := True;
       logStr := 'Table ' + UsrTable + ' exist';
     end;
-    dmRostek.TR_Techbase.Commit;
+    dmRostek.trTB.Commit;
   except
     logStr := 'Table ' + UsrTable + ' not exist';
   end;
@@ -1044,7 +1044,7 @@ begin
         SQL.Add('FUSR Integer NOT NULL, ');
         SQL.Add('FROSTEK_EMPLOYEE Integer NOT NULL);');
         ExecSQL;
-        dmRostek.TR_Techbase.Commit;
+        dmRostek.trTB.Commit;
         logStr := 'Table ' + UsrTable + ' was created';
         Synchronize(Log);
       end;
@@ -1195,7 +1195,7 @@ begin
         Close;
         SQL.Text := Expression;
         ExecSQL;
-        dmRostek.TR_Techbase.CommitRetaining;
+        dmRostek.trTB.CommitRetaining;
       end;
 
     SRC_PASSBASE:
@@ -1204,18 +1204,21 @@ begin
         Close;
         SQL.Text := Expression;
         ExecSQL;
-        dmRostek.TR_Passbase.CommitRetaining;
+        dmRostek.trPB.CommitRetaining;
       end;
 
   end;
 end;
 
 procedure TProcess.Log;
-const
-  fname = '.\Log.log';
 var
   tf: Textfile;
+  fname: String;
+
 begin
+  fname:= ExtractFileName(ParamStr(0));
+  Delete(fname, length(fname)-2, 3);
+  fname:= fname + 'log';
   try
     AssignFile(tf, fname);
     if FileExists(fname) then

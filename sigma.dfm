@@ -88,21 +88,4 @@ object dmSigma: TdmSigma
     Left = 30
     Top = 120
   end
-  object IBQuery1: TIBQuery
-    Database = DB_Work
-    Transaction = TR_Work
-    BufferChunks = 1000
-    CachedUpdates = False
-    ParamCheck = True
-    SQL.Strings = (
-      'select IDPODR, IDPAR, NAMEPODR from PODRAZ order by IDPAR')
-    Left = 270
-    Top = 270
-  end
-  object IBDatabaseINI1: TIBDatabaseINI
-    UseAppPath = ipoPathToServer
-    Section = 'Database Settings'
-    Left = 400
-    Top = 260
-  end
 end

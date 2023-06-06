@@ -122,10 +122,10 @@ begin
     dmSigma.DB_Work.Close;
     dmSigma.DB_Work.DatabaseName := vle1.Values[pRM_ADDRESS] + ':' +
       WorkDatabaseName;
-    dmRostek.DB_Techbase.Close;
-    dmRostek.DB_Techbase.DatabaseName := vle1.Values[pTB];
-    dmRostek.DB_Passbase.Close;
-    dmRostek.DB_Passbase.DatabaseName := vle1.Values[pPB];
+    dmRostek.dTB.Close;
+    dmRostek.dTB.DatabaseName := vle1.Values[pTB];
+    dmRostek.dPB.Close;
+    dmRostek.dPB.DatabaseName := vle1.Values[pPB];
   end;
 
   StatusBar1.Panels[0].Text := 'Старт: ' + DateTimeToStr(now);
