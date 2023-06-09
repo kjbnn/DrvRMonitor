@@ -55,8 +55,6 @@ type
     kc: word;
   end;
 
- 
-
 const
   pRM_ADDRESS = 'Адрес Рубеж-Монитор';
   pTB = 'База Techbase';
@@ -88,7 +86,7 @@ const
 procedure Tfmain.Consider(mes: KSBMES);
 begin
   inherited;
-  Memo1.Lines.Add(mes.Code.ToString);
+  // Memo1.Lines.Add(mes.Code.ToString);
 end;
 
 procedure Tfmain.FormCreate(Sender: TObject);
@@ -99,22 +97,21 @@ begin
   with vle1 do
   begin
     Strings.Clear;
-    Values[pRM_ADDRESS] := GetKey(pRM_ADDRESS, Values[pRM_ADDRESS]);
-    Values[pTB] := GetKey(pTB, Values[pTB]);
-    Values[pPB] := GetKey(pPB, Values[pPB]);
+    Values[pRM_ADDRESS] := GetKey(pRM_ADDRESS, 'localhost');
+    Values[pTB] := GetKey(pTB, 'localhost/3051:d:\Database\Techbase.gdb');
+    Values[pPB] := GetKey(pPB, 'localhost/3051:d:\Database\Passbase.gdb');
     Values['ModuleNetDevice'] := ModuleNetDevice.ToString;
     Values['ModuleBigDevice'] := ModuleBigDevice.ToString;
-    Values[pPARENT_ELEMENT] := GetKey(pPARENT_ELEMENT, Values[pPARENT_USER]);
-    Values[pPARENT_USER] := GetKey(pPARENT_USER, Values[pPARENT_USER]);
-    Values[pPARENT_DEPARTMENT] := GetKey(pPARENT_DEPARTMENT,
-      Values[pPARENT_DEPARTMENT]);
-    Values[pWORK_MODE] := GetKey(pWORK_MODE, Values[pWORK_MODE]);
-    Values[pEVENT] := GetKey(pEVENT, Values[pEVENT]);
+    Values[pPARENT_ELEMENT] := GetKey(pPARENT_ELEMENT, '0');
+    Values[pPARENT_USER] := GetKey(pPARENT_USER, '0');
+    Values[pPARENT_DEPARTMENT] := GetKey(pPARENT_DEPARTMENT, '0');
+    Values[pWORK_MODE] := GetKey(pWORK_MODE, '0');
+    Values[pEVENT] := GetKey(pEVENT, '0');
     Try
-      curEvent:= StrToInt(Values[pEVENT]);
+      curEvent := StrToInt(Values[pEVENT]);
     except
     End;
-    saveEvent:= curEvent;
+    saveEvent := curEvent;
     //
     dmSigma.DB_Protocol.Close;
     dmSigma.DB_Protocol.DatabaseName := vle1.Values[pRM_ADDRESS] + ':' +
@@ -136,11 +133,11 @@ procedure Tfmain.RefreshTimerTimer(Sender: TObject);
 begin
   vle1.Values[pEVENT] := curEvent.ToString + ' (' + testSigmaDb.ToString + ')';
   if (curEvent > saveEvent) then
-  try
-     SetKey(pEVENT, curEvent);
-     saveEvent:= curEvent;
-  except
-  end;
+    try
+      SetKey(pEVENT, curEvent);
+      saveEvent := curEvent;
+    except
+    end;
 
 end;
 

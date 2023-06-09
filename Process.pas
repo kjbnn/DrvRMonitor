@@ -21,6 +21,8 @@ type
     procedure EventHandler(netDevice, idBcp: word; dt: TDateTime; objType: word;
       idObj: LongInt; idZone, typeSource, idSource, idIvent, tsType: Integer;
       var mes: KSBMES);
+    procedure GetCard(idBcp, IdUsr: word; out Facility: Byte; out Card: word);
+    procedure CleanConfig;
     procedure GetBCPElements;
     procedure GetPodraz;
     procedure GetUsr;
@@ -76,6 +78,7 @@ begin
             else
               sigmaOperation := OP_START_EVENT;
             end;
+            CleanConfig;
           end;
 
         OP_INIT:
@@ -185,6 +188,9 @@ begin
 end;
 
 procedure TProcess.NextEvent;
+var
+  tc: word;
+
 begin
   with dmSigma.qEvent do
   begin
@@ -261,6 +267,7 @@ begin
 
   mes.netDevice := netDevice;
   mes.BigDevice := idBcp;
+  mes.NumDevice := 0;
   {
     _______ _______ _______ _______ _______
     |       |       |       |       |       |
@@ -292,23 +299,27 @@ begin
     1 .. 4:
       begin
         mes.typeDevice := 5; // ШС
-        mes.SmallDevice := idObj and $FFFF;
+        mes.SmallDevice := (idObj shr 16) - $7FFF;
+        mes.NumDevice := mes.SmallDevice;
       end;
     5:
       begin
         mes.typeDevice := 7; // Реле
-        mes.SmallDevice := idObj and $FFFF;
+        mes.SmallDevice := (idObj shr 16) - $7FFF;
+        mes.NumDevice := mes.SmallDevice;
       end;
     6:
       begin
         mes.SysDevice := 1;
-        mes.typeDevice := {10}2; // ТД
-        mes.SmallDevice := idObj and $FFFF;
+        mes.typeDevice := { 10 } 2; // ТД
+        mes.SmallDevice := (idObj shr 16) - $7FFF;
+        mes.NumDevice := mes.SmallDevice;
       end;
     7:
       begin
         mes.typeDevice := 8; // Терминал
-        mes.SmallDevice := idObj and $FFFF;
+        mes.SmallDevice := (idObj shr 16) - $7FFF;
+        mes.NumDevice := mes.SmallDevice;
       end;
   end; // case
 
@@ -433,11 +444,20 @@ begin
     $504:
       mes.Code := R8_RELAY_CHECK;
     $601:
-      mes.Code := { R8_AP_IN } SUD_ACCESS_GRANTED;
+      begin
+        mes.Code := { R8_AP_IN } SUD_ACCESS_GRANTED;
+        GetCard(mes.BigDevice, mes.User, mes.Facility, mes.NumCard);
+      end;
     $602:
-      mes.Code := { R8_AP_OUT } SUD_ACCESS_GRANTED;
+      begin
+        mes.Code := { R8_AP_OUT } SUD_ACCESS_GRANTED;
+        GetCard(mes.BigDevice, mes.User, mes.Facility, mes.NumCard);
+      end;
     $603:
-      mes.Code := { R8_AP_PASSENABLE } SUD_ACCESS_GRANTED;
+      begin
+        mes.Code := { R8_AP_PASSENABLE } SUD_ACCESS_GRANTED;
+        GetCard(mes.BigDevice, mes.User, mes.Facility, mes.NumCard);
+      end;
     $604:
       mes.Code := { R8_AP_DOOROPEN } SUD_DOOR_OPEN;
     $605:
@@ -473,13 +493,22 @@ begin
     $60D:
       mes.Code := { R8_AP_CODEFORGERY } SUD_ACCESS_CHOOSE;
     $60E:
-      mes.Code := R8_AP_REQUESTPASS;
+      begin
+        mes.Code := R8_AP_REQUESTPASS;
+        GetCard(mes.BigDevice, mes.User, mes.Facility, mes.NumCard);
+      end;
     $60F:
       mes.Code := R8_AP_FORCING;
     $610:
-      mes.Code := { R8_AP_APBERROR } SUD_BAD_APB;
+      begin
+        mes.Code := { R8_AP_APBERROR } SUD_BAD_APB;
+        GetCard(mes.BigDevice, mes.User, mes.Facility, mes.NumCard);
+      end;
     $611:
-      mes.Code := { R8_AP_ACCESSGRANTED } SUD_ACCESS_GRANTED;
+      begin
+        mes.Code := { R8_AP_ACCESSGRATED } SUD_ACCESS_GRANTED;
+        GetCard(mes.BigDevice, mes.User, mes.Facility, mes.NumCard);
+      end;
     $612:
       mes.Code := R8_AP_ACCESSTIMEOUT;
     $701:
@@ -598,6 +627,33 @@ end;
 procedure TProcess.Send;
 begin
   fmain.Send(mes);
+end;
+
+procedure TProcess.CleanConfig;
+var
+  s: String;
+begin
+  s := Format
+    ('update element set PARENT_ID=null where (NET_DEVICE=%d) and ((SYSTEM_DEVICE=0) '
+    + 'and(TYPE_DEVICE in (4,5,6,7,8,9,10,11)) or (SYSTEM_DEVICE=1)and(TYPE_DEVICE in (2)))',
+    [fmain.ModuleNetDevice]);
+  QueryExec(SRC_TECHBASE, s);
+
+  s := Format
+    ('delete from element where (NET_DEVICE=%d) and ((SYSTEM_DEVICE=0) ' +
+    'and(TYPE_DEVICE in (4,5,6,7,8,9,10,11)) or (SYSTEM_DEVICE=1)and(TYPE_DEVICE in (2)))',
+    [fmain.ModuleNetDevice]);
+  QueryExec(SRC_TECHBASE, s);
+
+  s := Format('delete from %s', [UsrTable]);
+  QueryExec(SRC_TECHBASE, s);
+
+  s := Format('delete from %s', [PodrazTable]);
+  QueryExec(SRC_PASSBASE, s);
+
+  s := Format('delete from %s', [UsrTable]);
+  QueryExec(SRC_PASSBASE, s);
+
 end;
 
 procedure TProcess.GetBCPElements;
@@ -727,6 +783,7 @@ var
       len2 := a[len1] + (a[len1 + 1] shl 8);
       ar := Copy(a, len1 + 2 + 2, len2 - 2);
       tc := a[0] + a[1] shl 8;
+      tc := tc - $7FFF;
 
       case a[2] of
         1 .. 4:
@@ -888,6 +945,30 @@ begin
     err := 13;
   end;
 
+end;
+
+procedure TProcess.GetCard(idBcp, IdUsr: word; out Facility: Byte;
+  out Card: word);
+begin
+  Facility := 0;
+  Card := 0;
+  with dmSigma.qUsr do
+  begin
+    First;
+    while not eof do
+      if (idBcp = FieldByName('IDBCP').AsInteger) and
+        (IdUsr = FieldByName('IDUSR').AsInteger) and
+        (not FieldByName('FACILITY').IsNull) and
+        (not FieldByName('CARD').IsNull)
+      then
+      begin
+        Facility := FieldByName('FACILITY').AsInteger;
+        Card := FieldByName('CARD').AsInteger;
+        Break;
+      end
+      else
+        Next;
+  end;
 end;
 
 procedure TProcess.GetPodraz;
@@ -1055,13 +1136,11 @@ begin
   begin
     Close;
     SQL.Text :=
-    // 'select  IDBCP, IDZONE AS IDUSR, FAMIL, IME, OTC, PODR from USR';
       'select sernum as IDBCP, u.IDZONE as IDUSR, FAMIL, IME, OTC, PODR, ' +
       'fcard as FACILITY, codcard as CARD from USR as u ' + 'join BCP as b ' +
       'on  u.idbcp = b.idbcp left join usercart as uc ' +
       'on (b.sernum = uc.snbcp) and (u.idzone = uc.iduser) ' +
       'order by sernum, u.IDZONE';
-
     Open;
     while not eof do
     begin
@@ -1216,9 +1295,9 @@ var
   fname: String;
 
 begin
-  fname:= ExtractFileName(ParamStr(0));
-  Delete(fname, length(fname)-2, 3);
-  fname:= fname + 'log';
+  fname := ExtractFileName(ParamStr(0));
+  Delete(fname, length(fname) - 2, 3);
+  fname := fname + 'log';
   try
     AssignFile(tf, fname);
     if FileExists(fname) then
