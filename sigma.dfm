@@ -9,13 +9,15 @@ object dmSigma: TdmSigma
       'password=masterkey'
       'lc_ctype=WIN1251')
     LoginPrompt = False
-    DefaultTransaction = TR_Protocol
+    DefaultTransaction = TR_ProtocolR
     ServerType = 'IBServer'
     SQLDialect = 1
+    AllowStreamedConnected = False
     Left = 140
     Top = 20
   end
-  object TR_Protocol: TIBTransaction
+  object TR_ProtocolR: TIBTransaction
+    AllowAutoStart = False
     DefaultDatabase = DB_Protocol
     Params.Strings = (
       'read'
@@ -27,7 +29,7 @@ object dmSigma: TdmSigma
   end
   object qEvent: TIBQuery
     Database = DB_Protocol
-    Transaction = TR_Protocol
+    Transaction = TR_ProtocolR
     BufferChunks = 1000
     CachedUpdates = False
     ParamCheck = True
@@ -42,12 +44,14 @@ object dmSigma: TdmSigma
       'lc_ctype=WIN1251'
       '')
     LoginPrompt = False
-    DefaultTransaction = TR_Work
+    DefaultTransaction = TR_WorkR
     ServerType = 'IBServer'
+    AllowStreamedConnected = False
     Left = 30
     Top = 20
   end
-  object TR_Work: TIBTransaction
+  object TR_WorkR: TIBTransaction
+    AllowAutoStart = False
     DefaultDatabase = DB_Work
     Params.Strings = (
       'read'
@@ -57,20 +61,9 @@ object dmSigma: TdmSigma
     Left = 30
     Top = 70
   end
-  object qUsr: TIBQuery
-    Database = DB_Work
-    Transaction = TR_Work
-    BufferChunks = 1000
-    CachedUpdates = False
-    ParamCheck = True
-    SQL.Strings = (
-      '')
-    Left = 30
-    Top = 220
-  end
   object qPodraz: TIBQuery
     Database = DB_Work
-    Transaction = TR_Work
+    Transaction = TR_WorkR
     BufferChunks = 1000
     CachedUpdates = False
     ParamCheck = True
@@ -79,12 +72,22 @@ object dmSigma: TdmSigma
   end
   object qConfig: TIBQuery
     Database = DB_Work
-    Transaction = TR_Work
-    AutoCalcFields = False
+    Transaction = TR_WorkR
     BufferChunks = 1000
     CachedUpdates = False
     ParamCheck = True
     Left = 30
     Top = 120
+  end
+  object qUsr: TIBQuery
+    Database = DB_Work
+    Transaction = TR_WorkR
+    BufferChunks = 1000
+    CachedUpdates = False
+    ParamCheck = True
+    SQL.Strings = (
+      '')
+    Left = 30
+    Top = 220
   end
 end

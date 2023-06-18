@@ -20,11 +20,9 @@ inherited fmain: Tfmain
     ActivePage = TabSheet4
     Align = alClient
     TabOrder = 0
-    ExplicitWidth = 583
     object TabSheet4: TTabSheet
       Caption = #1055#1088#1086#1090#1086#1082#1086#1083
       ImageIndex = 3
-      ExplicitWidth = 575
       object Memo1: TMemo
         Left = 0
         Top = 0
@@ -34,13 +32,15 @@ inherited fmain: Tfmain
         ReadOnly = True
         ScrollBars = ssVertical
         TabOrder = 0
-        ExplicitWidth = 575
       end
     end
     object TabSheet5: TTabSheet
       Caption = #1053#1072#1089#1090#1088#1086#1081#1082#1080
       ImageIndex = 5
-      ExplicitWidth = 575
+      ExplicitLeft = 0
+      ExplicitTop = 0
+      ExplicitWidth = 0
+      ExplicitHeight = 0
       object vle1: TValueListEditor
         Left = 0
         Top = 0
@@ -54,7 +54,6 @@ inherited fmain: Tfmain
         TitleCaptions.Strings = (
           #1055#1072#1088#1072#1084#1077#1090#1088
           #1047#1085#1072#1095#1077#1085#1080#1077)
-        ExplicitWidth = 585
         ColWidths = (
           210
           368)
@@ -71,7 +70,6 @@ inherited fmain: Tfmain
         Text = #1057#1090#1072#1088#1090
         Width = 200
       end>
-    ExplicitWidth = 583
   end
   inherited InitTimer: TTimer
     Left = 346

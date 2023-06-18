@@ -57,11 +57,9 @@ type
 
 const
   pRM_ADDRESS = 'Адрес Рубеж-Монитор';
-  pTB = 'База Techbase';
-  pPB = 'База Passbase';
-  pPARENT_ELEMENT = 'Родительский элемент';
-  pPARENT_USER = 'Родительский пользователь';
-  pPARENT_DEPARTMENT = 'Родительское подразделение';
+  pTB = 'База Techbase (TB)';
+  pPB = 'База Passbase (PB)';
+  pPARENT_ELEMENT = 'Родительский элемент TB';
   pWORK_MODE = 'Режим работы';
   pEVENT = 'Событие';
 
@@ -103,15 +101,15 @@ begin
     Values['ModuleNetDevice'] := ModuleNetDevice.ToString;
     Values['ModuleBigDevice'] := ModuleBigDevice.ToString;
     Values[pPARENT_ELEMENT] := GetKey(pPARENT_ELEMENT, '0');
-    Values[pPARENT_USER] := GetKey(pPARENT_USER, '0');
-    Values[pPARENT_DEPARTMENT] := GetKey(pPARENT_DEPARTMENT, '0');
     Values[pWORK_MODE] := GetKey(pWORK_MODE, '0');
+
     Values[pEVENT] := GetKey(pEVENT, '0');
     Try
       curEvent := StrToInt(Values[pEVENT]);
     except
     End;
     saveEvent := curEvent;
+
     //
     dmSigma.DB_Protocol.Close;
     dmSigma.DB_Protocol.DatabaseName := vle1.Values[pRM_ADDRESS] + ':' +
@@ -138,7 +136,6 @@ begin
       saveEvent := curEvent;
     except
     end;
-
 end;
 
 procedure Tfmain.N1Click(Sender: TObject);
