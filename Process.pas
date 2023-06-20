@@ -465,7 +465,7 @@ begin
     $606:
       mes.Code := { R8_AP_DOORALARM } SUD_FORCED;
     $607:
-      mes.Code := R8_AP_DOORCLOSE;
+      mes.Code := {R8_AP_DOORCLOSE;} SUD_DOOR_CLOSE;
     $608:
       begin
         mes.Code := { R8_AP_BLOCKING } RIC_MODE;
@@ -481,7 +481,11 @@ begin
     $60A:
       mes.Code := { R8_AP_EXITBUTTON } SUD_GRANTED_BUTTON;
     $60B:
-      ;
+      begin
+        mes.Code := RIC_MODE;
+        mes.Level := 0;
+        mes.Partion := 1;
+      end;
     $60C:
       begin
         mes.Code := R8_AP_AUTHORIZATIONERROR;
@@ -510,7 +514,7 @@ begin
         GetCard(mes.BigDevice, mes.User, mes.Facility, mes.NumCard);
       end;
     $612:
-      mes.Code := R8_AP_ACCESSTIMEOUT;
+      mes.Code := R8_AP_ACCESSTIMEOUT; //9518
     $701:
       mes.Code := R8_TERM_REQUEST;
     $702:
