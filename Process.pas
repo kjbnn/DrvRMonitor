@@ -1203,7 +1203,16 @@ begin
         + 'values (%d, %d, ''%s'') matching (CLASS_PROPERTY_ID, OBJECT_ID)',
         [3, ido, Trim(FieldByName('OTC').AsString)]);
       QueryExec(SRC_DB_PB, s);
-
+      s := Format
+        ('update or insert into OBJECT_PROPERTY (CLASS_PROPERTY_ID, OBJECT_ID, PROPERTY_VALUE) '
+        + 'values (%d, %d, ''%s'') matching (CLASS_PROPERTY_ID, OBJECT_ID)',
+        [4, ido, '01.01.2000']);
+      QueryExec(SRC_DB_PB, s);
+      s := Format
+        ('update or insert into OBJECT_PROPERTY (CLASS_PROPERTY_ID, OBJECT_ID, PROPERTY_VALUE) '
+        + 'values (%d, %d, ''%s'') matching (CLASS_PROPERTY_ID, OBJECT_ID)',
+        [5, ido, 'Физическое лицо']);
+      QueryExec(SRC_DB_PB, s);
 
       // add TB.employee
       idemployee := GetId(SRC_DB_TB,
@@ -1296,9 +1305,9 @@ begin
         idp := GetId(SRC_DB_PB,
           'select GEN_ID(GEN_PASS_ID, 1) from RDB$DATABASE', 'GEN_ID');
       s := Format
-        ('update or insert into pass (PASS_ID, ELEMENT_ID, OBJECT_ID, DEMAND_ID, CURRENT_CARD_ID) '
-        + 'values (%d, %d, %d, %d, %d) matching (PASS_ID)',
-        [idp, ide, ido, curDemand, FieldByName('IDUSR').AsInteger]);
+        ('update or insert into pass (PASS_ID, ELEMENT_ID, OBJECT_ID, DEMAND_ID, CURRENT_CARD_ID, START_DATE_TIME, STOP_DATE_TIME, PASS_STATUS_ID) '
+        + 'values (%d, %d, %d, %d, %d, ''%s'', ''%s'', %d) matching (PASS_ID)',
+        [idp, ide, ido, curDemand, FieldByName('IDUSR').AsInteger, '01.01.2020', '01.01.2100', 2]);
       // <<IDUSR instead CARD
       QueryExec(SRC_DB_PB, s);
 
@@ -1537,10 +1546,7 @@ procedure TProcess.Log;
 var
   tf: Textfile;
   fname: String;
-  FullStr: String;
-
 begin
-  FullStr:= DateTimetoStr(now) + ': ' + logStr;
   fname := ExtractFileName(ParamStr(0));
   Delete(fname, length(fname) - 2, 3);
   fname := fname + 'log';
@@ -1550,7 +1556,7 @@ begin
       Append(tf)
     else
       ReWrite(tf);
-    WriteLn(tf, FullStr);
+    WriteLn(tf, logStr);
     Flush(tf);
   finally
     CloseFile(tf);
@@ -1558,7 +1564,7 @@ begin
 
   if fmain.Memo1.Lines.Count > 10000 then
     fmain.Memo1.Clear;
-  fmain.Memo1.Lines.Add(FullStr);
+  fmain.Memo1.Lines.Add(logStr);
 end;
 
 function ValToStr(var m: array of Byte): String;
