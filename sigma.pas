@@ -17,6 +17,7 @@ type
     qPodraz: TIBQuery;
     qConfig: TIBQuery;
     qUsr: TIBQuery;
+    qDolg: TIBQuery;
     procedure IBEvents1EventAlert(Sender: TObject; EventName: string;
       EventCount: Integer; var CancelAlerts: Boolean);
   private

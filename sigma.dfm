@@ -1,6 +1,6 @@
 object dmSigma: TdmSigma
   OldCreateOrder = False
-  Height = 314
+  Height = 399
   Width = 236
   object DB_Protocol: TIBDatabase
     DatabaseName = 'localhost:C:\'#1056#1091#1073#1077#1078'\DB\Protocol\PROTOCOL.GDB'
@@ -37,6 +37,7 @@ object dmSigma: TdmSigma
     Top = 130
   end
   object DB_Work: TIBDatabase
+    Connected = True
     DatabaseName = 'localhost:C:\'#1056#1091#1073#1077#1078'\DB\R08WORK.GDB'
     Params.Strings = (
       'user_name=sysdba'
@@ -89,5 +90,16 @@ object dmSigma: TdmSigma
       '')
     Left = 30
     Top = 220
+  end
+  object qDolg: TIBQuery
+    Database = DB_Work
+    Transaction = TR_WorkR
+    BufferChunks = 1000
+    CachedUpdates = False
+    ParamCheck = True
+    SQL.Strings = (
+      '')
+    Left = 30
+    Top = 270
   end
 end
