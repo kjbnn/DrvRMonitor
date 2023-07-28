@@ -70,6 +70,7 @@ Testing/
 Tool/
 Win32/
 Win64/
+Doc/
 *.~*
 
 
