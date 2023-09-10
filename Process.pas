@@ -284,6 +284,11 @@ begin
     |_______|_______|_______|_______|_______|
   }
 
+  {
+    Блокирование
+
+  }
+
   case tsType of
     0:
       begin
@@ -324,6 +329,13 @@ begin
         mes.SmallDevice := (idObj shr 16) - $7FFF;
         mes.NumDevice := mes.SmallDevice;
       end;
+    9:
+      begin
+        mes.typeDevice := 12; // АСПТ
+        mes.SmallDevice := (idObj shr 16) - $7FFF;
+        mes.NumDevice := mes.SmallDevice;
+      end;
+
   end; // case
 
   case typeSource of
@@ -345,7 +357,7 @@ begin
       mes.User := idSource;
   end;
 
-  case idIvent of
+  case (idIvent and $FFFF) of
     $101:
       mes.Code := R8_SH_ARMED;
     $102:
@@ -628,6 +640,19 @@ begin
       mes.Code := R8_CONNECT_FALSE;
     $3F02:
       mes.Code := R8_CONNECT_TRUE;
+    $8304:
+      case tsType of
+        1 .. 4:
+          mes.Code := R8_SH_NORIGTH;
+        5:
+          mes.Code := R8_RELAY_NORIGTH;
+        6:
+          mes.Code := SUD_BAD_LEVEL { R8_AP_NORIGTH };
+        7:
+          mes.Code := R8_TERM_NORIGTH;
+        9:
+          mes.Code := R8_ASPT_NORIGTH;
+      end;
   end;
 
   { vvv - for test, need delete }
@@ -1046,6 +1071,7 @@ var
   s: String;
   id: Longword;
 begin
+  id:= 0;
 
   exist := False;
   try

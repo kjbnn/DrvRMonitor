@@ -194,7 +194,10 @@ begin
             if(r.StrData[r.EndPointer+i]<>#0) then
               begin
                 str:=str+r.StrData[r.EndPointer+i];
-                if s.CountByte>0 then Dec(s.CountByte); //kjb
+                if (s<>nil)and(s.CountByte>0) then //kjb
+                  Dec(s.CountByte)
+                else if (s=nil) then
+                  raise Exception.Create('Error Message: s=Nil');
                 Inc(i);
               end
             else
