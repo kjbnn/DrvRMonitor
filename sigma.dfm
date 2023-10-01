@@ -1,6 +1,6 @@
 object dmSigma: TdmSigma
   OldCreateOrder = False
-  Height = 399
+  Height = 465
   Width = 236
   object DB_Protocol: TIBDatabase
     DatabaseName = 'localhost:C:\'#1056#1091#1073#1077#1078'\DB\Protocol\PROTOCOL.GDB'
@@ -101,5 +101,16 @@ object dmSigma: TdmSigma
       '')
     Left = 30
     Top = 270
+  end
+  object qWAnyR: TIBQuery
+    Database = DB_Work
+    Transaction = TR_WorkR
+    BufferChunks = 1000
+    CachedUpdates = False
+    ParamCheck = True
+    SQL.Strings = (
+      '')
+    Left = 30
+    Top = 326
   end
 end

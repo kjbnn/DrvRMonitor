@@ -9,7 +9,7 @@ inherited fmain: Tfmain
   Font.Name = 'Tahoma'
   PopupMenu = PopupMenu1
   ExplicitWidth = 608
-  ExplicitHeight = 354
+  ExplicitHeight = 355
   PixelsPerInch = 96
   TextHeight = 13
   object PageControl1: TPageControl [0]
@@ -37,17 +37,13 @@ inherited fmain: Tfmain
     object TabSheet5: TTabSheet
       Caption = #1053#1072#1089#1090#1088#1086#1081#1082#1080
       ImageIndex = 5
-      ExplicitLeft = 0
-      ExplicitTop = 0
-      ExplicitWidth = 0
-      ExplicitHeight = 0
       object vle1: TValueListEditor
         Left = 0
         Top = 0
         Width = 584
         Height = 269
         Align = alClient
-        Options = [goFixedVertLine, goFixedHorzLine, goVertLine, goHorzLine, goColSizing, goEditing, goThumbTracking]
+        Options = [goFixedVertLine, goFixedHorzLine, goVertLine, goHorzLine, goColSizing, goThumbTracking]
         Strings.Strings = (
           '')
         TabOrder = 0
@@ -93,8 +89,37 @@ inherited fmain: Tfmain
     Left = 124
     Top = 84
     object N1: TMenuItem
-      Caption = #1058#1077#1089#1090#1086#1074#1086#1077' '#1089#1086#1086#1073#1097#1077#1085#1080#1077
+      Caption = #1054#1090#1087#1088#1072#1074#1080#1090#1100' '#1090#1077#1089#1090#1086#1074#1086#1077' KSB '#1089#1086#1086#1073#1097#1077#1085#1080#1077
       OnClick = N1Click
     end
+    object N2: TMenuItem
+      Caption = '-'
+    end
+    object N_Stop: TMenuItem
+      Caption = #1054#1089#1090#1072#1085#1086#1074#1080#1090#1100' '#1086#1073#1088#1072#1073#1086#1090#1082#1091' '#1057#1080#1075#1084#1072' '#1089#1086#1086#1073#1097#1077#1085#1080#1081
+      OnClick = N_StopClick
+    end
+    object N_One: TMenuItem
+      Caption = #1054#1073#1088#1072#1073#1086#1090#1072#1090#1100' '#1089#1083#1077#1076#1091#1102#1097#1077#1077' '#1057#1080#1075#1084#1072' '#1089#1086#1086#1073#1097#1077#1085#1080#1077
+      OnClick = N_OneClick
+    end
+    object N_All: TMenuItem
+      Caption = #1054#1073#1088#1072#1073#1086#1090#1072#1090#1100' '#1074#1089#1077' '#1057#1080#1075#1084#1072' '#1089#1086#1086#1073#1097#1077#1085#1080#1103
+      OnClick = N_AllClick
+    end
+    object N4: TMenuItem
+      Caption = '-'
+    end
+    object N3: TMenuItem
+      Caption = #1063#1090#1077#1085#1080#1077' '#1082#1086#1085#1092#1080#1075#1091#1088#1072#1094#1080#1080
+      OnClick = N3Click
+    end
+  end
+  object UpdateConfigTimer: TTimer
+    Enabled = False
+    Interval = 30000
+    OnTimer = UpdateConfigTimerTimer
+    Left = 188
+    Top = 128
   end
 end

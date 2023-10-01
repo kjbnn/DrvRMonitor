@@ -6,8 +6,8 @@ uses
   System.Classes, SharedBuffer;
 
 type
-  TSigmaOperation = (OP_NONE, OP_INIT, OP_SYNC_CONFIG, OP_START_EVENT,
-    OP_NEXT_EVENT);
+  TSigmaOperation = (OP_NONE, OP_SYNC_CONFIG, OP_START_EVENT, OP_NEXT_EVENT,
+    OP_NEXT_ONE_EVENT, OP_STOP_EVENT);
 
   TSrc = (SRC_NONE, SRC_DB_TB, SRC_DB_PB, SRC_DB_WORK, SRC_DB_PROTOCOL,
     SRC_TR_TB_R, SRC_TR_TB_W, SRC_TR_PB_R, SRC_TR_PB_W, SRC_TR_WORK_R,
@@ -22,8 +22,9 @@ type
   protected
     logStr: String;
     mes: KSBMES;
-    procedure Execute; override;
+    Users: TList;
 
+    procedure Execute; override;
     procedure StartEvent;
     procedure NextEvent;
     procedure EventHandler(netDevice, idBcp: word; dt: TDateTime; objType: word;
@@ -34,6 +35,8 @@ type
     procedure GetBCPElements;
     procedure GetPodraz;
     procedure GetDemand;
+    procedure ClearLUsers;
+    function GetLUser(number: word): Pointer;
     procedure GetUsr;
     procedure UpdateElementGroup;
     procedure StartTransaction(Db: TSrc; Tr: TSrc);
@@ -65,15 +68,16 @@ implementation
 
 uses
   sigma, main, Sysutils, rostek, TypInfo, Variants,
-  constants, connection;
+  constants, connection, System.Types;
 
 { TProcess }
 procedure TProcess.Execute;
 var
-  SyncConfig: Integer;
+  mode: Integer;
 
 begin
   NameThreadForDebugging('Process');
+  Users := TList.Create;
 
   while not Terminated do
     try
@@ -82,25 +86,18 @@ begin
 
         OP_NONE:
           begin
-            TryStrToInt(fmain.vle1.Values[pWORK_MODE], SyncConfig);
-            case SyncConfig of
+            TryStrToInt(fmain.vle1.Values[pWORK_MODE], mode);
+            case mode of
               0:
                 begin
                   SigmaOperation := OP_NONE;
                   CleanConfig;
                 end;
               1:
-                SigmaOperation := OP_INIT;
-              2:
                 SigmaOperation := OP_SYNC_CONFIG;
             else
               SigmaOperation := OP_START_EVENT;
             end;
-          end;
-
-        OP_INIT:
-          begin
-            SigmaOperation := OP_SYNC_CONFIG;
           end;
 
         OP_SYNC_CONFIG:
@@ -205,6 +202,24 @@ begin
 
     while not eof do
     begin
+
+      case SigmaOperation of
+        OP_SYNC_CONFIG:
+          break;
+
+        OP_NEXT_ONE_EVENT:
+          begin
+            SigmaOperation := OP_STOP_EVENT;
+          end;
+
+        OP_STOP_EVENT:
+          begin
+            sleep(100);
+            Continue;
+          end;
+
+      end;
+
       EventHandler(fmain.ModuleNetDevice, FieldByName('IDBCP').AsInteger, // bcp
         FieldByName('DT').AsDateTime, // DATE
         FieldByName('OBJTYPE').AsInteger, // TC, US, PC
@@ -346,15 +361,15 @@ begin
     2: // Система
       ;
     4: // Скрипт
-      mes.User := idSource;
+      mes.User := abs(idSource);
     6: // ПЭВМ
       ;
     9: // Код неисправности (Потеря связи с оборудованием)
       ;
     11: // АРМ
-      mes.User := idSource;
+      mes.User := abs(idSource);
     61: // БЦП
-      mes.User := idSource;
+      mes.User := abs(idSource);
   end;
 
   case (idIvent and $FFFF) of
@@ -647,25 +662,27 @@ begin
         5:
           mes.Code := R8_RELAY_NORIGTH;
         6:
-          mes.Code := SUD_BAD_LEVEL { R8_AP_NORIGTH };
+          begin
+            mes.Code := SUD_BAD_LEVEL { R8_AP_NORIGTH };
+            GetCard(mes.BigDevice, mes.User, mes.Facility, mes.NumCard);
+          end;
         7:
           mes.Code := R8_TERM_NORIGTH;
         9:
           mes.Code := R8_ASPT_NORIGTH;
       end;
-  end;
+    $8280 .. $8282, // СРУ Зоны
+    $8380 .. $8382, // СРУ ТС
+    $8480 .. $8482, // СРУ СУ
+    $8580 .. $8582: // СРУ User
+      begin
+        fmain.UpdateConfigTimer.Enabled := False;
+        fmain.UpdateConfigTimer.Enabled := True;
+        logStr := 'Запрос новой конфигурации... ';
+        Synchronize(Log);
+      end;
 
-  { vvv - for test, need delete }
-  {
-    case idIvent of
-    $600 .. $620:
-    begin
-    logStr := Format('%x -> %d', [idIvent, mes.Code]);
-    Synchronize(Log);
-    end;
-    end;
-  }
-  { ^^^ }
+  end;
 
 end;
 
@@ -703,6 +720,8 @@ end;
 procedure TProcess.GetBCPElements;
 var
   ConfigArray: TArray<Byte>; // TBytes;
+  TotalGr, TotalNu, TotalUser: word;
+  s: String;
 
   procedure PrintConfig(bcpNumber: word; a: TArray<Byte>);
   var
@@ -738,14 +757,15 @@ var
 
   function ParseConfig(a: TArray<Byte>): Boolean;
   type
-    TelementParse = (EP_NONE, EP_ZONE, EP_TC, EP_SEARCH);
+    TelementParse = (EP_NONE, EP_ZONE, EP_TC, EP_GR, EP_NU, EP_USER, EP_SEARCH);
 
   VAR
     DrvParentID, BCPParentID, ZoneParentID: LongInt;
     curLen, txtLen: LongInt; // word;
-    zoneCount: word;
+    TotalZone: word;
     ep: TelementParse;
     curBCP: word;
+    User: ^TUser;
 
     function StringToBytes(const Value: WideString): TBytes;
     begin
@@ -936,6 +956,21 @@ var
       QueryExec(SRC_DB_TB, s);
     end;
 
+    procedure CreateGr(a: TArray<Byte>);
+    begin
+      //
+    end;
+
+    procedure CreateNu(a: TArray<Byte>);
+    begin
+      //
+    end;
+
+    procedure CreateUser(a: TArray<Byte>);
+    begin
+      //
+    end;
+
   // -------------------------
   begin
     result := False;
@@ -950,11 +985,15 @@ var
     Delete(a, 0, 2);
     CreateBCP(a);
     Delete(a, 0, 3);
-    zoneCount := (a[0] + a[1] shl 8);
+    TotalZone := (a[0] + a[1] shl 8);
     Delete(a, 0, 4);
-
+    //
+    logStr := Format('Probably Gr:%d, Nu:%d, User:%d',
+      [TotalGr, TotalNu, TotalUser]);
+    Synchronize(Log);
+    //
     ep := EP_ZONE;
-    while (zoneCount > 0) or (ep <> EP_NONE) do
+    while (TotalZone > 0) or (ep <> EP_NONE) do
       case ep of
 
         EP_ZONE:
@@ -966,7 +1005,7 @@ var
               exit;
             CreateZone(a);
             Delete(a, 0, curLen);
-            dec(zoneCount);
+            dec(TotalZone);
             ep := EP_SEARCH;
           end;
 
@@ -991,7 +1030,7 @@ var
               Delete(a, 0, 6);
               ep := EP_TC;
             end
-            else if zoneCount > 0 then
+            else if TotalZone > 0 then
               ep := EP_ZONE
             else
               ep := EP_NONE;
@@ -1008,11 +1047,52 @@ var
             Delete(a, 0, curLen);
             ep := EP_SEARCH;
           end;
-
       end;
+
+    // start
+    if (length(a) < 9) then
+      exit;
+
+    if (TotalGr > 0) then
+    begin
+      TotalGr := a[0];
+      Delete(a, 0, TotalGr * SizeOf(TGr) + 1);
+    end;
+
+    while (TotalNu > 0) do
+    begin
+      curLen := a[0] + (a[1] shl 8) + (a[2] shl 16) + (a[3] shl 24);
+      Delete(a, 0, curLen * SizeOf(TNu) + 4);
+      TotalNu := TotalNu - curLen;
+      while (length(a) > 0) and (a[0] = 0) do
+        Delete(a, 0, 1);
+    end;
+
+    TotalUser := a[0] + (a[1] shl 8) + (a[2] shl 16) + (a[3] shl 24);
+    Delete(a, 0, 4);
+    ClearLUsers;
+    while (TotalUser > 0) do
+    begin
+      New(User);
+      Move(a[0], User^, SizeOf(TUser));
+      Users.Add(User);
+      Delete(a, 0, SizeOf(TUser));
+      dec(TotalUser);
+    end;
+
   end;
 
 begin
+  try
+    s := 'select count(*) from GRUP';
+    TotalGr := GetId(SRC_DB_WORK, s, 'COUNT');
+    s := 'select count(*) from SUS';
+    TotalNu := GetId(SRC_DB_WORK, s, 'COUNT');
+    s := 'select count(*) from USR';
+    TotalUser := GetId(SRC_DB_WORK, s, 'COUNT');
+  except
+  end;
+
   with dmSigma.qConfig do
   begin
     StartTransaction(SRC_DB_WORK, SRC_TR_WORK_R);
@@ -1056,7 +1136,7 @@ begin
       begin
         Facility := FieldByName('FACILITY').AsInteger;
         Card := FieldByName('CARD').AsInteger;
-        Break;
+        break;
       end
       else
         Next;
@@ -1071,7 +1151,7 @@ var
   s: String;
   id: Longword;
 begin
-  id:= 0;
+  id := 0;
 
   exist := False;
   try
@@ -1176,6 +1256,28 @@ begin
   Synchronize(Log);
 end;
 
+procedure TProcess.ClearLUsers;
+begin
+  while Users.Count > 0 do
+  begin
+    Dispose(Users.Last);
+    Users.Remove(Users.Last);
+  end;
+end;
+
+function TProcess.GetLUser(number: word): Pointer;
+var
+  i: word;
+begin
+  result := nil;
+  for i := 1 to Users.Count do
+    if TPUser(Users.Items[i - 1])^.id = number then
+    begin
+      result := Users.Items[i - 1];
+      break;
+    end;
+end;
+
 procedure TProcess.GetUsr;
 var
   exist: Boolean;
@@ -1184,6 +1286,8 @@ var
   idd: String;
   idemployee: Integer;
   UserGroup: Integer;
+  CardStateId, PassStatusId: Byte;
+  LUser: TPUser;
 
 begin
   exist := False;
@@ -1364,11 +1468,22 @@ begin
 
       { TEMP DISITION vvv }
 
-      // add PB.card
+      // add PB.card   FULLCARD_VVV
+      CardStateId := 3;
+      LUser := GetLUser(FieldByName('IDUSR').AsInteger);
+      if LUser <> nil then
+        if (LUser^.UserFlagsWord and $10) = 0 then
+          CardStateId := 1;
+      if (CardStateId = 1) then
+        PassStatusId := 2
+      else
+        PassStatusId := 3;
+
       s := Format
         ('update or insert into card (CARD_ID, CARD_STATE_ID, FACILITY) ' +
         'values (%d, %d, %d) matching (CARD_ID, FACILITY)',
-        [FieldByName('IDUSR').AsInteger, 1, FieldByName('FACILITY').AsInteger]);
+        [FieldByName('IDUSR').AsInteger, CardStateId,
+        dmSigma.qUsr.FieldByName('FACILITY').AsInteger]);
       // <<IDUSR instead CARD
       QueryExec(SRC_DB_PB, s);
 
@@ -1385,7 +1500,7 @@ begin
         ('update or insert into pass (PASS_ID, ELEMENT_ID, OBJECT_ID, DEMAND_ID, CURRENT_CARD_ID, START_DATE_TIME, STOP_DATE_TIME, PASS_STATUS_ID) '
         + 'values (%d, %d, %d, %d, %d, ''%s'', ''%s'', %d) matching (PASS_ID)',
         [idp, ide, ido, CurDemand, FieldByName('IDUSR').AsInteger, '01.01.2020',
-        '01.01.2100', 2]);
+        '01.01.2100', PassStatusId]);
       // <<IDUSR instead CARD
       QueryExec(SRC_DB_PB, s);
 
@@ -1599,7 +1714,7 @@ begin
     SRC_DB_WORK:
       try
         StartTransaction(SRC_DB_WORK, SRC_TR_WORK_R);
-        with dmRostek.qPBAnyR do
+        with dmSigma.qWAnyR do
         begin
           Close;
           SQL.Text := Expression;

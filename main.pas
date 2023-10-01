@@ -22,9 +22,22 @@ type
     RefreshTimer: TTimer;
     PopupMenu1: TPopupMenu;
     N1: TMenuItem;
+    N2: TMenuItem;
+    N_One: TMenuItem;
+    N_All: TMenuItem;
+    N_Stop: TMenuItem;
+    N3: TMenuItem;
+    N4: TMenuItem;
+    UpdateConfigTimer: TTimer;
     procedure FormCreate(Sender: TObject);
     procedure RefreshTimerTimer(Sender: TObject);
     procedure N1Click(Sender: TObject);
+    procedure N_OneClick(Sender: TObject);
+    procedure N_AllClick(Sender: TObject);
+    procedure N_StopClick(Sender: TObject);
+    procedure ClearCheckedMenu;
+    procedure N3Click(Sender: TObject);
+    procedure UpdateConfigTimerTimer(Sender: TObject);
   private
   public
     procedure Consider(mes: KSBMES); override;
@@ -54,6 +67,39 @@ type
     tcoConfig: array [0 .. 15] of byte;
     kc: word;
   end;
+
+  TGr = packed record
+    Num: byte;
+    TextNamePointer: byte;
+    kc: word;
+  end;
+
+  TNu = packed record
+    HardwareID: array [0 .. 2] of byte;
+    HWVersion: word;
+    NDCFlagsWord: byte;
+    NDConfig: array [0 .. 7] of byte;
+    kc: word;
+  end;
+
+  TUser = packed record
+    UserFlagsWord: byte;
+    ID: word;
+    IdentifierType: byte;
+    IdentifierCodeDataUnion: array [0 .. 7] of byte;
+    Pincode: Longword;
+    AL: byte;
+    CheckRulesLevel: byte;
+    RObjectNumber: array [0 .. 3] of byte;
+    LifeTime: Longword;
+    AccessToBCP: byte;
+    AL2: byte;
+    TimeZoneForOwnerZone: byte;
+    Weight: byte;
+    kc: word;
+  end;
+
+  TPUser = ^TUser;
 
 const
   pRM_ADDRESS = 'Адрес Рубеж-Монитор';
@@ -136,6 +182,37 @@ begin
       saveEvent := curEvent;
     except
     end;
+
+  case SigmaOperation of
+    OP_STOP_EVENT:
+      if not N_Stop.Checked then
+      begin
+        ClearCheckedMenu;
+        N_Stop.Checked := True;
+      end;
+
+    OP_NEXT_ONE_EVENT:
+      if not N_One.Checked then
+      begin
+        ClearCheckedMenu;
+        N_One.Checked := True;
+      end;
+
+    OP_NEXT_EVENT:
+      if not N_All.Checked then
+      begin
+        ClearCheckedMenu;
+        N_All.Checked := True;
+      end;
+
+  end;
+
+end;
+
+procedure Tfmain.UpdateConfigTimerTimer(Sender: TObject);
+begin
+  SigmaOperation := OP_SYNC_CONFIG;
+  TTimer(Sender).Enabled:= False;
 end;
 
 procedure Tfmain.N1Click(Sender: TObject);
@@ -145,6 +222,33 @@ begin
   Init(mes);
   mes.Code := 11111;
   send(mes);
+end;
+
+procedure Tfmain.ClearCheckedMenu;
+begin
+  N_Stop.Checked := False;
+  N_One.Checked := False;
+  N_All.Checked := False;
+end;
+
+procedure Tfmain.N_StopClick(Sender: TObject);
+begin
+  SigmaOperation :=  OP_STOP_EVENT;
+end;
+
+procedure Tfmain.N_OneClick(Sender: TObject);
+begin
+  SigmaOperation := OP_NEXT_ONE_EVENT;
+end;
+
+procedure Tfmain.N_AllClick(Sender: TObject);
+begin
+  SigmaOperation := OP_NEXT_EVENT;
+end;
+
+procedure Tfmain.N3Click(Sender: TObject);
+begin
+  SigmaOperation:= OP_SYNC_CONFIG;
 end;
 
 Initialization
