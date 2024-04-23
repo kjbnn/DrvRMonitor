@@ -23,96 +23,26 @@ type
     PopupMenu1: TPopupMenu;
     N1: TMenuItem;
     N2: TMenuItem;
-    N_One: TMenuItem;
-    N_All: TMenuItem;
-    N_Stop: TMenuItem;
     N3: TMenuItem;
-    N4: TMenuItem;
-    UpdateConfigTimer: TTimer;
+    ConfigTimer: TTimer;
     procedure FormCreate(Sender: TObject);
     procedure RefreshTimerTimer(Sender: TObject);
     procedure N1Click(Sender: TObject);
-    procedure N_OneClick(Sender: TObject);
-    procedure N_AllClick(Sender: TObject);
-    procedure N_StopClick(Sender: TObject);
-    procedure ClearCheckedMenu;
-    procedure N3Click(Sender: TObject);
-    procedure UpdateConfigTimerTimer(Sender: TObject);
+    procedure ConfigTimerTimer(Sender: TObject);
   private
   public
     procedure Consider(mes: KSBMES); override;
   end;
-
-  TZone = packed record
-    flags: byte;
-    number: array [0 .. 3] of byte;
-    stringNamePointer: byte;
-    status: byte;
-    kc: word;
-    zero4: array [0 .. 3] of byte;
-  end;
-
-  TTc = packed record
-    bcp: word;
-    id: word;
-    kind: byte; // 0-7
-    number: array [0 .. 3] of byte;
-    stringNamePointer: byte;
-    flags: byte;
-    parentZone: array [0 .. 3] of byte;
-    group: byte;
-    hwType: byte;
-    hwSerial: word;
-    hwElement: byte;
-    tcoConfig: array [0 .. 15] of byte;
-    kc: word;
-  end;
-
-  TGr = packed record
-    Num: byte;
-    TextNamePointer: byte;
-    kc: word;
-  end;
-
-  TNu = packed record
-    HardwareID: array [0 .. 2] of byte;
-    HWVersion: word;
-    NDCFlagsWord: byte;
-    NDConfig: array [0 .. 7] of byte;
-    kc: word;
-  end;
-
-  TUser = packed record
-    UserFlagsWord: byte;
-    ID: word;
-    IdentifierType: byte;
-    IdentifierCodeDataUnion: array [0 .. 7] of byte;
-    Pincode: Longword;
-    AL: byte;
-    CheckRulesLevel: byte;
-    RObjectNumber: array [0 .. 3] of byte;
-    LifeTime: Longword;
-    AccessToBCP: byte;
-    AL2: byte;
-    TimeZoneForOwnerZone: byte;
-    Weight: byte;
-    kc: word;
-  end;
-
-  TPUser = ^TUser;
 
 const
   pRM_ADDRESS = 'Адрес Рубеж-Монитор';
   pTB = 'База Techbase (TB)';
   pPB = 'База Passbase (PB)';
   pPARENT_ELEMENT = 'Родительский элемент TB';
-  pWORK_MODE = 'Режим работы';
   pEVENT = 'Событие';
 
 var
   fmain: Tfmain;
-  saveEvent: Int64 = 0;
-  curEvent: Int64 = 0;
   Process: TProcess;
 
 implementation
@@ -147,7 +77,6 @@ begin
     Values['ModuleNetDevice'] := ModuleNetDevice.ToString;
     Values['ModuleBigDevice'] := ModuleBigDevice.ToString;
     Values[pPARENT_ELEMENT] := GetKey(pPARENT_ELEMENT, '0');
-    Values[pWORK_MODE] := GetKey(pWORK_MODE, '0');
 
     Values[pEVENT] := GetKey(pEVENT, '0');
     Try
@@ -155,7 +84,6 @@ begin
     except
     End;
     saveEvent := curEvent;
-
     //
     dmSigma.DB_Protocol.Close;
     dmSigma.DB_Protocol.DatabaseName := vle1.Values[pRM_ADDRESS] + ':' +
@@ -175,44 +103,19 @@ end;
 
 procedure Tfmain.RefreshTimerTimer(Sender: TObject);
 begin
-  vle1.Values[pEVENT] := curEvent.ToString + ' (' + testSigmaDb.ToString + ')';
+  vle1.Values[pEVENT] := curEvent.ToString + ' (' + EventRequest.ToString + ')';
   if (curEvent > saveEvent) then
     try
       SetKey(pEVENT, curEvent);
       saveEvent := curEvent;
     except
     end;
-
-  case SigmaOperation of
-    OP_STOP_EVENT:
-      if not N_Stop.Checked then
-      begin
-        ClearCheckedMenu;
-        N_Stop.Checked := True;
-      end;
-
-    OP_NEXT_ONE_EVENT:
-      if not N_One.Checked then
-      begin
-        ClearCheckedMenu;
-        N_One.Checked := True;
-      end;
-
-    OP_NEXT_EVENT:
-      if not N_All.Checked then
-      begin
-        ClearCheckedMenu;
-        N_All.Checked := True;
-      end;
-
-  end;
-
 end;
 
-procedure Tfmain.UpdateConfigTimerTimer(Sender: TObject);
+procedure Tfmain.ConfigTimerTimer(Sender: TObject);
 begin
   SigmaOperation := OP_SYNC_CONFIG;
-  TTimer(Sender).Enabled:= False;
+  TTimer(Sender).Enabled := False;
 end;
 
 procedure Tfmain.N1Click(Sender: TObject);
@@ -223,36 +126,5 @@ begin
   mes.Code := 11111;
   send(mes);
 end;
-
-procedure Tfmain.ClearCheckedMenu;
-begin
-  N_Stop.Checked := False;
-  N_One.Checked := False;
-  N_All.Checked := False;
-end;
-
-procedure Tfmain.N_StopClick(Sender: TObject);
-begin
-  SigmaOperation :=  OP_STOP_EVENT;
-end;
-
-procedure Tfmain.N_OneClick(Sender: TObject);
-begin
-  SigmaOperation := OP_NEXT_ONE_EVENT;
-end;
-
-procedure Tfmain.N_AllClick(Sender: TObject);
-begin
-  SigmaOperation := OP_NEXT_EVENT;
-end;
-
-procedure Tfmain.N3Click(Sender: TObject);
-begin
-  SigmaOperation:= OP_SYNC_CONFIG;
-end;
-
-Initialization
-
-Finalization
 
 end.

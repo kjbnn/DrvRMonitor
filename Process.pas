@@ -6,75 +6,132 @@ uses
   System.Classes, SharedBuffer;
 
 type
-  TSigmaOperation = (OP_NONE, OP_SYNC_CONFIG, OP_START_EVENT, OP_NEXT_EVENT,
-    OP_NEXT_ONE_EVENT, OP_STOP_EVENT);
+  TSigmaOperation = (OP_SYNC_CONFIG, OP_NEXT_EVENT);
 
   TSrc = (SRC_NONE, SRC_DB_TB, SRC_DB_PB, SRC_DB_WORK, SRC_DB_PROTOCOL,
     SRC_TR_TB_R, SRC_TR_TB_W, SRC_TR_PB_R, SRC_TR_PB_W, SRC_TR_WORK_R,
     SRC_TR_PROTOCOLR);
 
+  TTransactionType = (TR_NONE, TR_C, TR_CR, TR_RB);
+
   TFieldType = (FT_LONGINT, FT_STRING);
 
-  TTransactionType = (TR_NONE, TR_C, TR_CR, TR_RB);
+  TZone = packed record
+    flags: byte;
+    number: array [0 .. 3] of byte;
+    stringNamePointer: byte;
+    status: byte;
+    kc: word;
+    zero4: array [0 .. 3] of byte;
+  end;
+
+  TTc = packed record
+    bcp: word;
+    id: word;
+    kind: byte; // 0-7
+    number: array [0 .. 3] of byte;
+    stringNamePointer: byte;
+    flags: byte;
+    parentZone: array [0 .. 3] of byte;
+    group: byte;
+    hwType: byte;
+    hwSerial: word;
+    hwElement: byte;
+    tcoConfig: array [0 .. 15] of byte;
+    kc: word;
+  end;
+
+  TGr = packed record
+    Num: byte;
+    TextNamePointer: byte;
+    kc: word;
+  end;
+
+  TNu = packed record
+    HardwareID: array [0 .. 2] of byte;
+    HWVersion: word;
+    NDCFlagsWord: byte;
+    NDConfig: array [0 .. 7] of byte;
+    kc: word;
+  end;
+
+  TUser = packed record
+    UserFlagsWord: byte;
+    id: word;
+    IdentifierType: byte;
+    IdentifierCodeDataUnion: array [0 .. 7] of byte;
+    Pincode: Longword;
+    AL: byte;
+    CheckRulesLevel: byte;
+    RObjectNumber: array [0 .. 3] of byte;
+    LifeTime: Longword;
+    AccessToBCP: byte;
+    AL2: byte;
+    TimeZoneForOwnerZone: byte;
+    Weight: byte;
+    kc: word;
+  end;
+
+  TPUser = ^TUser;
 
   TProcess = class(TThread)
   private
   protected
-    logStr: String;
+    logStr: string;
     mes: KSBMES;
     Users: TList;
-
     procedure Execute; override;
     procedure StartEvent;
     procedure NextEvent;
     procedure EventHandler(netDevice, idBcp: word; dt: TDateTime; objType: word;
       idObj: LongInt; idZone, typeSource, idSource, idIvent, tsType: Integer;
       var mes: KSBMES);
-    procedure GetCard(idBcp, IdUsr: word; out Facility: Byte; out Card: word);
+    procedure GetCard(idBcp, IdUsr: word; out Facility: byte; out Card: word);
+    //
     procedure CleanConfig;
-    procedure GetBCPElements;
+    procedure GetBcp;
     procedure GetPodraz;
     procedure GetDemand;
     procedure ClearLUsers;
     function GetLUser(number: word): Pointer;
     procedure GetUsr;
-    procedure UpdateElementGroup;
+    procedure UpdateTbElement;
     procedure StartTransaction(Db: TSrc; Tr: TSrc);
     procedure EndTransaction(Tr: TSrc; How: TTransactionType);
-    function GetId(Db: TSrc; Expression, Field: String;
+    function GetId(Db: TSrc; Expression, Field: string;
       FieldType: TFieldType = FT_LONGINT): Variant;
-    procedure QueryExec(Db: TSrc; Expression: String);
+    procedure QueryExec(Db: TSrc; Expression: string;
+      Transaction: boolean = True);
     procedure Log;
     procedure Send;
   end;
 
-function ValToStr(var m: array of Byte): String;
+function ValToStr(var m: array of byte): string;
 
 const
   CU_MAX = 1024;
   ZN_MAX = 1024;
-  PodrazTable = 'RM$PODRAZ';
-  UsrTable = 'RM$USR';
-  UsrGrTable = 'RM$USR_GR';
+  PB_PodrazTable = 'RM$PODRAZ';
+  PB_UsrTable = 'RM$USR';
+  TB_UsrGrTable = 'RM$USR_GR';
 
 var
-  TestSigmaDb: Int64 = 0;
-  SigmaOperation: TSigmaOperation = OP_NONE; // need check
+  curEvent: Int64 = 0;
+  saveEvent: Int64 = 0;
+  EventRequest: Int64 = 0;
+  SigmaOperation: TSigmaOperation = OP_SYNC_CONFIG; // need check
+  SyncConfig: boolean = False;
   DemandElement: Int64 = 0;
   CurDemand: Int64 = 0;
-  Err: word;
 
 implementation
 
 uses
-  sigma, main, Sysutils, rostek, TypInfo, Variants,
-  constants, connection, System.Types;
+  sigma, main, Sysutils, rostek, TypInfo, Variants, constants, connection,
+  System.Types;
 
 { TProcess }
 procedure TProcess.Execute;
-var
-  mode: Integer;
-
 begin
   NameThreadForDebugging('Process');
   Users := TList.Create;
@@ -84,62 +141,38 @@ begin
 
       case SigmaOperation of
 
-        OP_NONE:
-          begin
-            TryStrToInt(fmain.vle1.Values[pWORK_MODE], mode);
-            case mode of
-              0:
-                begin
-                  SigmaOperation := OP_NONE;
-                  CleanConfig;
-                end;
-              1:
-                SigmaOperation := OP_SYNC_CONFIG;
-            else
-              SigmaOperation := OP_START_EVENT;
-            end;
-          end;
-
         OP_SYNC_CONFIG:
           begin
-
-            Err := 6;
-            GetBCPElements;
-            Err := 7;
+            logStr := 'Загрузка конфигурации..';
+            Synchronize(Log);
+            //
+            logStr := 'БЦП';
+            Synchronize(Log);
+            GetBcp;
+            //
+            logStr := 'Подразделения';
+            Synchronize(Log);
             GetPodraz;
-            Err := 8;
+            //
+            logStr := 'Заявки';
+            Synchronize(Log);
             GetDemand;
-            Err := 9;
+            //
+            logStr := 'Пользователи';
+            Synchronize(Log);
             GetUsr;
+            //
+            logStr := 'Группы пользователей';
+            Synchronize(Log);
+            UpdateTbElement;
 
-            UpdateElementGroup;
-            {
-              s:TMemoryStream;
-              a:array [0..31] of Byte;
-              begin
-              S:= TMemoryStream.Create;
-              IBTable1.Edit;
-              a[0]:=127; a[1]:=0; a[2]:=0; a[3]:=1;
-              s.Write(a, 4);
-              (IBTable1.FieldByName('FBLOB') as TBlobField).LoadFromStream(s);
-              IBTable1.Post;
-              S.Destroy;
-              IBTransaction1.CommitRetaining;
-              end;
-            }
-            SigmaOperation := OP_START_EVENT;
-          end;
-
-        OP_START_EVENT:
-          begin
-            StartEvent;
             SigmaOperation := OP_NEXT_EVENT;
           end;
 
         OP_NEXT_EVENT:
           begin
             NextEvent;
-            inc(TestSigmaDb);
+            inc(EventRequest);
             sleep(1000);
           end;
       end;
@@ -149,7 +182,7 @@ begin
       on E: Exception do
       begin
         logStr := 'Exception: ' + GetEnumName(TypeInfo(TSigmaOperation),
-          ord(SigmaOperation)) + ' -(' + Err.ToString + ')-> ' + E.Message;
+          ord(SigmaOperation)) + ' -(' + logStr + ')-> ' + E.Message;
         Synchronize(Log);
         dmSigma.DB_Protocol.Close;
         dmSigma.DB_Work.Close;
@@ -189,9 +222,14 @@ begin
 end;
 
 procedure TProcess.NextEvent;
+var
+  EventExist: boolean;
+
 begin
   with dmSigma.qEvent do
   begin
+    EventExist := False;
+
     StartTransaction(SRC_DB_PROTOCOL, SRC_TR_PROTOCOLR);
     Close;
     SQL.Text := 'select COD, DT, IDBCP, IDEVT' +
@@ -199,26 +237,11 @@ begin
       ', NAMEZON, OBJTYPE, TSTYPE, TYPESOURCE from TABLE1' + ' where COD > ' +
       IntToStr(curEvent) + ' and IDBCP in (0, 11829) order by COD';
     Open;
-
     while not eof do
     begin
-
-      case SigmaOperation of
-        OP_SYNC_CONFIG:
-          break;
-
-        OP_NEXT_ONE_EVENT:
-          begin
-            SigmaOperation := OP_STOP_EVENT;
-          end;
-
-        OP_STOP_EVENT:
-          begin
-            sleep(100);
-            Continue;
-          end;
-
-      end;
+      EventExist := True;
+      { if SigmaOperation = OP_SYNC_CONFIG then
+        break; }
 
       EventHandler(fmain.ModuleNetDevice, FieldByName('IDBCP').AsInteger, // bcp
         FieldByName('DT').AsDateTime, // DATE
@@ -269,14 +292,40 @@ begin
       sleep(1);
     end;
 
+    if not EventExist then
+    begin
+      Close;
+      SQL.Text := 'select COD, DT, IDBCP, IDEVT' +
+        ', IDOBJ, IDSOURCE, IDZON, NAMEEVT, NAMEOBJ, NAMESOURCE' +
+        ', NAMEZON, OBJTYPE, TSTYPE, TYPESOURCE from TABLE1' + ' where COD = ' +
+        IntToStr(curEvent) + ' and IDBCP in (0, 11829) order by COD';
+      Open;
+      if eof then
+      begin
+        curEvent := 0;
+        saveEvent := 0;
+      end;
+    end;
     EndTransaction(SRC_TR_PROTOCOLR, TR_C);
+
+    if SyncConfig then
+    begin
+      fmain.ConfigTimer.Enabled := False;
+      fmain.ConfigTimer.Enabled := True;
+      SyncConfig := False;
+    end;
   end;
+
+  if (EventRequest mod 100) = 0 then
+    if dmSigma.DB_Protocol.Connected then
+      dmSigma.DB_Protocol.Close;
+  if dmSigma.DB_Work.Connected then
+    dmSigma.DB_Work.Close;
 end;
 
 procedure TProcess.EventHandler(netDevice, idBcp: word; dt: TDateTime;
   objType: word; idObj: LongInt; idZone, typeSource, idSource, idIvent,
   tsType: Integer; var mes: KSBMES);
-
 begin
   Init(mes);
   mes.Proga := $FFFF;
@@ -297,10 +346,6 @@ begin
     |   +   |   +   |   +   |       |   +   |   БЦП
     |   +   |   +   |   +   |   +   |       |   Zn/СУ/ТС/Gr/UD/TZ/User/Script
     |_______|_______|_______|_______|_______|
-  }
-
-  {
-    Блокирование
 
   }
 
@@ -675,15 +720,8 @@ begin
     $8380 .. $8382, // СРУ ТС
     $8480 .. $8482, // СРУ СУ
     $8580 .. $8582: // СРУ User
-      begin
-        fmain.UpdateConfigTimer.Enabled := False;
-        fmain.UpdateConfigTimer.Enabled := True;
-        logStr := 'Запрос новой конфигурации... ';
-        Synchronize(Log);
-      end;
-
+      SyncConfig := True;
   end;
-
 end;
 
 procedure TProcess.Send;
@@ -693,8 +731,9 @@ end;
 
 procedure TProcess.CleanConfig;
 var
-  s: String;
+  s: string;
 begin
+  // удаление элементов оборудования в Ростэк
   s := Format
     ('update element set PARENT_ID=null where (NET_DEVICE=%d) and ((SYSTEM_DEVICE=0) '
     + 'and(TYPE_DEVICE in (4,5,6,7,8,9,10,11)) or (SYSTEM_DEVICE=1)and(TYPE_DEVICE in (2)))',
@@ -707,27 +746,44 @@ begin
     [fmain.ModuleNetDevice]);
   QueryExec(SRC_DB_TB, s);
 
-  s := Format('delete from %s', [PodrazTable]);
+  s := Format('delete from %s', [PB_UsrTable]);
   QueryExec(SRC_DB_PB, s);
+  { TB
+    delete from EMPLOYEE ehere EMPLOYEE_ID>20000
+  }
 
-  s := Format('delete from %s', [UsrTable]);
-  QueryExec(SRC_DB_PB, s);
+  { PB
+    delete from pass
+    delete from card
+    delete from DEMAND
+    delete from object
+    delete from ELEMENT e where e.parent_id=0
+    delete from ELEMENT
+    delete from rm$podraz
+    delete from rm$usr
+  }
 
-  s := Format('delete from %s', [UsrGrTable]);
-  QueryExec(SRC_DB_TB, s);
+  { приводит к появлению висячих записей PB.ELEMENT (подразделений)
+    s := Format('delete from %s', [PB_PodrazTable]);
+    QueryExec(SRC_DB_PB, s);
+
+    приводит к похожим записям в TB.USER_GROUP
+    s := Format('delete from %s', [TB_UsrGrTable]);
+    QueryExec(SRC_DB_TB, s);
+  }
 end;
 
-procedure TProcess.GetBCPElements;
+procedure TProcess.GetBcp;
 var
-  ConfigArray: TArray<Byte>; // TBytes;
+  ConfigArray: TArray<byte>; // TBytes;
   TotalGr, TotalNu, TotalUser: word;
-  s: String;
+  s: string;
 
-  procedure PrintConfig(bcpNumber: word; a: TArray<Byte>);
+  procedure PrintConfig(bcpNumber: word; a: TArray<byte>);
   var
     tf: Textfile;
     i: Longword;
-    b: Byte;
+    b: byte;
   begin
     AssignFile(tf, Format('.\blob%d.txt', [bcpNumber])); // need resolve
     try
@@ -755,12 +811,11 @@ var
     end;
   end;
 
-  function ParseConfig(a: TArray<Byte>): Boolean;
+  function ParseConfig(a: TArray<byte>): boolean;
   type
     TelementParse = (EP_NONE, EP_ZONE, EP_TC, EP_GR, EP_NU, EP_USER, EP_SEARCH);
-
-  VAR
-    DrvParentID, BCPParentID, ZoneParentID: LongInt;
+  var
+    DrvID, BcpID, ZoneID: LongInt;
     curLen, txtLen: LongInt; // word;
     TotalZone: word;
     ep: TelementParse;
@@ -783,40 +838,40 @@ var
 
     procedure CreateUsrGroup(idBcp: word);
     var
-      s: String;
-      exist: Boolean;
+      s: string;
+      exist: boolean;
       UserGroup: Integer;
     begin
       exist := False;
       try
-        s := 'select count(*) from ' + UsrGrTable;
+        s := 'select count(*) from ' + TB_UsrGrTable;
         GetId(SRC_DB_TB, s, 'COUNT');
         exist := True;
-        logStr := 'Table ' + UsrGrTable + ' exist';
+        logStr := 'Table ' + TB_UsrGrTable + ' exist';
       except
-        logStr := 'Table ' + UsrGrTable + ' not exist';
+        logStr := 'Table ' + TB_UsrGrTable + ' not exist';
       end;
       Synchronize(Log);
 
       if not(exist) then
         try
-          s := 'create table ' + UsrGrTable + ' (BCP Integer NOT NULL,' +
+          s := 'create table ' + TB_UsrGrTable + ' (BCP Integer NOT NULL,' +
             ' USER_GROUP Integer NOT NULL);';
           QueryExec(SRC_DB_TB, s);
-          logStr := 'Table ' + UsrGrTable + ' was created';
+          logStr := 'Table ' + TB_UsrGrTable + ' was created';
           Synchronize(Log);
         except
         end;
 
       UserGroup := GetId(SRC_DB_TB,
-        Format('select USER_GROUP from %s where BCP=%d', [UsrGrTable, idBcp]),
-        'USER_GROUP');
+        Format('select USER_GROUP from %s where BCP=%d', [TB_UsrGrTable, idBcp]
+        ), 'USER_GROUP');
       if UserGroup = 0 then
         UserGroup := GetId(SRC_DB_TB,
           'select GEN_ID(GEN_USER_GROUP_ID, 1) from RDB$DATABASE', 'GEN_ID');
 
       s := Format('update or insert into %s (BCP, USER_GROUP) ' +
-        'values (%d, %d) matching (BCP);', [UsrGrTable, idBcp, UserGroup]);
+        'values (%d, %d) matching (BCP);', [TB_UsrGrTable, idBcp, UserGroup]);
       QueryExec(SRC_DB_TB, s);
 
       s := Format('update or insert into USER_GROUP (GROUP_ID, GROUP_TITLE) ' +
@@ -825,17 +880,17 @@ var
       QueryExec(SRC_DB_TB, s);
     end;
 
-    procedure CreateBCP(a: TArray<Byte>);
+    procedure CreateBCP(a: TArray<byte>);
     var
       id: LongInt;
-      s: String;
+      s: string;
     begin
       curBCP := a[0] + a[1] shl 8;
       logStr := 'БЦП ' + IntToStr(curBCP);
       Synchronize(Log); //
       id := GetId(SRC_DB_TB,
         Format('select ELEMENT_ID from ELEMENT where TYPE_DEVICE=4 and SYSTEM_DEVICE=0 and NET_DEVICE=%d and BIG_DEVICE=%d and SMALL_DEVICE=0',
-        [fmain.ModuleNetDevice, a[0] + a[1] shl 8]), 'ELEMENT_ID');
+        [fmain.ModuleNetDevice, curBCP]), 'ELEMENT_ID');
       if id = 0 then
         id := GetId(SRC_DB_TB,
           'select GEN_ID(GEN_ELEMENT_ID, 1) from RDB$DATABASE', 'GEN_ID');
@@ -843,21 +898,21 @@ var
         ('update or insert into ELEMENT (ELEMENT_ID, PARENT_ID, CATEGORY_ID, TYPE_DEVICE, PARTION, DESCRIPTION, SYSTEM_DEVICE, NET_DEVICE, BIG_DEVICE, SMALL_DEVICE, ELEMENT_NAME) '
         + 'values (%d, %d, %d, %d, NULL, NULL, %d, %d, %d, %d, ''%s'') ' +
         'matching (TYPE_DEVICE, SYSTEM_DEVICE, NET_DEVICE, BIG_DEVICE, SMALL_DEVICE)',
-        [id, DrvParentID, 110, 4, 0, fmain.ModuleNetDevice, a[0] + a[1] shl 8,
+        [id, DrvID, 110, 4, 0, fmain.ModuleNetDevice, a[0] + a[1] shl 8,
         0, logStr]);
       QueryExec(SRC_DB_TB, s);
-      BCPParentID := id;
+      BcpID := id;
       //
       CreateUsrGroup(curBCP);
     end;
 
-    procedure CreateZone(a: TArray<Byte>);
+    procedure CreateZone(a: TArray<byte>);
     var
       ar: TBytes;
       len1, len2: word;
       id: LongInt;
       zn: Integer;
-      s: String;
+      s: string;
     begin
       len1 := SizeOf(TZone);
       len2 := a[len1] + (a[len1 + 1] shl 8);
@@ -876,18 +931,17 @@ var
         ('update or insert into ELEMENT (ELEMENT_ID, PARENT_ID, CATEGORY_ID, TYPE_DEVICE, PARTION, DESCRIPTION, SYSTEM_DEVICE, NET_DEVICE, BIG_DEVICE, SMALL_DEVICE, ELEMENT_NAME) '
         + 'values (%d, %d, %d, %d, NULL, NULL, %d, %d, %d, %d, ''%s'') ' +
         'matching (TYPE_DEVICE, SYSTEM_DEVICE, NET_DEVICE, BIG_DEVICE, SMALL_DEVICE)',
-        [id, BCPParentID, 112, 6, 0, fmain.ModuleNetDevice, curBCP, zn,
-        logStr]);
+        [id, BcpID, 112, 6, 0, fmain.ModuleNetDevice, curBCP, zn, logStr]);
       QueryExec(SRC_DB_TB, s);
-      ZoneParentID := id;
+      ZoneID := id;
     end;
 
-    procedure CreateTC(a: TArray<Byte>);
+    procedure CreateTC(a: TArray<byte>);
     var
       ar: TBytes;
       len1, len2: word;
       id, categoryId, typeDevice, SysDevice, tc: word;
-      s: String;
+      s: string;
     begin
       len1 := SizeOf(TTc);
       len2 := a[len1] + (a[len1 + 1] shl 8);
@@ -951,22 +1005,22 @@ var
         ('update or insert into ELEMENT (ELEMENT_ID, PARENT_ID, CATEGORY_ID, TYPE_DEVICE, PARTION, DESCRIPTION, SYSTEM_DEVICE, NET_DEVICE, BIG_DEVICE, SMALL_DEVICE, ELEMENT_NAME) '
         + 'values (%d, %d, %d, %d, NULL, NULL, %d, %d, %d, %d, ''%s'') ' +
         'matching (TYPE_DEVICE, SYSTEM_DEVICE, NET_DEVICE, BIG_DEVICE, SMALL_DEVICE)',
-        [id, ZoneParentID, categoryId, typeDevice, SysDevice,
-        fmain.ModuleNetDevice, curBCP, tc, logStr]);
+        [id, ZoneID, categoryId, typeDevice, SysDevice, fmain.ModuleNetDevice,
+        curBCP, tc, logStr]);
       QueryExec(SRC_DB_TB, s);
     end;
 
-    procedure CreateGr(a: TArray<Byte>);
+    procedure CreateGr(a: TArray<byte>);
     begin
       //
     end;
 
-    procedure CreateNu(a: TArray<Byte>);
+    procedure CreateNu(a: TArray<byte>);
     begin
       //
     end;
 
-    procedure CreateUser(a: TArray<Byte>);
+    procedure CreateUser(a: TArray<byte>);
     begin
       //
     end;
@@ -974,7 +1028,7 @@ var
   // -------------------------
   begin
     result := False;
-    if not TryStrToInt(fmain.vle1.Values[pPARENT_ELEMENT], DrvParentID) then
+    if not TryStrToInt(fmain.vle1.Values[pPARENT_ELEMENT], DrvID) then
       exit;
 
     // start
@@ -988,9 +1042,11 @@ var
     TotalZone := (a[0] + a[1] shl 8);
     Delete(a, 0, 4);
     //
-    logStr := Format('Probably Gr:%d, Nu:%d, User:%d',
+    {
+      logStr := Format('Probably Gr:%d, Nu:%d, User:%d',
       [TotalGr, TotalNu, TotalUser]);
-    Synchronize(Log);
+      Synchronize(Log);
+    }
     //
     ep := EP_ZONE;
     while (TotalZone > 0) or (ep <> EP_NONE) do
@@ -1078,11 +1134,21 @@ var
       Users.Add(User);
       Delete(a, 0, SizeOf(TUser));
       dec(TotalUser);
+      //
+      if (User^.IdentifierType > 0) then
+      begin
+        logStr := Format('us:%d.%d %d.%d', [User^.id, User^.IdentifierType,
+          User^.IdentifierCodeDataUnion[0], User^.IdentifierCodeDataUnion[1] +
+          256 * User^.IdentifierCodeDataUnion[2]]);
+        Synchronize(Log);
+      end;
     end;
 
   end;
 
 begin
+
+  // эти Totalы для ParseConfig
   try
     s := 'select count(*) from GRUP';
     TotalGr := GetId(SRC_DB_WORK, s, 'COUNT');
@@ -1112,11 +1178,10 @@ begin
     finally
       EnableControls;
     end;
-    Err := 13;
   end;
 end;
 
-procedure TProcess.GetCard(idBcp, IdUsr: word; out Facility: Byte;
+procedure TProcess.GetCard(idBcp, IdUsr: word; out Facility: byte;
   out Card: word);
 begin
   Facility := 0;
@@ -1126,7 +1191,7 @@ begin
   begin
     StartTransaction(SRC_DB_PB, SRC_TR_PB_R);
     SQL.Text := 'select NETDEVICE, BIGDEVICE, BCP, USR, ' +
-      'CARD, FACILITY, ROSTEK_OBJECT, ROSTEK_PASS from ' + UsrTable;
+      'CARD, FACILITY, ROSTEK_OBJECT, ROSTEK_PASS from ' + PB_UsrTable;
     Open;
     while not eof do
       if (idBcp = FieldByName('BCP').AsInteger) and
@@ -1147,8 +1212,8 @@ end;
 
 procedure TProcess.GetPodraz;
 var
-  exist: Boolean;
-  s: String;
+  exist: boolean;
+  s: string;
   id: Longword;
 begin
   id := 0;
@@ -1178,22 +1243,22 @@ begin
 
   exist := False;
   try
-    s := 'select count(*) from ' + PodrazTable;
+    s := 'select count(*) from ' + PB_PodrazTable;
     GetId(SRC_DB_PB, s, 'COUNT');
     exist := True;
-    logStr := 'Table ' + PodrazTable + ' exist';
+    logStr := 'Table ' + PB_PodrazTable + ' exist';
   except
-    logStr := 'Table ' + PodrazTable + ' not exist';
+    logStr := 'Table ' + PB_PodrazTable + ' not exist';
   end;
   Synchronize(Log);
 
   if not(exist) then
     try
-      s := 'create table ' + PodrazTable + ' (NETDEVICE Integer NOT NULL,' +
+      s := 'create table ' + PB_PodrazTable + ' (NETDEVICE Integer NOT NULL,' +
         ' BIGDEVICE Integer NOT NULL,' + ' PODRAZ Integer NOT NULL,' +
         ' ROSTEK_ELEMENT Integer NOT NULL);';
       QueryExec(SRC_DB_PB, s);
-      logStr := 'Table ' + PodrazTable + ' was created';
+      logStr := 'Table ' + PB_PodrazTable + ' was created';
       Synchronize(Log);
     except
     end;
@@ -1209,7 +1274,7 @@ begin
 
       id := GetId(SRC_DB_PB,
         Format('select ROSTEK_ELEMENT from %s where NETDEVICE=%d and BIGDEVICE=%d and PODRAZ=%d',
-        [PodrazTable, fmain.ModuleNetDevice, fmain.ModuleBigDevice,
+        [PB_PodrazTable, fmain.ModuleNetDevice, fmain.ModuleBigDevice,
         FieldByName('IDPODR').AsInteger]), 'ROSTEK_ELEMENT');
       if id = 0 then
         id := GetId(SRC_DB_PB,
@@ -1226,7 +1291,7 @@ begin
       s := Format
         ('update or insert into %s (NETDEVICE, BIGDEVICE, PODRAZ, ROSTEK_ELEMENT) '
         + 'values (%d, %d, %d, %d) matching (ROSTEK_ELEMENT)',
-        [PodrazTable, fmain.ModuleNetDevice, fmain.ModuleBigDevice,
+        [PB_PodrazTable, fmain.ModuleNetDevice, fmain.ModuleBigDevice,
         FieldByName('IDPODR').AsInteger, id]);
       QueryExec(SRC_DB_PB, s);
       Next;
@@ -1239,7 +1304,7 @@ end;
 
 procedure TProcess.GetDemand;
 var
-  s: String;
+  s: string;
 begin
   CurDemand := GetId(SRC_DB_PB,
     Format('select DEMAND_ID from DEMAND where ELEMENT_ID=%d and APPLICANT_ID=%d',
@@ -1280,41 +1345,43 @@ end;
 
 procedure TProcess.GetUsr;
 var
-  exist: Boolean;
-  s: String;
+  exist: boolean;
+  s: string;
   ido, ide, idp: Int64;
-  idd: String;
+  idd: string;
   idemployee: Integer;
   UserGroup: Integer;
-  CardStateId, PassStatusId: Byte;
+  CardStateId, PassStatusId: byte;
   LUser: TPUser;
-
 begin
   exist := False;
   try
-    s := 'select count(*) from ' + UsrTable;
+    s := 'select count(*) from ' + PB_UsrTable;
     GetId(SRC_DB_PB, s, 'COUNT');
     exist := True;
-    logStr := 'Table ' + UsrTable + ' exist';
+    logStr := 'Table ' + PB_UsrTable + ' exist';
   except
-    logStr := 'Table ' + UsrTable + ' not exist';
+    logStr := 'Table ' + PB_UsrTable + ' not exist';
   end;
   Synchronize(Log);
 
   if not(exist) then
     try
-      s := 'create table ' + UsrTable + ' (NETDEVICE Integer NOT NULL, ' +
+      s := 'create table ' + PB_UsrTable + ' (NETDEVICE Integer NOT NULL, ' +
         'BIGDEVICE Integer NOT NULL, ' + 'BCP Integer NOT NULL, ' +
         'USR Integer NOT NULL, ' + 'CARD Integer NOT NULL, ' +
         'FACILITY SMALLINT NOT NULL, ' + 'ROSTEK_OBJECT Integer NOT NULL, ' +
         'ROSTEK_PASS Integer NOT NULL);';
       QueryExec(SRC_DB_PB, s);
-      logStr := 'Table ' + UsrTable + ' was created';
+      logStr := 'Table ' + PB_UsrTable + ' was created';
       Synchronize(Log);
     except
     end;
 
   StartTransaction(SRC_DB_WORK, SRC_TR_WORK_R);
+  StartTransaction(SRC_DB_PB, SRC_TR_PB_W);
+  StartTransaction(SRC_DB_TB, SRC_TR_TB_W);
+
   with dmSigma.qUsr do
   begin
     Close;
@@ -1327,58 +1394,49 @@ begin
     Open;
     while not eof do
     begin
-      // id object in rostek
+      // id PB.object
       ido := GetId(SRC_DB_PB,
         Format('select ROSTEK_OBJECT from %s where NETDEVICE=%d and BIGDEVICE=%d and BCP=%d and USR=%d',
-        [UsrTable, fmain.ModuleNetDevice, fmain.ModuleBigDevice,
+        [PB_UsrTable, fmain.ModuleNetDevice, fmain.ModuleBigDevice,
         FieldByName('IDBCP').AsInteger, FieldByName('IDUSR').AsInteger]),
         'ROSTEK_OBJECT');
       if ido = 0 then
         ido := GetId(SRC_DB_PB,
           'select GEN_ID(GEN_OBJECT_ID, 1) from RDB$DATABASE', 'GEN_ID');
-      {
-        logStr := FieldByName('IDBCP').AsInteger.ToString + ' ' +
-        FieldByName('IDUSR').AsInteger.ToString + ' ' +
-        Trim(FieldByName('FAMIL').AsString) + ' ' +
-        Trim(FieldByName('IME').AsString) + ' ' +
-        Trim(FieldByName('OTC').AsString) + ' ' + FieldByName('PODR')
-        .AsInteger.ToString;
-        Synchronize(Log);
-      }
 
-      // id PB.podraz
+      // id PB.element (podraz)
       ide := GetId(SRC_DB_PB,
         Format('select ROSTEK_ELEMENT from %s where NETDEVICE=%d and BIGDEVICE=%d and PODRAZ=%d',
-        [PodrazTable, fmain.ModuleNetDevice, fmain.ModuleBigDevice,
+        [PB_PodrazTable, fmain.ModuleNetDevice, fmain.ModuleBigDevice,
         FieldByName('PODR').AsInteger]), 'ROSTEK_ELEMENT');
 
-      // add PB.object
+      // add PB.object  (!!!)
       s := Format
         ('update or insert into OBJECT (OBJECT_ID, CLASS_ID, ELEMENT_ID) ' +
         'values (%d, %d, %d) matching (OBJECT_ID)', [ido, 0, ide]);
-      QueryExec(SRC_DB_PB, s);
+      QueryExec(SRC_DB_PB, s, False);
 
       // add PB.object property
       s := Format
         ('update or insert into OBJECT_PROPERTY (CLASS_PROPERTY_ID, OBJECT_ID, PROPERTY_VALUE) '
         + 'values (%d, %d, ''%s'') matching (CLASS_PROPERTY_ID, OBJECT_ID)',
         [1, ido, Trim(FieldByName('FAMIL').AsString)]);
-      QueryExec(SRC_DB_PB, s);
+      QueryExec(SRC_DB_PB, s, False);
       s := Format
         ('update or insert into OBJECT_PROPERTY (CLASS_PROPERTY_ID, OBJECT_ID, PROPERTY_VALUE) '
         + 'values (%d, %d, ''%s'') matching (CLASS_PROPERTY_ID, OBJECT_ID)',
         [2, ido, Trim(FieldByName('IME').AsString)]);
-      QueryExec(SRC_DB_PB, s);
+      QueryExec(SRC_DB_PB, s, False);
       s := Format
         ('update or insert into OBJECT_PROPERTY (CLASS_PROPERTY_ID, OBJECT_ID, PROPERTY_VALUE) '
         + 'values (%d, %d, ''%s'') matching (CLASS_PROPERTY_ID, OBJECT_ID)',
         [3, ido, Trim(FieldByName('OTC').AsString)]);
-      QueryExec(SRC_DB_PB, s);
+      QueryExec(SRC_DB_PB, s, False);
       s := Format
         ('update or insert into OBJECT_PROPERTY (CLASS_PROPERTY_ID, OBJECT_ID, PROPERTY_VALUE) '
         + 'values (%d, %d, ''%s'') matching (CLASS_PROPERTY_ID, OBJECT_ID)',
         [4, ido, '01.01.2000']);
-      QueryExec(SRC_DB_PB, s);
+      QueryExec(SRC_DB_PB, s, False);
       idd := '';
       with dmSigma.qDolg do
       begin
@@ -1393,7 +1451,7 @@ begin
         ('update or insert into OBJECT_PROPERTY (CLASS_PROPERTY_ID, OBJECT_ID, PROPERTY_VALUE) '
         + 'values (%d, %d, ''%s'') matching (CLASS_PROPERTY_ID, OBJECT_ID)',
         [5, ido, idd]);
-      QueryExec(SRC_DB_PB, s);
+      QueryExec(SRC_DB_PB, s, False);
 
       // add TB.employee
       idemployee := GetId(SRC_DB_TB,
@@ -1407,66 +1465,18 @@ begin
         + 'values (%d, ''%s'', %d) matching (EMPLOYEE_ID)',
         [idemployee, FieldByName('FAMIL').AsString + ' ' + FieldByName('IME')
         .AsString + ' ' + FieldByName('OTC').AsString, ido]);
-      QueryExec(SRC_DB_TB, s);
+      QueryExec(SRC_DB_TB, s, False);
 
       // add TB.employee_group
       UserGroup := GetId(SRC_DB_TB,
         Format('select USER_GROUP from %s where BCP=%d',
-        [UsrGrTable, FieldByName('IDBCP').AsInteger]), 'USER_GROUP');
+        [TB_UsrGrTable, FieldByName('IDBCP').AsInteger]), 'USER_GROUP');
 
       s := Format
         ('update or insert into EMPLOYEE_GROUP (GROUP_ID, EMPLOYEE_ID, USER_ID, IS_ACTIVE) '
         + 'values (%d, %d, %d, %d) matching (GROUP_ID, EMPLOYEE_ID)',
         [UserGroup, idemployee, FieldByName('IDUSR').AsInteger, 1]);
-      QueryExec(SRC_DB_TB, s);
-
-      {
-        // add PB.card
-        if not(FieldByName('FACILITY').IsNull) and not(FieldByName('CARD').IsNull)
-        and (FieldByName('FACILITY').AsInteger > 0) and
-        (FieldByName('CARD').AsInteger > 0) then
-        begin
-        s := Format
-        ('update or insert into card (CARD_ID, CARD_STATE_ID, FACILITY) ' +
-        'values (%d, %d, %d) matching (CARD_ID, FACILITY)',
-        [FieldByName('CARD').AsInteger, 1, FieldByName('FACILITY')
-        .AsInteger]);
-        QueryExec(SRC_DB_PB, s);
-        end;
-
-        // add PB.pass
-        if not(FieldByName('FACILITY').IsNull) and not(FieldByName('CARD').IsNull)
-        and (FieldByName('FACILITY').AsInteger > 0) and
-        (FieldByName('CARD').AsInteger > 0) then
-        begin
-        idp := GetId(SRC_DB_PB,
-        Format('select ROSTEK_PASS from %s where NETDEVICE=%d and BIGDEVICE=%d and BCP=%d and USR=%d',
-        [UsrTable, fmain.ModuleNetDevice, fmain.ModuleBigDevice,
-        FieldByName('IDBCP').AsInteger, FieldByName('IDUSR').AsInteger]),
-        'ROSTEK_PASS');
-        if idp = 0 then
-        idp := GetId(SRC_DB_PB,
-        'select GEN_ID(GEN_PASS_ID, 1) from RDB$DATABASE', 'GEN_ID');
-
-        s := Format
-        ('update or insert into pass (PASS_ID, ELEMENT_ID, OBJECT_ID, DEMAND_ID, CURRENT_CARD_ID) '
-        + 'values (%d, %d, %d, %d, %d) matching (PASS_ID)',
-        [idp, ide, ido, curDemand, FieldByName('CARD').AsInteger]);
-        QueryExec(SRC_DB_PB, s);
-        end;
-
-        // add PB.usrTable
-        s := Format
-        ('update or insert into %s (NETDEVICE, BIGDEVICE, BCP, USR, CARD, FACILITY, ROSTEK_OBJECT, ROSTEK_PASS) '
-        + 'values (%d, %d, %d, %d, %d, %d, %d, %d) matching (NETDEVICE, BIGDEVICE, BCP, USR, CARD, FACILITY)',
-        [UsrTable, fmain.ModuleNetDevice, fmain.ModuleBigDevice,
-        FieldByName('IDBCP').AsInteger, FieldByName('IDUSR').AsInteger,
-        FieldByName('CARD').AsInteger, FieldByName('FACILITY')
-        .AsInteger, ido, 0]);
-        QueryExec(SRC_DB_PB, s);
-      }
-
-      { TEMP DISITION vvv }
+      QueryExec(SRC_DB_TB, s, False);
 
       // add PB.card   FULLCARD_VVV
       CardStateId := 3;
@@ -1481,60 +1491,59 @@ begin
 
       s := Format
         ('update or insert into card (CARD_ID, CARD_STATE_ID, FACILITY) ' +
-        'values (%d, %d, %d) matching (CARD_ID, FACILITY)',
+        'values (%d, %d, %d) matching (CARD_ID)',
         [FieldByName('IDUSR').AsInteger, CardStateId,
         dmSigma.qUsr.FieldByName('FACILITY').AsInteger]);
       // <<IDUSR instead CARD
-      QueryExec(SRC_DB_PB, s);
+      QueryExec(SRC_DB_PB, s, False);
 
       // add PB.pass
       idp := GetId(SRC_DB_PB,
         Format('select ROSTEK_PASS from %s where NETDEVICE=%d and BIGDEVICE=%d and BCP=%d and USR=%d',
-        [UsrTable, fmain.ModuleNetDevice, fmain.ModuleBigDevice,
+        [PB_UsrTable, fmain.ModuleNetDevice, fmain.ModuleBigDevice,
         FieldByName('IDBCP').AsInteger, FieldByName('IDUSR').AsInteger]),
         'ROSTEK_PASS');
       if idp = 0 then
         idp := GetId(SRC_DB_PB,
           'select GEN_ID(GEN_PASS_ID, 1) from RDB$DATABASE', 'GEN_ID');
       s := Format
-        ('update or insert into pass (PASS_ID, ELEMENT_ID, OBJECT_ID, DEMAND_ID, CURRENT_CARD_ID, START_DATE_TIME, STOP_DATE_TIME, PASS_STATUS_ID) '
+        ('update or insert into pass (PASS_ID, ELEMENT_ID, OBJECT_ID, DEMAND_ID,'
+        + ' CURRENT_CARD_ID, START_DATE_TIME, STOP_DATE_TIME, PASS_STATUS_ID) '
         + 'values (%d, %d, %d, %d, %d, ''%s'', ''%s'', %d) matching (PASS_ID)',
         [idp, ide, ido, CurDemand, FieldByName('IDUSR').AsInteger, '01.01.2020',
         '01.01.2100', PassStatusId]);
       // <<IDUSR instead CARD
-      QueryExec(SRC_DB_PB, s);
+      QueryExec(SRC_DB_PB, s, False);
 
       // add PB.usrTable
       s := Format
         ('update or insert into %s (NETDEVICE, BIGDEVICE, BCP, USR, CARD, FACILITY, ROSTEK_OBJECT, ROSTEK_PASS) '
         + 'values (%d, %d, %d, %d, %d, %d, %d, %d) matching (NETDEVICE, BIGDEVICE, BCP, USR)',
         // <<delete CARD, FACILITY
-        [UsrTable, fmain.ModuleNetDevice, fmain.ModuleBigDevice,
+        [PB_UsrTable, fmain.ModuleNetDevice, fmain.ModuleBigDevice,
         FieldByName('IDBCP').AsInteger, FieldByName('IDUSR').AsInteger,
         FieldByName('IDUSR').AsInteger, FieldByName('FACILITY')
         // <<IDUSR instead CARD
         .AsInteger, ido, idp]);
-      QueryExec(SRC_DB_PB, s);
-
-      { TEMP DISITION ^^^ }
+      QueryExec(SRC_DB_PB, s, False);
 
       Next;
     end;
   end;
+  EndTransaction(SRC_TR_TB_W, TR_C);
+  EndTransaction(SRC_TR_PB_W, TR_C);
   EndTransaction(SRC_TR_WORK_R, TR_C);
-
 end;
 
-procedure TProcess.UpdateElementGroup;
+procedure TProcess.UpdateTbElement;
 var
-  s: String;
-
+  s: string;
 begin
   with dmRostek.qRmUsrGr do
   begin
     StartTransaction(SRC_DB_TB, SRC_TR_TB_R);
     Close;
-    SQL.Text := 'select BCP, USER_GROUP from ' + UsrGrTable;
+    SQL.Text := 'select BCP, USER_GROUP from ' + TB_UsrGrTable;
     Open;
     while not eof do
     begin
@@ -1665,7 +1674,7 @@ begin
   end;
 end;
 
-function TProcess.GetId(Db: TSrc; Expression, Field: String;
+function TProcess.GetId(Db: TSrc; Expression, Field: string;
   FieldType: TFieldType = FT_LONGINT): Variant;
 begin
   if FieldType = FT_LONGINT then
@@ -1732,13 +1741,15 @@ begin
   end;
 end;
 
-procedure TProcess.QueryExec(Db: TSrc; Expression: String);
+procedure TProcess.QueryExec(Db: TSrc; Expression: string;
+  Transaction: boolean = True);
 begin
   case Db of
 
     SRC_DB_TB:
       try
-        StartTransaction(SRC_DB_TB, SRC_TR_TB_W);
+        if Transaction then
+          StartTransaction(SRC_DB_TB, SRC_TR_TB_W);
         with dmRostek.qTBAnyW do
         begin
           Close;
@@ -1746,12 +1757,14 @@ begin
           ExecSQL;
         end;
       finally
-        EndTransaction(SRC_TR_TB_W, TR_C);
+        if Transaction then
+          EndTransaction(SRC_TR_TB_W, TR_C);
       end;
 
     SRC_DB_PB:
       try
-        StartTransaction(SRC_DB_PB, SRC_TR_PB_W);
+        if Transaction then
+          StartTransaction(SRC_DB_PB, SRC_TR_PB_W);
         with dmRostek.qPBAnyW do
         begin
           Close;
@@ -1759,7 +1772,8 @@ begin
           ExecSQL;
         end;
       finally
-        EndTransaction(SRC_TR_PB_W, TR_C);
+        if Transaction then
+          EndTransaction(SRC_TR_PB_W, TR_C);
       end;
 
   end;
@@ -1768,7 +1782,7 @@ end;
 procedure TProcess.Log;
 var
   tf: Textfile;
-  fname: String;
+  fname: string;
 begin
   fname := ExtractFileName(ParamStr(0));
   Delete(fname, length(fname) - 2, 3);
@@ -1790,11 +1804,10 @@ begin
   fmain.Memo1.Lines.Add(logStr);
 end;
 
-function ValToStr(var m: array of Byte): String;
+function ValToStr(var m: array of byte): string;
 var
-  st: String;
-  i: Byte;
-
+  st: string;
+  i: byte;
 begin
   st := '';
   for i := 0 to 2 do

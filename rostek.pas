@@ -1,6 +1,5 @@
 unit Rostek;
 
-
 interface
 
 uses
@@ -45,7 +44,7 @@ uses Vcl.Dialogs, main;
 
 procedure TdmRostek.IBSQLMonitor1SQL(EventText: string; EventTime: TDateTime);
 begin
-  //fmain.Memo1.Lines.Add(EventText);
+  // fmain.Memo1.Lines.Add(EventText);
 end;
 
 end.

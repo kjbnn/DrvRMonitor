@@ -1,7 +1,7 @@
 REGEDIT4
 
 [HKEY_CURRENT_USER\Software\RostVSP\PathSystem]
-"Path"="d:\\4\\Repo\\DrvRMonitor\\" 
+"Path"="c:\\DrvRMonitor\\" 
 
 [HKEY_CURRENT_USER\Software\Borland\DBD\7.0\Preferences\Properties] 
 "SystemFont"="MS Sans Serif"

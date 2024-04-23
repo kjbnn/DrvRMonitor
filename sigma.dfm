@@ -37,7 +37,6 @@ object dmSigma: TdmSigma
     Top = 130
   end
   object DB_Work: TIBDatabase
-    Connected = True
     DatabaseName = 'localhost:C:\'#1056#1091#1073#1077#1078'\DB\R08WORK.GDB'
     Params.Strings = (
       'user_name=sysdba'
